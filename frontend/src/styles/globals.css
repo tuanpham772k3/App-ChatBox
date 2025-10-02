@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* custom */
+html,
+body,
+#root {
+    height: 100%;
+}
