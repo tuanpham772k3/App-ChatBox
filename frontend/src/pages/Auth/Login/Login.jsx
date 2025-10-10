@@ -1,7 +1,7 @@
 import { Button, Card, Checkbox, Form, Input } from "antd";
 import Title from "antd/es/typography/Title";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from "@/features/auth/authSlice";
 import { useNotification } from "@/hooks/useNotification";
 
@@ -40,19 +40,19 @@ const Login = () => {
                 case 1:
                     notification.warning({
                         message: "Lack of information",
-                        description: "Email, password are required!",
+                        description: err.message || "Email, password are required!",
                     });
                     break;
                 case 2:
                     notification.warning({
                         message: "Failed",
-                        description: "Invalid email or password!",
+                        description: err.message || "Invalid email or password!",
                     });
                     break;
                 case 3:
                     notification.warning({
                         message: "System error!",
-                        description: "Internal server error!",
+                        description: err.message || "Internal server error!",
                     });
                     break;
                 default:
@@ -110,6 +110,13 @@ const Login = () => {
                         </Button>
                     </Form.Item>
                 </Form>
+                {/* ✅ Thêm phần “Đã có tài khoản? Đăng nhập” */}
+                <div className="text-center mt-2">
+                    Chưa có tài khoản?{" "}
+                    <Link to="/register" className="text-blue-600 hover:text-blue-800 font-medium">
+                        Đăng ký
+                    </Link>
+                </div>
             </Card>
         </div>
     );
