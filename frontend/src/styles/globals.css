@@ -1,8 +1,95 @@
 @import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=MuseoModerno:ital,wght@0,100..900;1,100..900&display=swap");
 
-/* custom */
-html,
-body,
-#root {
-    height: 100%;
+/* CSS Variables */
+:root {
+    /* 🌿 Primary brand colors */
+    --color-primary-dark: #023019; /* Xanh lá đậm – Dark green forest */
+    --color-primary: #006837; /* Xanh lá chủ đạo – Green forest */
+    --color-primary-light: #8cff8c; /* Xanh lá sáng – Light green */
+    --color-primary-bg: #d3ffd3; /* Nền xanh nhạt – Pastel green background */
+
+    /* ⚫ Neutral (xám / đen) */
+    --color-gray: #575757; /* Xám trung tính – Neutral gray */
+    --color-gray-dark: #4f4f4f; /* Xám đậm – Dark gray */
+    --color-gray-light: #a9a9a9; /* Xám nhạt */
+    --color-black: #1f1f1f; /* Đen xám */
+
+    /* 🌟 Accent (nhấn mạnh, CTA) */
+    --color-accent: #e6c328; /* Vàng sáng – Golden yellow */
+    --color-accent-dark: #88741a; /* Vàng nâu – Dark golden */
+
+    /* ✍️ Text */
+    --text-primary: var(--color-black); /* Văn bản chính */
+    --text-secondary: var(--color-gray-dark); /* Văn bản phụ */
+    --text-light: #ffffff; /* Văn bản sáng */
+
+    /* 🎨 Background */
+    --bg-lightest: #ffffff; /* Nền item */
+    --bg-light: #f9f9f9; /* Nền sáng */
+    --bg-dark: var(--color-black); /* Nền tối */
+
+    /* ------------------------------------------------------- */
+
+    /* Font */
+    --font-primary: "MuseoModerno", sans-serif; /* body */
+    --font-secondary: "Segoe UI", sans-serif; /* description, content */
+    --font-product: "Product Sans", sans-serif; /* Header logo text */
+}
+
+/* Reset/Normalize CSS */
+html {
+    line-height: 1.5;
+    box-sizing: border-box;
+    scroll-behavior: smooth;
+    background: var(--bg-light);
+    font-family: "MuseoModerno", sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+*,
+*:before,
+*:after {
+    box-sizing: border-box;
+}
+
+input,
+textarea,
+select,
+button {
+    outline: none;
+    font: inherit;
+    border: none;
+}
+
+input {
+    line-height: normal;
+}
+
+label,
+button {
+    cursor: pointer;
+    user-select: none !important;
+}
+
+ul {
+    list-style: none;
+}
+
+a {
+    text-decoration: none;
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+    display: block;
+    max-width: 100%;
+    user-select: none !important;
 }

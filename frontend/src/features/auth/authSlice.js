@@ -19,7 +19,7 @@ export const loginUser = createAsyncThunk("auth/login", async (payload, { reject
 // Tạo slice
 const authSlice = createSlice({
     name: "auth",
-    // Quản lý state
+    // state manage
     initialState: {
         user: null,
         accessToken: null,
@@ -45,7 +45,6 @@ const authSlice = createSlice({
                 state.loading = false;
                 state.user = action.payload.user;
                 state.accessToken = action.payload.accessToken;
-                localStorage.setItem("accessToken", action.payload.accessToken);
             })
             .addCase(loginUser.rejected, (state, action) => {
                 state.loading = false;

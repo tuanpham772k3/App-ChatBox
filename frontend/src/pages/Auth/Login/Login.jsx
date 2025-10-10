@@ -11,56 +11,61 @@ const Login = () => {
     const { loading } = useSelector((state) => state.auth);
     const notification = useNotification();
 
-    console.log("notification object:", notification);
-    const onFinish = (values) => {
-        dispatch(loginUser(values))
-            .unwrap() //Bắt err rejectWithValue
-            .then((res) => {
-                console.log("API Response:", res); // debug
-                // Điều kiên thành công
-                if (res && res.idCode === 0) {
-                    // Thông báo
-                    notification.success({
-                        message: "Successful!",
-                        description: res.message || "Login successful!",
+    const onFinish = async (values) => {
+        try {
+            const res = await dispatch(loginUser(values)).unwrap();
+
+            console.log("API Response:", res); // debug
+            // Điều kiên đăng nhập thành công
+            if (res && res.idCode === 0) {
+                // Thông báo
+                notification.success({
+                    message: "Successful!",
+                    description: res.message || "Login successful!",
+                });
+
+                if (values.remember) {
+                    // Ghi nhớ đăng nhập lâu dài
+                    localStorage.setItem("accessToken", res.accessToken);
+                } else {
+                    // Đăng nhập tạm (xoá khi tắt trình duyệt)
+                    sessionStorage.setItem("accessToken", res.accessToken);
+                }
+                navigate("/"); // chuyển hướng
+            }
+        } catch (err) {
+            console.log("err:", err); // debug
+            //Xử lý lỗi dựa trên idCode
+            switch (err.idCode) {
+                case 1:
+                    notification.warning({
+                        message: "Lack of information",
+                        description: "Email, password are required!",
                     });
-                    console.log("Notification called!");
-                    navigate("/"); // chuyển hướng
-                }
-            })
-            .catch((err) => {
-                console.log("err:", err); // debug
-                //Xử lý lỗi dựa trên idCode
-                switch (err.idCode) {
-                    case 1:
-                        notification.warning({
-                            message: "Lack of information",
-                            description: "Email, password are required!",
-                        });
-                        break;
-                    case 2:
-                        notification.warning({
-                            message: "Failed",
-                            description: "Invalid email or password!",
-                        });
-                        break;
-                    case 3:
-                        notification.warning({
-                            message: "System error!",
-                            description: "Internal server error!",
-                        });
-                        break;
-                    default:
-                        notification.error({
-                            message: "Đăng nhập thất bại",
-                            description: err.message || "Lỗi không xác định!",
-                        });
-                }
-            });
+                    break;
+                case 2:
+                    notification.warning({
+                        message: "Failed",
+                        description: "Invalid email or password!",
+                    });
+                    break;
+                case 3:
+                    notification.warning({
+                        message: "System error!",
+                        description: "Internal server error!",
+                    });
+                    break;
+                default:
+                    notification.error({
+                        message: "Đăng nhập thất bại",
+                        description: err.message || "Lỗi không xác định!",
+                    });
+            }
+        }
     };
 
     return (
-        <div className="flex justify-center items-center h-screen bg-gray-50">
+        <div className="flex justify-center items-center h-screen">
             <Card className="w-[400px] shadow-lg">
                 <Title level={3} className="text-center mb-4">
                     Đăng nhập
@@ -78,7 +83,7 @@ const Login = () => {
                         name="email"
                         rules={[{ required: true, message: "Vui lòng nhập email!" }]}
                     >
-                        <Input />
+                        <Input disabled={loading} />
                     </Form.Item>
 
                     <Form.Item
@@ -86,15 +91,21 @@ const Login = () => {
                         name="password"
                         rules={[{ required: true, message: "Vui lòng nhập mật khẩu!" }]}
                     >
-                        <Input.Password />
+                        <Input.Password disabled={loading} />
                     </Form.Item>
 
                     <Form.Item name="remember" valuePropName="checked">
-                        <Checkbox>Ghi nhớ đăng nhập</Checkbox>
+                        <Checkbox disabled={loading}>Ghi nhớ đăng nhập</Checkbox>
                     </Form.Item>
 
                     <Form.Item>
-                        <Button type="primary" htmlType="submit" block loading={loading}>
+                        <Button
+                            type="primary"
+                            htmlType="submit"
+                            block
+                            disabled={loading}
+                            loading={loading}
+                        >
                             Đăng nhập
                         </Button>
                     </Form.Item>
