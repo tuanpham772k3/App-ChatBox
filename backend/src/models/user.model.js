@@ -16,9 +16,6 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: true,
         }, // Mã băm của mật khẩu
-        displayName: {
-            type: String,
-        }, // Tên hiển thị
         avatarUrl: {
             type: String,
         }, // URL ảnh đại diện

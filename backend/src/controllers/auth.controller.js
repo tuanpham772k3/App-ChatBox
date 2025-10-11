@@ -34,7 +34,7 @@ export const register = async (req, res) => {
     console.log("req.body", req.body);
 
     try {
-        const { username, email, password, displayName } = req.body;
+        const { username, email, password } = req.body;
 
         //validate input
         if (!username || !email || !password) {
@@ -59,7 +59,6 @@ export const register = async (req, res) => {
             username,
             email,
             passwordHash: hashedPassword,
-            displayName: displayName || username,
         });
 
         await newUser.save(); //Save to DB
@@ -72,7 +71,6 @@ export const register = async (req, res) => {
                 id: newUser._id,
                 username: newUser.username,
                 email: newUser.email,
-                displayName: newUser.displayName,
             },
         });
     } catch (error) {
@@ -163,7 +161,6 @@ export const login = async (req, res) => {
                 id: user._id,
                 username: user.username,
                 email: user.email,
-                displayName: user.displayName,
             },
         });
     } catch (error) {
