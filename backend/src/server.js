@@ -6,10 +6,11 @@ import cookieParser from "cookie-parser";
 import { Server } from "socket.io";
 import { connectDB } from "./config/db.js";
 import { chatSocket } from "./sockets/chat.socket.js";
-import redisClient, { connectRedis } from "./utils/redis.js";
 import authRoutes from "./routes/auth.route.js";
 
 dotenv.config();
+
+connectDB();
 
 const app = express(); // khởi tạo app Express
 const server = http.createServer(app); // tạo HTTP server
@@ -29,27 +30,6 @@ chatSocket(io);
 
 // PORT
 const port = process.env.PORT || 8080;
-
-// =====================================
-// START SERVER SEQUENCE
-// =====================================
-
-(async () => {
-    try {
-        console.log("🚀 Starting Chatbox API Server...");
-
-        // 1. Connect to Redis
-        await connectRedis();
-
-        // 2. Connect to MongoDB
-        await connectDB(); // ⚠️ BẮT BUỘC await
-
-        // 3. Start HTTP + Socket.io server
-        server.listen(port, () => {
-            console.log(`✅ Server is running on port ${port}`);
-        });
-    } catch (err) {
-        console.error("❌ Error starting server:", err);
-        process.exit(1);
-    }
-})();
+server.listen(port, () => {
+    console.log(`✅ Server is running on port ${port}`);
+});

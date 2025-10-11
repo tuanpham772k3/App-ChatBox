@@ -1,9 +1,8 @@
 import bcrypt from "bcrypt";
 import User from "../models/user.model.js";
 import Session from "../models/session.model.js";
-import { decodeToken, signAccessToken } from "../utils/jwt.js";
+import { signAccessToken } from "../utils/jwt.js";
 import { generateRefreshToken, hashToken } from "../utils/tokens.js";
-import { blacklistAccessToken } from "../utils/redis.js";
 
 // Time To Live for refresh token (7 days)
 const REFRESH_TTL_DAYS = parseInt(process.env.REFRESH_TOKEN_EXPIRES_DAYS || "7", 10);
@@ -252,32 +251,14 @@ export const logoutCurrent = async (req, res) => {
 
         // Nếu tồn tại
         if (session) {
-            // Xóa mềm bằng valid
+            // đánh dấu session hết hiệu lực
             session.valid = false;
             await session.save();
 
-            // Ngắt kết nối phiên socket bằng socketId
-            if (session.socketId) publishToSocketServiceToDisconnect(session.socketId);
-
-            // Blacklist access token hiện tại
-            const authHeader = req.headers.authorization;
-            if (authHeader && authHeader.startsWith("Bearer ")) {
-                const token = authHeader.split(" ")[1];
-
-                try {
-                    //Lấy thời gian còn lại của token
-                    const decoded = decodeToken(token);
-                    if (decoded?.exp) {
-                        //Tính thời gian còn lại trước khi hết hạn
-                        const ttlSeconds = decoded.exp - Math.floor(Date.now() / 1000);
-                        if (ttlSeconds > 0) {
-                            await blacklistAccessToken(token, ttlSeconds);
-                            console.log(" Blacklisted access token: ", token);
-                        }
-                    }
-                } catch (error) {
-                    console.log("Error decoding token:", error);
-                }
+            // Nếu có socketId, ngắt kết nối socket tương ứng
+            if (session.socketId) {
+                const socket = io.sockets.sockets.get(session.socketId);
+                if (socket) socket.disconnect(true);
             }
         }
 
