@@ -1,14 +1,14 @@
 import jwt from "jsonwebtoken";
 
-// xác thực token
+// Kiểm tra token
 export const verifyToken = (req, res, next) => {
     try {
-        const authHeader = req.header.authorization;
-
+        const authHeader = req.headers.authorization;
+        
         // kiểm tra đầu vào
         if (
             !authHeader ||
-            typeof header.authorization !== "string" ||
+            typeof authHeader !== "string" ||
             !authHeader.startsWith("Bearer ")
         ) {
             return res.status(401).json({
@@ -23,14 +23,14 @@ export const verifyToken = (req, res, next) => {
         // xác thực token
         jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
             if (err) {
-                console.error("❌ Token verification error:", err.message);
+                console.error("Token verification error:", err.message);
                 return res.status(403).json({
                     message: "Token không hợp lệ hoặc đã hết hạn",
                     idCode: 2,
                 });
             }
 
-            // 4️⃣ Gắn user vào request để route có thể dùng
+            // Gắn user vào request để route có thể dùng
             req.user = decoded;
             next();
         });

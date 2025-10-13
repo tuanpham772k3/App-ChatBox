@@ -7,6 +7,7 @@ import { Server } from "socket.io";
 import { connectDB } from "./config/db.js";
 import { chatSocket } from "./sockets/chat.socket.js";
 import authRoutes from "./routes/auth.route.js";
+import userRoutes from "./routes/user.route.js";
 
 dotenv.config();
 
@@ -24,6 +25,7 @@ app.use(cookieParser()); // parse cookie từ request
 
 // routes
 app.use("/api/auth", authRoutes);
+app.use("/api/user", userRoutes);
 
 // sockets
 chatSocket(io);
