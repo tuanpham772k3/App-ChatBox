@@ -1,13 +1,14 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import instance from "@/lib/axios";
+import authApi from "./services/authApi";
 
 // Register
 export const registerUser = createAsyncThunk(
     "auth/register",
     async (payload, { rejectWithValue }) => {
         try {
-            const res = await instance.post("/auth/register", payload);
-            return res.data;
+            const res = await authApi.register(payload);
+            return res;
         } catch (err) {
             const data = err.response?.data;
             return rejectWithValue({
@@ -22,8 +23,8 @@ export const registerUser = createAsyncThunk(
 // Login
 export const loginUser = createAsyncThunk("auth/login", async (payload, { rejectWithValue }) => {
     try {
-        const res = await instance.post("/auth/login", payload);
-        return res.data;
+        const res = await authApi.login(payload);
+        return res;
     } catch (err) {
         const data = err.response?.data;
         return rejectWithValue({

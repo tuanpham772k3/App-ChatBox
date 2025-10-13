@@ -23,14 +23,8 @@ const Login = () => {
                     message: "Successful!",
                     description: res.message || "Login successful!",
                 });
-
-                if (values.remember) {
-                    // Ghi nhớ đăng nhập lâu dài
-                    localStorage.setItem("accessToken", res.accessToken);
-                } else {
-                    // Đăng nhập tạm (xoá khi tắt trình duyệt)
-                    sessionStorage.setItem("accessToken", res.accessToken);
-                }
+                localStorage.setItem("accessToken", res.accessToken);
+                localStorage.setItem("user", JSON.stringify(res.user));
                 navigate("/"); // chuyển hướng
             }
         } catch (err) {
