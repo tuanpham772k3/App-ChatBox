@@ -23,6 +23,7 @@ const Login = () => {
                     message: "Successful!",
                     description: res.message || "Login successful!",
                 });
+
                 localStorage.setItem("accessToken", res.accessToken);
                 localStorage.setItem("user", JSON.stringify(res.user));
                 navigate("/"); // chuyển hướng
@@ -34,13 +35,15 @@ const Login = () => {
                 case 1:
                     notification.warning({
                         message: "Lack of information",
-                        description: err.message || "Email, password are required!",
+                        description:
+                            err.message || "Email, password are required!",
                     });
                     break;
                 case 2:
                     notification.warning({
                         message: "Failed",
-                        description: err.message || "Invalid email or password!",
+                        description:
+                            err.message || "Invalid email or password!",
                     });
                     break;
                 case 3:
@@ -75,7 +78,9 @@ const Login = () => {
                     <Form.Item
                         label="Email"
                         name="email"
-                        rules={[{ required: true, message: "Vui lòng nhập email!" }]}
+                        rules={[
+                            { required: true, message: "Vui lòng nhập email!" },
+                        ]}
                     >
                         <Input disabled={loading} />
                     </Form.Item>
@@ -83,13 +88,20 @@ const Login = () => {
                     <Form.Item
                         label="Mật khẩu"
                         name="password"
-                        rules={[{ required: true, message: "Vui lòng nhập mật khẩu!" }]}
+                        rules={[
+                            {
+                                required: true,
+                                message: "Vui lòng nhập mật khẩu!",
+                            },
+                        ]}
                     >
                         <Input.Password disabled={loading} />
                     </Form.Item>
 
                     <Form.Item name="remember" valuePropName="checked">
-                        <Checkbox disabled={loading}>Ghi nhớ đăng nhập</Checkbox>
+                        <Checkbox disabled={loading}>
+                            Ghi nhớ đăng nhập
+                        </Checkbox>
                     </Form.Item>
 
                     <Form.Item>
@@ -107,7 +119,10 @@ const Login = () => {
                 {/* ✅ Thêm phần “Đã có tài khoản? Đăng nhập” */}
                 <div className="text-center mt-2">
                     Chưa có tài khoản?{" "}
-                    <Link to="/register" className="text-blue-600 hover:text-blue-800 font-medium">
+                    <Link
+                        to="/register"
+                        className="text-blue-600 hover:text-blue-800 font-medium"
+                    >
                         Đăng ký
                     </Link>
                 </div>

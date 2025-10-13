@@ -111,7 +111,7 @@ const Register = () => {
                         dependencies={["password"]}
                         rules={[
                             { required: true, message: "Vui lòng xác nhận mật khẩu!" },
-                            // Confirm password
+                            // So sánh mật khẩu
                             ({ getFieldValue }) => ({
                                 validator(_, value) {
                                     if (!value || getFieldValue("password") === value) {

@@ -1,12 +1,11 @@
 import bcrypt from "bcrypt";
 import User from "../models/user.model.js";
 import Session from "../models/session.model.js";
-import { signAccessToken } from "../utils/jwt.js";
-import { generateRefreshToken, hashToken } from "../utils/tokens.js";
+import crypto from "crypto";
+import jwt from "jsonwebtoken";
 
 // Time To Live for refresh token (7 days)
-const REFRESH_TTL_DAYS = parseInt(process.env.REFRESH_TOKEN_EXPIRES_DAYS || "7", 10);
-const REFRESH_TTL_MS = REFRESH_TTL_DAYS * (24 * 60 * 60 * 1000); // change to ms
+const REFRESH_TTL_MS = 7 * 24 * 60 * 60 * 1000; // change to ms
 
 // Helper: send refresh token to client as HTTP cookie.
 const setRefreshCookie = (res, refreshToken) => {
@@ -48,7 +47,9 @@ export const register = async (req, res) => {
         const user = await User.findOne({ email });
 
         if (user) {
-            return res.status(409).json({ message: "email already exists", idCode: 2 });
+            return res
+                .status(409)
+                .json({ message: "email already exists", idCode: 2 });
         }
 
         // hash password
@@ -75,8 +76,24 @@ export const register = async (req, res) => {
         });
     } catch (error) {
         console.error("Error in register:", error);
-        return res.status(500).json({ message: "Internal server error", idCode: 3 });
+        return res
+            .status(500)
+            .json({ message: "Internal server error", idCode: 3 });
     }
+};
+
+let signAccessToken = (payload) => {
+    return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "15m",
+    });
+};
+
+let generateRefreshToken = () => {
+    return crypto.randomBytes(64).toString("hex");
+};
+
+let hashToken = (token) => {
+    return crypto.createHash("sha256").update(token).digest("hex");
 };
 
 // Login
@@ -106,7 +123,10 @@ export const login = async (req, res) => {
         }
 
         // compare password with passwordHash
-        const comparePassword = await bcrypt.compare(password, user.passwordHash);
+        const comparePassword = await bcrypt.compare(
+            password,
+            user.passwordHash
+        );
 
         // if password not match
         if (!comparePassword) {
@@ -165,7 +185,9 @@ export const login = async (req, res) => {
         });
     } catch (error) {
         console.log("Error in login:", error);
-        return res.status(500).json({ message: "Internal server error", idCode: 3 });
+        return res
+            .status(500)
+            .json({ message: "Internal server error", idCode: 3 });
     }
 };
 
@@ -175,7 +197,9 @@ export const refreshToken = async (req, res) => {
 
         // nếu không có refresh token trong cookie
         if (!refToken) {
-            return res.status(401).json({ message: "No refresh token provided", idCode: 1 });
+            return res
+                .status(401)
+                .json({ message: "No refresh token provided", idCode: 1 });
         }
 
         const hashedRefToken = hashToken(refToken);
@@ -189,13 +213,17 @@ export const refreshToken = async (req, res) => {
 
         // nếu không tìm thấy session
         if (!session) {
-            return res.status(401).json({ message: "Invalid refresh token", idCode: 2 });
+            return res
+                .status(401)
+                .json({ message: "Invalid refresh token", idCode: 2 });
         }
 
         // tìm user tương ứng
         const user = await User.findById(session.userId);
         if (!user) {
-            return res.status(401).json({ message: "User not found", idCode: 2 });
+            return res
+                .status(401)
+                .json({ message: "User not found", idCode: 2 });
         }
 
         // tạo access token mới
@@ -226,7 +254,9 @@ export const refreshToken = async (req, res) => {
         });
     } catch (error) {
         console.log("Error in refreshToken: ", error);
-        return res.status(500).json({ message: "Internal server error", idCode: 3 });
+        return res
+            .status(500)
+            .json({ message: "Internal server error", idCode: 3 });
     }
 };
 
@@ -244,7 +274,9 @@ export const logoutCurrent = async (req, res) => {
         const refTokenHash = hashToken(refToken);
 
         //Tìm session bằng refreshToken
-        const session = await Session.findOne({ refreshTokenHash: refTokenHash });
+        const session = await Session.findOne({
+            refreshTokenHash: refTokenHash,
+        });
 
         // Nếu tồn tại
         if (session) {
@@ -264,6 +296,8 @@ export const logoutCurrent = async (req, res) => {
         return res.status(200).json({ message: "Logged out", idCode: 0 });
     } catch (error) {
         console.log("Error logout current :", error);
-        return res.status(500).json({ message: "Internal server error", idCode: 3 });
+        return res
+            .status(500)
+            .json({ message: "Internal server error", idCode: 3 });
     }
 };
