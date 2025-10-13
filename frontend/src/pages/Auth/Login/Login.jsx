@@ -12,8 +12,11 @@ const Login = () => {
     const notification = useNotification();
 
     const onFinish = async (values) => {
+        const { email, password } = values;
+
+        // gọi api đăng nhập
         try {
-            const res = await dispatch(loginUser(values)).unwrap();
+            const res = await dispatch(loginUser({ email, password })).unwrap();
 
             console.log("API Response:", res); // debug
             // Điều kiên đăng nhập thành công
@@ -23,9 +26,10 @@ const Login = () => {
                     message: "Successful!",
                     description: res.message || "Login successful!",
                 });
-
+                // lưu vào localStorage
                 localStorage.setItem("accessToken", res.accessToken);
                 localStorage.setItem("user", JSON.stringify(res.user));
+
                 navigate("/"); // chuyển hướng
             }
         } catch (err) {
