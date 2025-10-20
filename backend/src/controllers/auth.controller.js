@@ -80,7 +80,7 @@ export const register = async (req, res) => {
 
 let signAccessToken = (payload) => {
   return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
-    expiresIn: "15m",
+    expiresIn: "30d",
   });
 };
 
@@ -107,7 +107,7 @@ export const login = async (req, res) => {
       });
     }
 
-    // check user
+    // Find user
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({

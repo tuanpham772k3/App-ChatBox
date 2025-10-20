@@ -1,5 +1,5 @@
+import "./config/loadEnv.js";
 import express from "express";
-import dotenv from "dotenv";
 import cors from "cors";
 import http from "http"; //module core có sẵn của Node.js, để tạo HTTP server
 import cookieParser from "cookie-parser";
@@ -8,8 +8,6 @@ import { connectDB } from "./config/db.js";
 import { chatSocket } from "./sockets/chat.socket.js";
 import authRoutes from "./routes/auth.route.js";
 import userRoutes from "./routes/user.route.js";
-
-dotenv.config();
 
 connectDB();
 
@@ -33,5 +31,5 @@ chatSocket(io);
 // PORT
 const port = process.env.PORT || 8080;
 server.listen(port, () => {
-    console.log(`✅ Server is running on port ${port}`);
+  console.log(`✅ Server is running on port ${port}`);
 });

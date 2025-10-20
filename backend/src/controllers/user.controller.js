@@ -1,3 +1,4 @@
+import cloudinary from "../config/cloudinary.js";
 import User from "../models/user.model.js";
 
 // lấy thông tin người dùng
@@ -6,10 +7,8 @@ export const getProfile = async (req, res) => {
     //req.user lấy từ verifyToken
     const userId = req.user.userId;
 
-    //tìm user trong db
+    //find and check user
     const user = await User.findById(userId).select("-passwordHash");
-
-    //validate
     if (!user) {
       return res.status(401).json({
         message: "User not found",
@@ -17,6 +16,7 @@ export const getProfile = async (req, res) => {
       });
     }
 
+    // result
     return res.status(200).json({
       message: "Get user profile successfully!",
       idCode: 0,
@@ -34,24 +34,54 @@ export const getProfile = async (req, res) => {
 // cập nhật hồ sơ
 export const updateProfile = async (req, res) => {
   try {
-    const userId = req.user.userId;
-    const { username, bio, avatar } = req.body;
+    console.log("REQ.FILE:", req.file);
 
-    //tìm user
-    const user = await User.findById(userId).select("-passwordHash"); //có thể sử dụng findbyIdAndUpdate để tối ưu truy vấn nếu dự án lớn
+    const userId = req.user.userId;
+    const { username, bio } = req.body;
+
+    let avatarData = null;
+
+    // Nếu có file avatar gửi lên
+    if (req.file) {
+      // Xóa avatar cũ nếu có
+      const currentUser = await User.findById(userId);
+      if (currentUser.avatarUrl?.public_id) {
+        await cloudinary.uploader.destroy(currentUser.avatarUrl.public_id);
+      }
+
+      // Upload avatar mới
+      const result = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          {
+            folder: "avatars",
+            transformation: [{ width: 400, height: 400, crop: "limit" }],
+          },
+          (error, result) => {
+            if (error) return reject(error);
+            resolve(result);
+          }
+        );
+        stream.end(req.file.buffer);
+      });
+
+      avatarData = { url: result.secure_url, public_id: result.public_id };
+    }
+
+    const updateFields = { username, bio };
+    if (avatarData) updateFields.avatarUrl = avatarData;
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { $set: updateFields },
+      { new: true }
+    ).select("-passwordHash");
+
     if (!user) {
       return res.status(404).json({
         message: "User not found",
         idCode: 1,
       });
     }
-
-    // Gán giá trị mới
-    if (username) user.username = username;
-    if (bio) user.bio = bio;
-    if (avatar) user.avatarUrl = avatar;
-
-    await user.save();
 
     //trả kết quả
     return res.status(200).json({
