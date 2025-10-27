@@ -8,6 +8,8 @@ import { connectDB } from "./config/db.js";
 import { chatSocket } from "./sockets/chat.socket.js";
 import authRoutes from "./routes/auth.route.js";
 import userRoutes from "./routes/user.route.js";
+import conversationRoutes from "./routes/conversation.route.js";
+import messageRoutes from "./routes/message.route.js";
 
 connectDB();
 
@@ -24,6 +26,8 @@ app.use(cookieParser()); // parse cookie từ request
 // routes
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/conversations", conversationRoutes);
+app.use("/api/messages", messageRoutes);
 
 // sockets
 chatSocket(io);
