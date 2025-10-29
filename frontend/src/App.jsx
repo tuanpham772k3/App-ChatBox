@@ -5,6 +5,7 @@ import Home from "./pages/Home/Home";
 import Login from "./pages/Auth/Login/Login";
 import Register from "./pages/Auth/Register/Register";
 import ProfilePage from "./pages/Profile/ProfilePage";
+import ChatPage from "./pages/Chat/ChatPage";
 
 export const NotificationContext = createContext(null);
 
@@ -33,6 +34,7 @@ function App() {
         {/* Các tuyến đường bảo vệ */}
         <Route path="/" element={<PrivateRoute element={<Home />} />} />
         <Route path="/profile" element={<PrivateRoute element={<ProfilePage />} />} />
+        <Route path="/chat" element={<PrivateRoute element={<ChatPage />} />} />
       </Routes>
     </NotificationContext.Provider>
   );
