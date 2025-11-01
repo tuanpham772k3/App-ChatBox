@@ -1,7 +1,6 @@
 import express from "express";
 import { verifyToken } from "../controllers/middleware.controller.js";
 import {
-  getAllUsers,
   getProfile,
   searchUsers,
   updateProfile,
@@ -18,8 +17,5 @@ router.put("/profile", verifyToken, upload.single("avatar"), updateProfile);
 
 // Tìm kiếm người dùng
 router.get("/search", verifyToken, searchUsers);
-
-// Lấy danh sách tất cả người dùng
-router.get("/", verifyToken, getAllUsers);
 
 export default router;

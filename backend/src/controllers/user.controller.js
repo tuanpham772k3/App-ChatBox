@@ -1,6 +1,6 @@
 import cloudinary from "../config/cloudinary.js";
 import User from "../models/user.model.js";
-import { getAllUsersService, searchUserService } from "../services/user.service.js";
+import { searchUserService } from "../services/user.service.js";
 
 // lấy thông tin người dùng
 export const getProfile = async (req, res) => {
@@ -114,10 +114,10 @@ export const searchUsers = async (req, res) => {
     const { userId } = req.user;
 
     // keyword từ client
-    const { q } = req.query;
+    const { keyword } = req.query;
 
     // Gọi service xử lý logic
-    const users = await searchUserService(q, userId);
+    const users = await searchUserService(keyword, userId);
 
     // Trả kết quả
     return res.status(200).json({
@@ -127,39 +127,6 @@ export const searchUsers = async (req, res) => {
     });
   } catch (error) {
     console.log("Error in getUsers controller", error);
-
-    // Error server
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      idCode: 1,
-    });
-  }
-};
-
-/**
- * Lấy danh sách tất cả người dùng
- * GET api/user
- *
- * Flow:
- * 1. Lấy userId từ JWT Token
- * 2. Gọi service xử lý logic
- * 3. Trả về response
- */
-export const getAllUsers = async (req, res) => {
-  try {
-    const { userId } = req.user;
-
-    const users = await getAllUsersService(userId);
-
-    res.status(200).json({
-      success: true,
-      message: "Get users successfully",
-      idCode: 0,
-      data: users,
-    });
-  } catch (error) {
-    console.log("Error in getAllUser controller", error);
 
     // Error server
     return res.status(500).json({
