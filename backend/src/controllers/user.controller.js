@@ -97,3 +97,41 @@ export const updateProfile = async (req, res) => {
     });
   }
 };
+
+/**
+ * Tìm kiếm người dùng
+ * GET api/user/search
+ *
+ * Flow:
+ * 1. Lấy userId từ JWT Token
+ * 2. Nhận keyword từ client
+ * 3. Gọi service xử lý logic
+ * 4. Trả về response
+ */
+export const searchUsers = async (req, res) => {
+  try {
+    const { userId } = req.user;
+
+    // keyword từ client
+    const { q } = req.query;
+
+    // Gọi service xử lý logic
+    const users = await searchUserService(q, userId);
+
+    // Trả kết quả
+    return res.status(200).json({
+      success: true,
+      idCode: 0,
+      data: users,
+    });
+  } catch (error) {
+    console.log("Error in getUsers controller", error);
+
+    // Error server
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      idCode: 1,
+    });
+  }
+};

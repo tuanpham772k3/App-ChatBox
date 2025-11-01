@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema(
     roles: {
       type: [String],
       default: ["user"],
-    }, 
+    },
     status: {
       type: String,
       enum: ["active", "inactive", "banned"],
@@ -47,6 +47,8 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+userSchema.index({ username: "text" });
 
 const User = mongoose.model("User", userSchema);
 export default User;
