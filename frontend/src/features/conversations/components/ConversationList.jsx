@@ -1,7 +1,10 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Search, CornerUpLeft } from "lucide-react";
 import { FaFacebook } from "react-icons/fa";
 import { SlNote } from "react-icons/sl";
+import { useDispatch, useSelector } from "react-redux";
+import { searchUsers } from "@/features/user/userSlice";
+import { debounce } from "lodash";
 
 // Mock data
 const list = [
@@ -47,7 +50,32 @@ const list = [
 ];
 
 const ConversationList = ({ activeChat, handleSelectChat }) => {
+  const dispatch = useDispatch();
+  /** Search */
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const { searchResults, loading } = useSelector((state) => state.user);
+  const [keyword, setKeyword] = useState("");
+
+  // Tối ưu tần suất gọi api search
+  const debouncedSearch = useMemo(
+    () => debounce((val) => dispatch(searchUsers(val)), 500),
+    [dispatch]
+  );
+
+  // Xử lý search user
+  const handleSearch = (e) => {
+    const value = e.target.value;
+    setKeyword(value);
+    debouncedSearch(value);
+  };
+
+  // Xử lý khi focus search
+  const handleFocus = () => {
+    setIsSearchFocused(true);
+    if (!keyword.trim()) {
+      dispatch(searchUsers("")); // keyword rỗng => trả danh sách gợi ý
+    }
+  };
 
   return (
     <section
@@ -89,8 +117,11 @@ const ConversationList = ({ activeChat, handleSelectChat }) => {
             type="text"
             placeholder="Tìm kiếm trên Messenger"
             className="placeholder:text-[var(--color-text-secondary)] focus:outline-none bg-transparent flex-1"
-            onFocus={() => setIsSearchFocused(true)}
+            onFocus={handleFocus}
             onBlur={() => setIsSearchFocused(false)}
+            value={keyword}
+            onClick={handleSearch}
+            onChange={handleSearch}
           />
         </div>
       </div>
@@ -100,23 +131,20 @@ const ConversationList = ({ activeChat, handleSelectChat }) => {
         {isSearchFocused ? (
           <div className="text-[var(--color-text-secondary)]">
             <p className="text-sm mb-2">Gợi ý liên hệ</p>
-            {[
-              { id: 1, name: "Nguyễn Văn A", avatar: "/img/user1.jpg" },
-              { id: 2, name: "Trần B", avatar: "/img/user2.jpg" },
-              { id: 3, name: "Lê C", avatar: "/img/user3.jpg" },
-            ].map((user) => (
+            {loading && <p>Kết quả tìm kiếm cho {keyword}</p>}
+            {searchResults.map((user) => (
               <div
-                key={user.id}
+                key={user._id}
                 className="flex items-center gap-3 p-2 rounded-md cursor-pointer hover:bg-[var(--bg-hover-secondary)] transition"
-                onClick={() => handleSelectChat(user.id)}
+                onClick={() => handleSelectChat(user._id)}
               >
                 <img
                   src={user.avatar}
-                  alt={user.name}
+                  alt={user.username}
                   className="w-10 h-10 rounded-full"
                 />
                 <span className="text-[var(--color-text-primary)] font-medium">
-                  {user.name}
+                  {user.username}
                 </span>
               </div>
             ))}
