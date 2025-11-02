@@ -1,10 +1,10 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { Search, CornerUpLeft } from "lucide-react";
 import { FaFacebook } from "react-icons/fa";
 import { SlNote } from "react-icons/sl";
 import { useDispatch, useSelector } from "react-redux";
 import { searchUsers } from "@/features/user/userSlice";
-import { debounce } from "lodash";
+import useDebounce from "@/hooks/useDebounce";
 
 // Mock data
 const list = [
@@ -57,10 +57,9 @@ const ConversationList = ({ activeChat, handleSelectChat }) => {
   const [keyword, setKeyword] = useState("");
 
   // Tối ưu tần suất gọi api search
-  const debouncedSearch = useMemo(
-    () => debounce((val) => dispatch(searchUsers(val)), 500),
-    [dispatch]
-  );
+  const debouncedSearch = useDebounce((val) => dispatch(searchUsers(val)), 500, [
+    dispatch,
+  ]);
 
   // Xử lý search user
   const handleSearch = (e) => {
