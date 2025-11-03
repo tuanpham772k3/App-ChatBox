@@ -20,19 +20,22 @@ export const registerUser = createAsyncThunk(
 );
 
 // Login
-export const loginUser = createAsyncThunk("auth/login", async (payload, { rejectWithValue }) => {
-  try {
-    const res = await authApi.login(payload);
-    return res;
-  } catch (err) {
-    const data = err.response?.data;
-    return rejectWithValue({
-      message: data?.message || "Lỗi không xác định",
-      idCode: data?.idCode || -1,
-      status: err.response?.status,
-    });
+export const loginUser = createAsyncThunk(
+  "auth/login",
+  async (payload, { rejectWithValue }) => {
+    try {
+      const res = await authApi.login(payload);
+      return res;
+    } catch (err) {
+      const data = err.response?.data;
+      return rejectWithValue({
+        message: data?.message || "Lỗi không xác định",
+        idCode: data?.idCode || -1,
+        status: err.response?.status,
+      });
+    }
   }
-});
+);
 
 // Tạo slice
 const authSlice = createSlice({

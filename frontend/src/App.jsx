@@ -6,18 +6,13 @@ import Login from "./pages/Auth/Login/Login";
 import Register from "./pages/Auth/Register/Register";
 import ProfilePage from "./pages/Profile/ProfilePage";
 import ChatPage from "./pages/Chat/ChatPage";
+import { useSelector } from "react-redux";
 
 export const NotificationContext = createContext(null);
 
 const PrivateRoute = ({ element }) => {
-  const isAuthenticated = () => {
-    const accessToken = localStorage.getItem("accessToken");
-    const user = localStorage.getItem("user");
-
-    return accessToken && user;
-  };
-
-  return isAuthenticated() ? element : <Navigate to="/login" />;
+  const { accessToken, user } = useSelector((state) => state.auth);
+  return accessToken && user ? element : <Navigate to="/login" />;
 };
 
 function App() {

@@ -2,7 +2,7 @@ import {
   createPrivateConversation,
   getUserConversations,
   getConversationById,
-  deleteConversation
+  deleteConversation,
 } from "../services/conversation.service.js";
 
 /**
@@ -13,7 +13,7 @@ import {
 /**
  * Tạo conversation 1-1
  * POST /api/conversations
- * 
+ *
  * Flow:
  * 1. Nhận request từ client với participantId
  * 2. Lấy userId từ JWT token (đã được middleware xác thực)
@@ -24,7 +24,7 @@ export const createConversation = async (req, res) => {
   try {
     // Lấy userId từ JWT token (đã được middleware authenticate xử lý)
     const { userId } = req.user;
-    
+
     // Lấy participantId từ request body
     const { participantId } = req.body;
 
@@ -33,7 +33,7 @@ export const createConversation = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Participant ID is required",
-        idCode: 1
+        idCode: 1,
       });
     }
 
@@ -42,7 +42,7 @@ export const createConversation = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Invalid participant ID format",
-        idCode: 2
+        idCode: 2,
       });
     }
 
@@ -56,19 +56,21 @@ export const createConversation = async (req, res) => {
       idCode: 0,
       data: {
         conversation: result.conversation,
-        isNew: result.isNew
-      }
+        isNew: result.isNew,
+      },
     });
-
   } catch (error) {
     console.error("Error in createConversation controller:", error);
 
     // Xử lý các loại lỗi khác nhau
-    if (error.message === "Creator not found" || error.message === "Participant not found") {
+    if (
+      error.message === "Creator not found" ||
+      error.message === "Participant not found"
+    ) {
       return res.status(404).json({
         success: false,
         message: "User not found",
-        idCode: 3
+        idCode: 3,
       });
     }
 
@@ -76,7 +78,7 @@ export const createConversation = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Cannot create conversation with yourself",
-        idCode: 4
+        idCode: 4,
       });
     }
 
@@ -84,7 +86,7 @@ export const createConversation = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Internal server error",
-      idCode: 5
+      idCode: 5,
     });
   }
 };
@@ -92,7 +94,7 @@ export const createConversation = async (req, res) => {
 /**
  * Lấy danh sách conversation của user hiện tại
  * GET /api/conversations?page=1&limit=20
- * 
+ *
  * Flow:
  * 1. Lấy userId từ JWT token
  * 2. Lấy page và limit từ query parameters
@@ -103,7 +105,7 @@ export const getConversations = async (req, res) => {
   try {
     // Lấy userId từ JWT token
     const { userId } = req.user;
-    
+
     // Lấy pagination parameters từ query
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
@@ -113,7 +115,7 @@ export const getConversations = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Invalid pagination parameters",
-        idCode: 1
+        idCode: 1,
       });
     }
 
@@ -125,16 +127,15 @@ export const getConversations = async (req, res) => {
       success: true,
       message: "Conversations retrieved successfully",
       idCode: 0,
-      data: result
+      data: result,
     });
-
   } catch (error) {
     console.error("Error in getConversations controller:", error);
 
     return res.status(500).json({
       success: false,
       message: "Internal server error",
-      idCode: 2
+      idCode: 2,
     });
   }
 };
@@ -142,7 +143,7 @@ export const getConversations = async (req, res) => {
 /**
  * Lấy thông tin chi tiết một conversation
  * GET /api/conversations/:conversationId
- * 
+ *
  * Flow:
  * 1. Lấy conversationId từ URL params
  * 2. Lấy userId từ JWT token
@@ -153,7 +154,7 @@ export const getConversation = async (req, res) => {
   try {
     // Lấy conversationId từ URL params
     const { conversationId } = req.params;
-    
+
     // Lấy userId từ JWT token
     const { userId } = req.user;
 
@@ -162,7 +163,7 @@ export const getConversation = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Invalid conversation ID format",
-        idCode: 1
+        idCode: 1,
       });
     }
 
@@ -174,11 +175,8 @@ export const getConversation = async (req, res) => {
       success: true,
       message: "Conversation retrieved successfully",
       idCode: 0,
-      data: {
-        conversation
-      }
+      data: conversation,
     });
-
   } catch (error) {
     console.error("Error in getConversation controller:", error);
 
@@ -187,14 +185,14 @@ export const getConversation = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: "Conversation not found or access denied",
-        idCode: 2
+        idCode: 2,
       });
     }
 
     return res.status(500).json({
       success: false,
       message: "Internal server error",
-      idCode: 3
+      idCode: 3,
     });
   }
 };
@@ -202,7 +200,7 @@ export const getConversation = async (req, res) => {
 /**
  * Xóa conversation (soft delete)
  * DELETE /api/conversations/:conversationId
- * 
+ *
  * Flow:
  * 1. Lấy conversationId từ URL params
  * 2. Lấy userId từ JWT token
@@ -213,7 +211,7 @@ export const deleteConversationById = async (req, res) => {
   try {
     // Lấy conversationId từ URL params
     const { conversationId } = req.params;
-    
+
     // Lấy userId từ JWT token
     const { userId } = req.user;
 
@@ -222,7 +220,7 @@ export const deleteConversationById = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Invalid conversation ID format",
-        idCode: 1
+        idCode: 1,
       });
     }
 
@@ -234,9 +232,8 @@ export const deleteConversationById = async (req, res) => {
       success: true,
       message: result.message,
       idCode: 0,
-      data: result
+      data: result,
     });
-
   } catch (error) {
     console.error("Error in deleteConversationById controller:", error);
 
@@ -245,15 +242,14 @@ export const deleteConversationById = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: "Conversation not found or access denied",
-        idCode: 2
+        idCode: 2,
       });
     }
 
     return res.status(500).json({
       success: false,
       message: "Internal server error",
-      idCode: 3
+      idCode: 3,
     });
   }
 };
-

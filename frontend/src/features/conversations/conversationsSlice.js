@@ -123,7 +123,9 @@ const conversationsSlice = createSlice({
       })
       .addCase(getConversations.fulfilled, (state, action) => {
         state.loading = false;
-        state.conversations = action.payload || [];
+        state.conversations = action.payload?.conversations || [];
+        // nếu muốn lưu thông tin phân trang
+        // state.pagination = action.payload?.pagination || null;
       })
       .addCase(getConversations.rejected, (state, action) => {
         state.loading = false;

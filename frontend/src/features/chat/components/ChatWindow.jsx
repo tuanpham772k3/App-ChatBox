@@ -1,6 +1,12 @@
-import React from "react";
+import { getConversationById } from "@/features/conversations/conversationsSlice";
+import React, { useEffect } from "react";
+import { useSelector } from "react-redux";
 
-const ChatWindow = ({ activeChat, handleBackToList }) => {
+const ChatWindow = ({ activeChat, onBackToList }) => {
+  const { currentConversation } = useSelector((state) => state.conversations);
+  const { user } = useSelector((state) => state.auth);
+  const partner = currentConversation.participants.find((p) => p._id !== user.id);
+
   return (
     <main
       className={`flex-[2] bg-[var(--bg-primary)] flex flex-col rounded-lg overflow-hidden
@@ -11,7 +17,7 @@ const ChatWindow = ({ activeChat, handleBackToList }) => {
         <div className="flex items-center gap-3">
           {/* Nút Back chỉ hiện trên mobile */}
           <button
-            onClick={handleBackToList}
+            onClick={onBackToList}
             className="md:hidden mr-2 text-[var(--color-text-primary)]"
           >
             <svg
@@ -33,16 +39,20 @@ const ChatWindow = ({ activeChat, handleBackToList }) => {
           {/* Avatar + Info */}
           <div className="relative">
             <img
-              src="/img/user3.jpg"
-              alt="avatar"
+              src={partner?.avatarUrl?.url}
+              alt={partner?.username}
               className="w-10 h-10 rounded-full object-cover"
             />
-            <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[var(--bg-primary)] rounded-full"></span>
+            {partner?.status === "active" && (
+              <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[var(--bg-primary)] rounded-full"></span>
+            )}
           </div>
           <div className="flex flex-col">
-            <h3 className="text-[var(--color-text-primary)] font-semibold">Anh Nưng</h3>
+            <h3 className="text-[var(--color-text-primary)] font-semibold">
+              {partner?.username}
+            </h3>
             <span className="text-xs text-[var(--color-text-secondary)]">
-              Đang hoạt động
+              {partner?.status === "active" ? "Đang hoạt động" : "Ngoại tuyến"}
             </span>
           </div>
         </div>

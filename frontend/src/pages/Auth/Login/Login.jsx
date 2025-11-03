@@ -26,10 +26,6 @@ const Login = () => {
           message: "Successful!",
           description: res.message || "Login successful!",
         });
-        // lưu vào localStorage
-        localStorage.setItem("accessToken", res.accessToken);
-        localStorage.setItem("user", JSON.stringify(res.user));
-
         navigate("/"); // chuyển hướng
       }
     } catch (err) {

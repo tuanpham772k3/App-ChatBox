@@ -1,60 +1,21 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Search, CornerUpLeft } from "lucide-react";
 import { FaFacebook } from "react-icons/fa";
 import { SlNote } from "react-icons/sl";
-import { useDispatch, useSelector } from "react-redux";
 import { searchUsers } from "@/features/user/userSlice";
 import useDebounce from "@/hooks/useDebounce";
+import { getConversationById, getConversations } from "../conversationsSlice";
 
-// Mock data
-const list = [
-  {
-    id: 1,
-    name: "Công nghệ thông tin",
-    message:
-      "Hà đã gửi 1 ảnh. a word that refers to a lung disease contracted from the inhalation of very fine silica particles, specifically from a volcano; medically, it is the same as silicosis.",
-    time: "1 giờ",
-    avatar: "/img/user1.jpg",
-    unread: true,
-  },
-  {
-    id: 2,
-    name: "Nhà Hàng Hữu Phước",
-    message: "Cuộc gọi video đã kết thúc.",
-    time: "2 giờ",
-    avatar: "/img/user2.jpg",
-    unread: true,
-  },
-  {
-    id: 3,
-    name: "Anh Nưng",
-    message: "Bạn: khả năng cũng sắp ngáp",
-    time: "4 giờ",
-    avatar: "/img/user3.jpg",
-  },
-  {
-    id: 4,
-    name: "AE xã hội",
-    message: "Kim Ha: Mà nước đang lên",
-    time: "5 giờ",
-    avatar: "/img/user4.jpg",
-  },
-  {
-    id: 5,
-    name: "Huỳnh Xuân Quý",
-    message: "Bạn: uh",
-    time: "1 ngày",
-    avatar: "/img/user5.jpg",
-    online: true,
-  },
-];
-
-const ConversationList = ({ activeChat, handleSelectChat }) => {
+const ConversationList = ({ activeChat, onSelectChat }) => {
   const dispatch = useDispatch();
   /** Search */
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const { searchResults, loading } = useSelector((state) => state.user);
   const [keyword, setKeyword] = useState("");
+  /** Conversations */
+  const { conversations = [] } = useSelector((state) => state.conversations);
+  const { user } = useSelector((state) => state.auth);
 
   // Tối ưu tần suất gọi api search
   const debouncedSearch = useDebounce((val) => dispatch(searchUsers(val)), 500, [
@@ -75,6 +36,17 @@ const ConversationList = ({ activeChat, handleSelectChat }) => {
       dispatch(searchUsers("")); // keyword rỗng => trả danh sách gợi ý
     }
   };
+
+  // Xử lý select conversation
+  const handleSelectChat = (conversationId) => {
+    dispatch(getConversationById(conversationId));
+    onSelectChat(conversationId); // giữ logic hiển thị ChatWindow
+  };
+
+  // Xử lý logic gọi api lấy danh sách hội thoại khi giao diện vừa bật lên
+  useEffect(() => {
+    dispatch(getConversations());
+  }, [dispatch]);
 
   return (
     <section
@@ -135,7 +107,7 @@ const ConversationList = ({ activeChat, handleSelectChat }) => {
               <div
                 key={user._id}
                 className="flex items-center gap-3 p-2 rounded-md cursor-pointer hover:bg-[var(--bg-hover-secondary)] transition"
-                onClick={() => handleSelectChat(user._id)}
+                onClick={() => onSelectChat(user._id)}
               >
                 <img
                   src={user.avatar}
@@ -149,41 +121,68 @@ const ConversationList = ({ activeChat, handleSelectChat }) => {
             ))}
           </div>
         ) : (
-          list.map((item) => (
-            <div
-              key={item.id}
-              className="flex items-center gap-3 p-2 rounded-md cursor-pointer transition hover:bg-[var(--bg-hover-secondary)]"
-              onClick={() => handleSelectChat(item.id)}
-            >
-              <div className="relative">
-                <img
-                  src={item.avatar}
-                  alt={item.name}
-                  className="w-12 h-12 rounded-full object-cover"
-                />
-                {item.online && (
-                  <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[var(--bg-black)] rounded-full"></span>
-                )}
+          conversations.map((conversation) => {
+            // Lấy ra người đối diện (với private chat)
+            const partner = conversation.participants.find((p) => p._id !== user.id);
+
+            // Nếu là group thì hiển thị khác
+            const isGroup = conversation.type === "group";
+            const displayName = isGroup
+              ? conversation.name
+              : partner?.username || "Người dùng";
+            const displayAvatar = isGroup
+              ? conversation.avatar?.url || "/img/group-default.png"
+              : partner?.avatarUrl?.url || "/img/default-avatar.png";
+
+            // Thông tin tin nhắn cuối
+            const lastMsg = conversation.lastMessage;
+            const lastMsgSender = lastMsg?.sender?.username || "";
+            const lastMsgContent = lastMsg?.content || "Chưa có tin nhắn";
+            const lastMsgTime = lastMsg?.createdAt
+              ? new Date(lastMsg.createdAt).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : "";
+
+            return (
+              <div
+                key={conversation._id}
+                className="flex items-center gap-3 p-2 rounded-md cursor-pointer transition hover:bg-[var(--bg-hover-secondary)]"
+                onClick={() => handleSelectChat(conversation._id)}
+              >
+                {/* Avatar */}
+                <div className="relative">
+                  <img
+                    src={displayAvatar}
+                    alt={displayName}
+                    className="w-12 h-12 rounded-full object-cover"
+                  />
+                  {partner?.status === "active" && (
+                    <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[var(--bg-black)] rounded-full"></span>
+                  )}
+                </div>
+
+                {/* Nội dung */}
+                <div className="flex flex-col flex-1 min-w-0">
+                  <h3 className="text-sm text-[var(--color-text-primary)] font-medium truncate">
+                    {displayName}
+                  </h3>
+                  <p className="text-xs text-[var(--color-text-secondary)] line-clamp-1">
+                    {lastMsgSender && (
+                      <span className="font-medium text-[var(--color-text-primary)] mr-1">
+                        {lastMsgSender}:
+                      </span>
+                    )}
+                    {lastMsgContent}
+                    <span className="ml-2 text-[var(--color-text-secondary)] whitespace-nowrap">
+                      {lastMsgTime}
+                    </span>
+                  </p>
+                </div>
               </div>
-              <div className="flex flex-col flex-1 min-w-0">
-                <h3 className="text-sm text-[var(--color-text-primary)] font-medium truncate">
-                  {item.name}
-                </h3>
-                <p
-                  className={`text-[var(--color-text-secondary)] ${
-                    item.unread
-                      ? "text-sm text-[var(--color-text-primary)]"
-                      : "text-xs text-[var(--color-text-secondary)]"
-                  } overflow-hidden text-ellipsis break-words line-clamp-1`}
-                >
-                  {item.message}
-                  <span className="ml-1 text-[var(--color-text-secondary)] whitespace-nowrap">
-                    {item.time}
-                  </span>
-                </p>
-              </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </section>

@@ -21,10 +21,10 @@ const ChatPage = () => {
         <Sidebar />
 
         {/* Conversations List */}
-        <ConversationList activeChat={activeChat} handleSelectChat={handleSelectChat} />
+        <ConversationList activeChat={activeChat} onSelectChat={handleSelectChat} />
 
         {/* Chat Window */}
-        <ChatWindow activeChat={activeChat} handleBackToList={handleBackToList} />
+        <ChatWindow activeChat={activeChat} onBackToList={handleBackToList} />
       </div>
     </div>
   );
