@@ -1,5 +1,4 @@
-import { getConversationById } from "@/features/conversations/conversationsSlice";
-import React, { useEffect } from "react";
+import React from "react";
 import { useSelector } from "react-redux";
 
 const ChatWindow = ({ activeChat, onBackToList }) => {

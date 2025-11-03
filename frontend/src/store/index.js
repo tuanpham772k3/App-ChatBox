@@ -1,4 +1,3 @@
-// src/app/store.js
 import { configureStore, combineReducers } from "@reduxjs/toolkit";
 import {
   persistStore,
@@ -16,19 +15,21 @@ import storage from "redux-persist/lib/storage"; // Sử dụng localStorage
 import authReducer from "../features/auth/authSlice";
 import userReducer from "../features/user/userSlice";
 import conversationsReducer from "../features/conversations/conversationsSlice";
+import messagesReducer from "../features/chat/messagesSlice";
 
 // Gộp các reducer lại
 const rootReducer = combineReducers({
   auth: authReducer,
   user: userReducer,
   conversations: conversationsReducer,
+  messages: messagesReducer,
 });
 
 // Cấu hình persist
 const persistConfig = {
   key: "root",
   storage, // localStorage
-  whitelist: ["auth", "conversations"], // ✅ Chỉ lưu những slice cần thiết
+  whitelist: ["auth", "conversations", "messages"], // ✅ Chỉ lưu những slice cần thiết
   blacklist: ["user"], // ❌ Không cần lưu danh sách user search
 };
 
