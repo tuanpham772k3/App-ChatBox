@@ -1,9 +1,11 @@
 import React from "react";
 import { useSelector } from "react-redux";
+import { ArrowLeft, Ellipsis, Phone, Video } from "lucide-react";
 
 const ChatWindow = ({ activeChat, onBackToList }) => {
   const { currentConversation } = useSelector((state) => state.conversations);
   const { user } = useSelector((state) => state.auth);
+  const { messages, loading } = useSelector((state) => state.messages);
   const partner = currentConversation.participants.find((p) => p._id !== user.id);
 
   return (
@@ -19,20 +21,7 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
             onClick={onBackToList}
             className="md:hidden mr-2 text-[var(--color-text-primary)]"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-6 h-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
+            <ArrowLeft className="w-5 h-5" />
           </button>
 
           {/* Avatar + Info */}
@@ -59,108 +48,115 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
         {/* Action icons */}
         <div className="flex items-center gap-3 text-[var(--color-text-primary)]">
           <button className="hover:bg-[var(--bg-hover-primary)] p-2 rounded-full">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-5 h-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="1.5"
-                d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.25 0a2.25 2.25 0 012.25 2.25v7.5a2.25 2.25 0 01-2.25 2.25H4.5A2.25 2.25 0 012.25 20.25v-7.5a2.25 2.25 0 012.25-2.25m11.25 0H6.75"
-              />
-            </svg>
+            <Phone className=" w-5 h-5" />
           </button>
           <button className="hover:bg-[var(--bg-hover-primary)] p-2 rounded-full">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-5 h-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="1.5"
-                d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25a8.25 8.25 0 1115 0H4.5z"
-              />
-            </svg>
+            <Video className="w-5 h-5" />
           </button>
           <button className="hover:bg-[var(--bg-hover-primary)] p-2 rounded-full">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-5 h-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="1.5"
-                d="M6 6h12M6 12h12M6 18h12"
-              />
-            </svg>
+            <Ellipsis className="w-5 h-5" />
           </button>
         </div>
       </div>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6 scrollbar-thin scrollbar-thumb-[var(--color-border)] scrollbar-track-transparent">
-        <div className="flex justify-center">
-          <span className="text-xs text-[var(--color-text-secondary)]">22:34 T2</span>
-        </div>
+        {loading && (
+          <p className="text-center text-sm text-[var(--color-text-secondary)]">
+            Đang tải tin nhắn...
+          </p>
+        )}
 
-        <div className="flex items-end gap-2">
-          <img
-            src="/img/user3.jpg"
-            alt=""
-            className="w-8 h-8 rounded-full object-cover"
-          />
-          <div className="flex flex-col gap-1">
-            <div className="bg-[var(--bg-gray)] text-[var(--color-text-primary)] px-3 py-2 rounded-2xl rounded-tl-none max-w-xs">
-              Mới lội vô quảng nam
-            </div>
-            <div className="bg-[var(--bg-gray)] text-[var(--color-text-primary)] px-3 py-2 rounded-2xl rounded-tl-none max-w-xs">
-              Má nước ngang rốn 😢
-            </div>
-          </div>
-        </div>
+        {messages.length === 0 && !loading && (
+          <p className="text-center text-sm text-[var(--color-text-secondary)]">
+            Chưa có tin nhắn nào
+          </p>
+        )}
+        {messages.map((msg, index) => {
+          const isMine = msg.sender._id === user.id;
+          const avatar = msg.sender.avatarUrl?.url || "/img/default-avatar.png";
+          const prevMsg = messages[index - 1];
 
-        <div className="flex justify-center">
-          <span className="text-xs text-[var(--color-text-secondary)]">23:10 T2</span>
-        </div>
+          // Format thời gian tin hiện tại
+          const msgTime = new Date(msg.createdAt);
+          const timeText = msgTime.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
 
-        <div className="flex justify-end">
-          <div className="bg-blue-600 text-white px-3 py-2 rounded-2xl rounded-tr-none max-w-xs">
-            Huế nhiều chỗ ngập tới nóc nhà 😢
-          </div>
-        </div>
+          // So sánh mốc thời gian giữa 2 tin nhắn
+          let showTimestamp = false; // show mốc thời gian nếu true
+          // tin đầu tiên
+          if (!prevMsg) {
+            showTimestamp = true;
+          } else {
+            const prevTime = new Date(prevMsg.createdAt);
+            const diffMinutes = (msgTime - prevTime) / (1000 * 60);
+            const diffDays = msgTime.toDateString() !== prevTime.toDateString();
+            // tin sau 5 phút hoặc khác ngày
+            if (diffMinutes > 5 || diffDays) showTimestamp = true;
+          }
 
-        <div className="flex justify-end">
-          <div className="bg-blue-500 text-white px-3 py-2 rounded-2xl rounded-tr-none max-w-xs">
-            khả năng cũng sắp ngập
-          </div>
-        </div>
+          // Hiển thị header thời gian giữa các tin
+          return (
+            <React.Fragment key={msg._id}>
+              {showTimestamp && (
+                <div className="flex justify-center">
+                  <span className="text-xs text-[var(--color-text-secondary)]">
+                    {msgTime.toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}{" "}
+                    {msgTime.toLocaleDateString([], {
+                      weekday: "short",
+                      day: "2-digit",
+                      month: "2-digit",
+                    })}
+                  </span>
+                </div>
+              )}
 
-        <div className="flex justify-center">
-          <span className="text-xs text-[var(--color-text-secondary)]">17:11 T3</span>
-        </div>
+              <div className={`flex ${isMine ? "justify-end" : "items-end gap-2"}`}>
+                {!isMine && (
+                  <img
+                    src={avatar}
+                    alt={msg.sender.username}
+                    className="w-8 h-8 rounded-full object-cover"
+                  />
+                )}
+                <div
+                  className={`px-3 py-2 rounded-2xl max-w-xs break-words ${
+                    isMine
+                      ? "bg-blue-600 text-white rounded-tr-none"
+                      : "bg-[var(--bg-gray)] text-[var(--color-text-primary)] rounded-tl-none"
+                  }`}
+                >
+                  {msg.isDeleted ? (
+                    <i className="opacity-70">Tin nhắn đã bị xoá</i>
+                  ) : (
+                    <>
+                      <span>{msg.content}</span>
+                      {msg.isEdited && (
+                        <span className="ml-1 text-[10px] opacity-70">
+                          (đã chỉnh sửa)
+                        </span>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
 
-        <div className="flex items-end gap-2">
-          <img
-            src="/img/user3.jpg"
-            alt=""
-            className="w-8 h-8 rounded-full object-cover"
-          />
-          <div className="bg-[var(--bg-gray)] text-[var(--color-text-primary)] px-3 py-2 rounded-2xl rounded-tl-none max-w-xs">
-            Đn ngập ko
-          </div>
-        </div>
+              {/* Thời gian nhỏ bên dưới mỗi tin */}
+              <p
+                className={`text-[10px] text-[var(--color-text-secondary)] mt-1 ${
+                  isMine ? "text-right" : "ml-10"
+                }`}
+              >
+                {timeText}
+              </p>
+            </React.Fragment>
+          );
+        })}
       </div>
 
       {/* Input */}

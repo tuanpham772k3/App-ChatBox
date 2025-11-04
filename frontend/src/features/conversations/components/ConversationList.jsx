@@ -6,6 +6,7 @@ import { SlNote } from "react-icons/sl";
 import { searchUsers } from "@/features/user/userSlice";
 import useDebounce from "@/hooks/useDebounce";
 import { getConversationById, getConversations } from "../conversationsSlice";
+import { clearMessages, fetchConversationMessages } from "@/features/chat/messagesSlice";
 
 const ConversationList = ({ activeChat, onSelectChat }) => {
   const dispatch = useDispatch();
@@ -40,6 +41,11 @@ const ConversationList = ({ activeChat, onSelectChat }) => {
   // Xử lý select conversation
   const handleSelectChat = (conversationId) => {
     dispatch(getConversationById(conversationId));
+
+    dispatch(clearMessages());
+
+    dispatch(fetchConversationMessages({conversationId}));
+
     onSelectChat(conversationId); // giữ logic hiển thị ChatWindow
   };
 
