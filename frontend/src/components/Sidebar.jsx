@@ -14,7 +14,7 @@ const Sidebar = () => {
   return (
     <aside
       className="flex flex-col justify-between text-[var(--color-text-secondary)]
-                transition-all duration-300 w-[44px] md:w-[60px]"
+                transition-all duration-300 w-[44px]"
     >
       {/* TOP ICONS */}
       <div className="flex flex-col items-center">

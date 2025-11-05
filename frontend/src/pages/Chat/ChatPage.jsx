@@ -21,7 +21,11 @@ const ChatPage = () => {
         <Sidebar />
 
         {/* Conversations List */}
-        <ConversationList activeChat={activeChat} onSelectChat={handleSelectChat} />
+        <ConversationList
+          activeChat={activeChat}
+          onSelectChat={handleSelectChat}
+          onBackToList={handleBackToList}
+        />
 
         {/* Chat Window */}
         <ChatWindow activeChat={activeChat} onBackToList={handleBackToList} />
