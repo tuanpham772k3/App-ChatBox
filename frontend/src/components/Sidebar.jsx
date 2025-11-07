@@ -14,11 +14,11 @@ const Sidebar = () => {
   return (
     <aside
       className="flex flex-col justify-between text-[var(--color-text-secondary)]
-                transition-all duration-300 w-[44px]"
+                transition-all duration-300 w-11"
     >
       {/* TOP ICONS */}
       <div className="flex flex-col items-center">
-        <button className="relative group w-[44px] h-[44px] flex items-center justify-center rounded-lg hover:bg-[var(--bg-hover-primary)]">
+        <button className="relative group w-11 h-11 flex items-center justify-center rounded-lg hover:bg-[var(--bg-hover-primary)]">
           <MessageCircle className="w-5 h-5" />
           <span className="absolute top-3 right-3 block w-2 h-2 bg-[var(--color-primary)] rounded-full"></span>
         </button>
@@ -26,7 +26,7 @@ const Sidebar = () => {
         {[Store, MessageCircleMore, Archive].map((Icon, i) => (
           <button
             key={i}
-            className="w-[44px] h-[44px] flex items-center justify-center rounded-lg hover:bg-[var(--bg-hover-primary)]"
+            className="w-11 h-11 flex items-center justify-center rounded-lg hover:bg-[var(--bg-hover-primary)]"
           >
             <Icon className="w-5 h-5" />
           </button>
