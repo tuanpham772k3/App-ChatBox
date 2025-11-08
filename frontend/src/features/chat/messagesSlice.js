@@ -10,7 +10,7 @@ export const createNewMessage = createAsyncThunk(
   "messages/create",
   async (_, { rejectWithValue }) => {
     try {
-      const res = await chatApi.createNewMessageApi();
+      const res = await messagesApi.createNewMessageApi();
       return res.data;
     } catch (error) {
       const data = err.response?.data;
