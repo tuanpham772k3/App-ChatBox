@@ -8,9 +8,9 @@ import messagesApi from "./services/messagesApi";
 // Tạo tin nhắn mới
 export const createNewMessage = createAsyncThunk(
   "messages/create",
-  async (_, { rejectWithValue }) => {
+  async (payload, { rejectWithValue }) => {
     try {
-      const res = await messagesApi.createNewMessageApi();
+      const res = await messagesApi.createNewMessageApi(payload);
       return res.data;
     } catch (error) {
       const data = err.response?.data;
