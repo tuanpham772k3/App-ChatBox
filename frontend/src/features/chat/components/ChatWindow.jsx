@@ -2,6 +2,7 @@ import React from "react";
 import { useSelector } from "react-redux";
 import { ArrowLeft, Ellipsis, Lock, Phone, Video } from "lucide-react";
 import MessageInput from "./MessageInput";
+import { showTimestamp } from "@/lib/utils";
 
 const ChatWindow = ({ activeChat, onBackToList }) => {
   const { currentConversation, draftConversation } = useSelector(
@@ -116,34 +117,18 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
               </p>
             )}
             {messages.map((msg, index) => {
-              const isMine = msg.sender._id === user.id;
+              const isMine = msg.sender._id === user.id; // Tin của tôi
               const avatar = msg.sender.avatarUrl?.url || "/img/default-avatar.png";
-              const prevMsg = messages[index - 1];
+              const prevMsg = messages[index - 1]; // Tin nhắn trước
+              const msgTime = new Date(msg.createdAt); // Date tin hiện tại
 
-              // Format thời gian tin hiện tại
-              const msgTime = new Date(msg.createdAt);
-              const timeText = msgTime.toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              });
+              // Xử lý show time
+              const showTime = showTimestamp(msg.createdAt, prevMsg?.createdAt);
 
-              // So sánh mốc thời gian giữa 2 tin nhắn
-              let showTimestamp = false; // show mốc thời gian nếu true
-              // tin đầu tiên
-              if (!prevMsg) {
-                showTimestamp = true;
-              } else {
-                const prevTime = new Date(prevMsg.createdAt);
-                const diffMinutes = (msgTime - prevTime) / (1000 * 60);
-                const diffDays = msgTime.toDateString() !== prevTime.toDateString();
-                // tin sau 5 phút hoặc khác ngày
-                if (diffMinutes > 5 || diffDays) showTimestamp = true;
-              }
-
-              // Hiển thị header thời gian giữa các tin
               return (
                 <React.Fragment key={msg._id}>
-                  {showTimestamp && (
+                  {/* Hiển thị header thời gian giữa các tin */}
+                  {showTime && (
                     <div className="flex justify-center">
                       <span className="text-xs text-[var(--color-text-secondary)]">
                         {msgTime.toLocaleTimeString([], {
@@ -170,7 +155,7 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
                     <div
                       className={`px-3 py-2 rounded-2xl max-w-xs break-words ${
                         isMine
-                          ? "bg-blue-600 text-white rounded-tr-none"
+                          ? "bg-blue-600 text-[var(--color-text-primary)] rounded-tr-none"
                           : "bg-[var(--bg-gray)] text-[var(--color-text-primary)] rounded-tl-none"
                       }`}
                     >
@@ -188,22 +173,14 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
                       )}
                     </div>
                   </div>
-
-                  {/* Thời gian nhỏ bên dưới mỗi tin */}
-                  <p
-                    className={`text-[10px] text-[var(--color-text-secondary)] mt-1 ${
-                      isMine ? "text-right" : "ml-10"
-                    }`}
-                  >
-                    {timeText}
-                  </p>
                 </React.Fragment>
               );
             })}
           </>
         )}
       </div>
-      {/* Input */}
+
+      {/* ===== Input Message ====== */}
       <MessageInput />
     </main>
   );
