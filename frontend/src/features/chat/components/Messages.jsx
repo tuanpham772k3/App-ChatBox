@@ -1,6 +1,6 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import { Lock } from "lucide-react";
+import { EllipsisVertical, Lock } from "lucide-react";
 import { showTimestamp } from "@/lib/utils";
 
 const Messages = ({ isDraft, partner }) => {
@@ -8,7 +8,7 @@ const Messages = ({ isDraft, partner }) => {
   const { user } = useSelector((state) => state.auth);
 
   return (
-    <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6 scrollbar-thin scrollbar-thumb-[var(--color-border)] scrollbar-track-transparent">
+    <div className="flex-1 overflow-y-auto px-6 py-4 space-y-0.5 scrollbar-thin scrollbar-thumb-[var(--color-border)] scrollbar-track-transparent">
       {/* Hiển thị message tạm trước */}
       {isDraft ? (
         <div className="flex flex-col items-center justify-center h-full text-center text-[var(--color-text-secondary)] space-y-2">
@@ -77,16 +77,23 @@ const Messages = ({ isDraft, partner }) => {
                   </div>
                 )}
 
-                <div className={`flex ${isMine ? "justify-end" : "items-end gap-2"}`}>
+                {/* ===== Item ===== */}
+                <div
+                  className={`relative group flex ${
+                    isMine ? "justify-end" : "items-end gap-2"
+                  }`}
+                >
+                  {/* Avatar */}
                   {!isMine && (
                     <img
                       src={avatar}
                       alt={msg.sender.username}
-                      className="w-8 h-8 rounded-full object-cover"
+                      className="w-8 h-8 rounded-full object-cover cursor-pointer"
                     />
                   )}
+                  {/* Bubble */}
                   <div
-                    className={`px-3 py-2 rounded-2xl max-w-xs break-words ${
+                    className={`relative px-3 py-2 rounded-2xl max-w-xs break-words ${
                       isMine
                         ? "bg-blue-600 text-[var(--color-text-primary)] rounded-tr-none"
                         : "bg-[var(--bg-gray)] text-[var(--color-text-primary)] rounded-tl-none"
@@ -104,6 +111,15 @@ const Messages = ({ isDraft, partner }) => {
                         )}
                       </>
                     )}
+
+                    {/* Xem thêm */}
+                    <button
+                      className={`absolute top-1/2 -translate-y-1/2 ${
+                        isMine ? "-left-10" : "-right-10"
+                      } opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full hover:bg-[var(--bg-hover-primary)]`}
+                    >
+                      <EllipsisVertical className="w-5 h-5" />
+                    </button>
                   </div>
                 </div>
               </React.Fragment>
