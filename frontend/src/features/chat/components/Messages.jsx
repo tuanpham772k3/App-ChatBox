@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { EllipsisVertical, Lock } from "lucide-react";
 import { showTimestamp } from "@/lib/utils";
@@ -7,9 +7,24 @@ const Messages = ({ isDraft, partner }) => {
   const { messages, loading } = useSelector((state) => state.messages);
   const { user } = useSelector((state) => state.auth);
 
+  const [openMenuId, setOpenMenuId] = useState(null);
+
+  const menuRef = useRef(null);
+
+  // Click ngoài để đóng menu
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setOpenMenuId(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <div className="flex-1 overflow-y-auto px-6 py-4 space-y-0.5 scrollbar-thin scrollbar-thumb-[var(--color-border)] scrollbar-track-transparent">
-      {/* Hiển thị message tạm trước */}
+      {/* ===== Display draft chat or real chat window =====*/}
       {isDraft ? (
         <div className="flex flex-col items-center justify-center h-full text-center text-[var(--color-text-secondary)] space-y-2">
           <div className="relative">
@@ -49,6 +64,7 @@ const Messages = ({ isDraft, partner }) => {
               Chưa có tin nhắn nào
             </p>
           )}
+          {/* ===== List Messages ===== */}
           {messages.map((msg, index) => {
             const isMine = msg.sender._id === user.id; // Tin của tôi
             const avatar = msg.sender.avatarUrl?.url || "/img/default-avatar.png";
@@ -60,7 +76,7 @@ const Messages = ({ isDraft, partner }) => {
 
             return (
               <React.Fragment key={msg._id}>
-                {/* Hiển thị header thời gian giữa các tin */}
+                {/* ===== Display time ===== */}
                 {showTime && (
                   <div className="flex justify-center">
                     <span className="text-xs text-[var(--color-text-secondary)]">
@@ -77,13 +93,13 @@ const Messages = ({ isDraft, partner }) => {
                   </div>
                 )}
 
-                {/* ===== Item ===== */}
+                {/* ===== Item Message ===== */}
                 <div
-                  className={`relative group flex ${
+                  className={`flex gap-4 ${
                     isMine ? "justify-end" : "items-end gap-2"
-                  }`}
+                  } group`}
                 >
-                  {/* Avatar */}
+                  {/* --- Avatar ---*/}
                   {!isMine && (
                     <img
                       src={avatar}
@@ -91,9 +107,45 @@ const Messages = ({ isDraft, partner }) => {
                       className="w-8 h-8 rounded-full object-cover cursor-pointer"
                     />
                   )}
-                  {/* Bubble */}
+
+                  {/* --- Ellipsis + Menu ---*/}
+                  {isMine && (
+                    <div
+                      className="flex items-center"
+                      ref={msg._id === openMenuId ? menuRef : null}
+                    >
+                      {/* Ellipsis */}
+                      <button
+                        onClick={() =>
+                          setOpenMenuId(openMenuId === msg._id ? null : msg._id)
+                        }
+                        className={`relative p-1 rounded-full transition-opacity ${
+                          openMenuId === msg._id
+                            ? "opacity-100"
+                            : "opacity-0 group-hover:opacity-100"
+                        }  hover:bg-gray-700`}
+                      >
+                        <EllipsisVertical
+                          className="w-5 h-5"
+                          color="var(--color-text-secondary)"
+                        />
+                        {/* Menu */}
+                        {openMenuId === msg._id && (
+                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2.5 w-[150px] p-1 bg-[var(--bg-gray)] rounded-md">
+                            <button className="text-white w-full px-2 py-1 text-start hover:bg-gray-600 rounded">
+                              Chỉnh sửa
+                            </button>
+                            <button className="text-white w-full px-2 py-1 text-start hover:bg-gray-600 rounded">
+                              Thu hồi
+                            </button>
+                          </div>
+                        )}
+                      </button>
+                    </div>
+                  )}
+                  {/* --- Bubble --- */}
                   <div
-                    className={`relative px-3 py-2 rounded-2xl max-w-xs break-words ${
+                    className={`px-3 py-2 rounded-2xl max-w-xs break-words ${
                       isMine
                         ? "bg-blue-600 text-[var(--color-text-primary)] rounded-tr-none"
                         : "bg-[var(--bg-gray)] text-[var(--color-text-primary)] rounded-tl-none"
@@ -111,15 +163,6 @@ const Messages = ({ isDraft, partner }) => {
                         )}
                       </>
                     )}
-
-                    {/* Xem thêm */}
-                    <button
-                      className={`absolute top-1/2 -translate-y-1/2 ${
-                        isMine ? "-left-10" : "-right-10"
-                      } opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full hover:bg-[var(--bg-hover-primary)]`}
-                    >
-                      <EllipsisVertical className="w-5 h-5" />
-                    </button>
                   </div>
                 </div>
               </React.Fragment>
