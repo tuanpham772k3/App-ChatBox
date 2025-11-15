@@ -1,14 +1,19 @@
 import React, { useState } from "react";
 import { Gift, Image, Mic, Smile, Sticker, ThumbsUp } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import { createNewMessage } from "../messagesSlice";
+import { createNewMessage, editMessageById } from "../messagesSlice";
 
-const MessageInput = () => {
-  const [text, setText] = useState("");
-  
+const MessageInput = ({
+  editMessageId,
+  editContent,
+  setEditMessageId,
+  setEditContent,
+  editOriginalContent,
+}) => {
   const { user } = useSelector((state) => state.auth);
   const { currentConversation } = useSelector((state) => state.conversations);
 
+  const [text, setText] = useState("");
   const dispatch = useDispatch();
 
   // Xử lý gửi tin nhắn
@@ -28,6 +33,24 @@ const MessageInput = () => {
       setText("");
     } catch (error) {
       console.log("Lỗi gửi tin nhắn:", error);
+    }
+  };
+
+  // Xử lý edit message
+  const handleEdit = async () => {
+    if (!editMessageId) return;
+    if (!editContent.trim()) return;
+    if (editContent.trim() === editOriginalContent.trim()) return;
+
+    try {
+      await dispatch(
+        editMessageById({ messageId: editMessageId, newContent: editContent })
+      ).unwrap();
+
+      setEditMessageId(null);
+      setEditContent("");
+    } catch (error) {
+      console.error("Edit message error:", error);
     }
   };
 
@@ -56,9 +79,16 @@ const MessageInput = () => {
       {/* Input Message */}
       <div className="flex-1 flex items-center justify-between bg-[var(--bg-gray)] rounded-full">
         <input
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleSend()}
+          value={editMessageId ? editContent : text}
+          onChange={(e) => {
+            if (editMessageId) setEditContent(e.target.value);
+            else setText(e.target.value);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              editMessageId ? handleEdit() : handleSend();
+            }
+          }}
           type="text"
           placeholder="Aa"
           className="flex-1 bg-[var(--bg-gray)] rounded-full ps-3 text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)] focus:outline-none"
