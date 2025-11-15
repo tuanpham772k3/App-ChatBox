@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { ArrowLeft, Ellipsis, Phone, Video } from "lucide-react";
 import MessageInput from "./MessageInput";
@@ -9,6 +9,11 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
     (state) => state.conversations
   );
   const { user } = useSelector((state) => state.auth);
+
+  //edit state
+  const [editMessageId, setEditMessageId] = useState(null);
+  const [editContent, setEditContent] = useState("");
+  const [editOriginalContent, setEditOriginalContent] = useState("");
 
   // Đối tác nhắn tin 1-1
   const isDraft = activeChat === "draft";
@@ -74,10 +79,22 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
       </div>
 
       {/* ===== Messages ====== */}
-      <Messages isDraft={isDraft} partner={partner} />
+      <Messages
+        isDraft={isDraft}
+        partner={partner}
+        setEditMessageId={setEditMessageId}
+        setEditContent={setEditContent}
+        setEditOriginalContent={setEditOriginalContent}
+      />
 
       {/* ===== Input Message ====== */}
-      <MessageInput />
+      <MessageInput
+        editMessageId={editMessageId}
+        editContent={editContent}
+        setEditMessageId={setEditMessageId}
+        setEditContent={setEditContent}
+        editOriginalContent={editOriginalContent}
+      />
     </main>
   );
 };
