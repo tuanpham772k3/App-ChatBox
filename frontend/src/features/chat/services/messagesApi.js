@@ -52,10 +52,12 @@ const messagesApi = {
    * Chỉnh sửa tin nhắn
    * PUT /messages/:messageId
    * @param {string} messageId - ID của tin nhắn
-   * @param {string} newContent - Nội dung mới của tin nhắn
+   * @param {string} content - Nội dung mới của tin nhắn
    */
-  editMessageByIdApi: async (messageId) => {
-    const res = await instance.put(`/messages/${messageId}`);
+  editMessageByIdApi: async (messageId, newContent) => {
+    const res = await instance.put(`/messages/${messageId}`, {
+      content: newContent,
+    });
     return res.data;
   },
 };
