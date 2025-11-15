@@ -8,10 +8,12 @@ const Messages = ({ isDraft, partner }) => {
   const { user } = useSelector((state) => state.auth);
 
   const [openMenuId, setOpenMenuId] = useState(null);
+  const [menuDirection, setMenuDirection] = useState("up");
 
+  // DOM reference for the menu element, used for click-outside detection
   const menuRef = useRef(null);
 
-  // Click ngoài để đóng menu
+  // Hàm lắng nghe sự kiện click
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -21,6 +23,25 @@ const Messages = ({ isDraft, partner }) => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Xử lý hướng menu hiển thị
+  const handleToggleMenu = (e, id) => {
+    const rect = e.currentTarget.getBoundingClientRect(); // tọa độ & kích thước element
+    const spaceAbove = rect.top;
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const estimatedMenuHeight = 125;
+
+    if (spaceAbove >= estimatedMenuHeight) {
+      setMenuDirection("up");
+    } else if (spaceBelow >= estimatedMenuHeight) {
+      setMenuDirection("down");
+    } else {
+      // chọn nơi có nhiều chỗ hơn
+      setMenuDirection(spaceBelow > spaceAbove ? "down" : "up");
+    }
+
+    setOpenMenuId(openMenuId === id ? null : id);
+  };
 
   return (
     <div className="flex-1 overflow-y-auto px-6 py-4 space-y-0.5 scrollbar-thin scrollbar-thumb-[var(--color-border)] scrollbar-track-transparent">
@@ -114,24 +135,31 @@ const Messages = ({ isDraft, partner }) => {
                       className="flex items-center"
                       ref={msg._id === openMenuId ? menuRef : null}
                     >
-                      {/* Ellipsis */}
-                      <button
-                        onClick={() =>
-                          setOpenMenuId(openMenuId === msg._id ? null : msg._id)
-                        }
-                        className={`relative p-1 rounded-full transition-opacity ${
-                          openMenuId === msg._id
-                            ? "opacity-100"
-                            : "opacity-0 group-hover:opacity-100"
-                        }  hover:bg-gray-700`}
-                      >
-                        <EllipsisVertical
-                          className="w-5 h-5"
-                          color="var(--color-text-secondary)"
-                        />
+                      {/* Wrapper */}
+                      <div className="relative">
+                        {/* Ellipsis */}
+                        <button
+                          onClick={(e) => handleToggleMenu(e, msg._id)}
+                          className={`p-1 rounded-full transition-opacity ${
+                            openMenuId === msg._id
+                              ? "opacity-100"
+                              : "opacity-0 group-hover:opacity-100"
+                          }  hover:bg-gray-700`}
+                        >
+                          <EllipsisVertical
+                            className="w-5 h-5"
+                            color="var(--color-text-secondary)"
+                          />
+                        </button>
                         {/* Menu */}
                         {openMenuId === msg._id && (
-                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2.5 w-[150px] p-1 bg-[var(--bg-gray)] rounded-md">
+                          <div
+                            className={`absolute ${
+                              menuDirection === "up"
+                                ? "bottom-full left-1/2 transform -translate-x-1/2 mb-2.5"
+                                : "top-full left-1/2 transform -translate-x-1/2 mb-2.5"
+                            } w-[150px] p-1 bg-[var(--bg-gray)] rounded-md`}
+                          >
                             <button className="text-white w-full px-2 py-1 text-start hover:bg-gray-600 rounded">
                               Chỉnh sửa
                             </button>
@@ -140,9 +168,10 @@ const Messages = ({ isDraft, partner }) => {
                             </button>
                           </div>
                         )}
-                      </button>
+                      </div>
                     </div>
                   )}
+
                   {/* --- Bubble --- */}
                   <div
                     className={`px-3 py-2 rounded-2xl max-w-xs break-words ${
