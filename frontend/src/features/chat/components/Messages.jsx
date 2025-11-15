@@ -1,14 +1,22 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { EllipsisVertical, Lock } from "lucide-react";
 import { showTimestamp } from "@/lib/utils";
+import { deleteMessageById, editMessageById } from "../messagesSlice";
 
-const Messages = ({ isDraft, partner }) => {
+const Messages = ({
+  isDraft,
+  partner,
+  setEditContent,
+  setEditMessageId,
+  setEditOriginalContent,
+}) => {
   const { messages, loading } = useSelector((state) => state.messages);
   const { user } = useSelector((state) => state.auth);
 
   const [openMenuId, setOpenMenuId] = useState(null);
   const [menuDirection, setMenuDirection] = useState("up");
+  const dispatch = useDispatch();
 
   // DOM reference for the menu element, used for click-outside detection
   const menuRef = useRef(null);
@@ -25,7 +33,7 @@ const Messages = ({ isDraft, partner }) => {
   }, []);
 
   // Xử lý hướng menu hiển thị
-  const handleToggleMenu = (e, id) => {
+  const handleToggleMenu = (e, messageId) => {
     const rect = e.currentTarget.getBoundingClientRect(); // tọa độ & kích thước element
     const spaceAbove = rect.top;
     const spaceBelow = window.innerHeight - rect.bottom;
@@ -40,7 +48,24 @@ const Messages = ({ isDraft, partner }) => {
       setMenuDirection(spaceBelow > spaceAbove ? "down" : "up");
     }
 
-    setOpenMenuId(openMenuId === id ? null : id);
+    setOpenMenuId(openMenuId === messageId ? null : messageId);
+  };
+
+  // Xử lý thu hồi message
+  const handleDelete = async (messageId) => {
+    try {
+      await dispatch(deleteMessageById(messageId)).unwrap();
+    } catch (error) {
+      console.log("Delete message error: ", error);
+    }
+  };
+
+  // Xử lý lấy thông tin mes khi click chỉnh sửa
+  const handleEditClick = (msg) => {
+    setEditMessageId(msg._id);
+    setEditContent(msg.content);
+    setEditOriginalContent(msg.content);
+    setOpenMenuId(null);
   };
 
   return (
@@ -130,7 +155,7 @@ const Messages = ({ isDraft, partner }) => {
                   )}
 
                   {/* --- Ellipsis + Menu ---*/}
-                  {isMine && (
+                  {isMine && !msg.isDeleted && (
                     <div
                       className="flex items-center"
                       ref={msg._id === openMenuId ? menuRef : null}
@@ -160,11 +185,17 @@ const Messages = ({ isDraft, partner }) => {
                                 : "top-full left-1/2 transform -translate-x-1/2 mb-2.5"
                             } w-[150px] p-1 bg-[var(--bg-gray)] rounded-md`}
                           >
-                            <button className="text-white w-full px-2 py-1 text-start hover:bg-gray-600 rounded">
-                              Chỉnh sửa
-                            </button>
-                            <button className="text-white w-full px-2 py-1 text-start hover:bg-gray-600 rounded">
+                            <button
+                              onClick={() => handleDelete(msg._id)}
+                              className="text-white w-full px-2 py-1 text-start hover:bg-gray-600 rounded"
+                            >
                               Thu hồi
+                            </button>
+                            <button
+                              onClick={() => handleEditClick(msg)}
+                              className="text-white w-full px-2 py-1 text-start hover:bg-gray-600 rounded"
+                            >
+                              Chỉnh sửa
                             </button>
                           </div>
                         )}
@@ -180,17 +211,11 @@ const Messages = ({ isDraft, partner }) => {
                         : "bg-[var(--bg-gray)] text-[var(--color-text-primary)] rounded-tl-none"
                     }`}
                   >
-                    {msg.isDeleted ? (
-                      <i className="opacity-70">Tin nhắn đã bị xoá</i>
-                    ) : (
-                      <>
-                        <span>{msg.content}</span>
-                        {msg.isEdited && (
-                          <span className="ml-1 text-[10px] opacity-70">
-                            (đã chỉnh sửa)
-                          </span>
-                        )}
-                      </>
+                    <span className={msg.isDeleted ? "opacity-70" : ""}>
+                      {msg.content}
+                    </span>
+                    {msg.isEdited && (
+                      <span className="ml-1 text-[10px] opacity-70">(đã chỉnh sửa)</span>
                     )}
                   </div>
                 </div>
