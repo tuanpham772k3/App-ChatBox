@@ -12,6 +12,8 @@ import { clearMessages, fetchConversationMessages } from "@/features/chat/messag
 import ConversationSearch from "./ConversationSearch";
 import useUserSearch from "../hooks/useUserSearch";
 import ConversationHeader from "./ConversationHeader";
+import { getDisplayInfo } from "../utils/conversationHelper";
+import ConversationItem from "./ConversationItem";
 
 const ConversationList = ({ activeChat, onSelectChat, onBackToList }) => {
   const {
@@ -78,7 +80,7 @@ const ConversationList = ({ activeChat, onSelectChat, onBackToList }) => {
     >
       {/* Header */}
       <ConversationHeader />
-      
+
       {/* Search bar */}
       <ConversationSearch
         keyword={keyword}
@@ -149,69 +151,31 @@ const ConversationList = ({ activeChat, onSelectChat, onBackToList }) => {
 
             {/* === DANH SÁCH HỘI THOẠI THẬT === */}
             {conversations.map((conversation) => {
-              // Lấy ra người đối diện (với private chat)
-              const partner = conversation.participants.find((p) => p._id !== user.id);
-
-              // Nếu là group thì hiển thị khác
-              const isGroup = conversation.type === "group";
-              const displayName = isGroup
-                ? conversation.name
-                : partner?.username || "Người dùng";
-              const displayAvatar = isGroup
-                ? conversation.avatar?.url || "/img/group-default.png"
-                : partner?.avatarUrl?.url || "/img/default-avatar.png";
-
-              // Thông tin tin nhắn cuối
-              const lastMsg = conversation.lastMessage;
-              const lastMsgSender = lastMsg?.sender?.username || "";
-              const lastMsgContent = lastMsg?.content || "Chưa có tin nhắn";
-              const lastMsgTime = lastMsg?.createdAt
-                ? new Date(lastMsg.createdAt).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
-                : "";
+              // Chuẩn hoá dữ liệu hiển thị cho mỗi conversation item
+              const {
+                partner,
+                displayName,
+                displayAvatar,
+                lastMsgSender,
+                lastMsgContent,
+                lastMsgTime,
+              } = getDisplayInfo(conversation, user.id);
 
               return (
-                <div
+                /** =========================
+                 *     CONVERSATION ITEM
+                 ============================*/
+                <ConversationItem
                   key={conversation._id}
-                  className={`flex items-center gap-3 p-2 rounded-md cursor-pointer transition hover:bg-[var(--bg-hover-secondary)] ${
-                    activeChat === conversation._id
-                      ? "bg-[var(--bg-hover-secondary)]"
-                      : ""
-                  }`}
+                  isActive={activeChat === conversation._id}
+                  partner={partner}
+                  displayName={displayName}
+                  displayAvatar={displayAvatar}
+                  lastMsgSender={lastMsgSender}
+                  lastMsgContent={lastMsgContent}
+                  lastMsgTime={lastMsgTime}
                   onClick={() => handleSelectChat(conversation._id)}
-                >
-                  {/* Avatar */}
-                  <div className="relative">
-                    <img
-                      src={displayAvatar}
-                      alt={displayName}
-                      className="w-12 h-12 rounded-full object-cover"
-                    />
-                    {partner?.status === "active" && (
-                      <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[var(--bg-black)] rounded-full"></span>
-                    )}
-                  </div>
-
-                  {/* Nội dung */}
-                  <div className="flex flex-col flex-1 min-w-0">
-                    <h3 className="text-sm text-[var(--color-text-primary)] font-medium truncate">
-                      {displayName}
-                    </h3>
-                    <p className="text-xs text-[var(--color-text-secondary)] line-clamp-1">
-                      {lastMsgSender && (
-                        <span className="font-medium text-[var(--color-text-primary)] mr-1">
-                          {lastMsgSender}:
-                        </span>
-                      )}
-                      {lastMsgContent}
-                      <span className="ml-2 text-[var(--color-text-secondary)] whitespace-nowrap">
-                        {lastMsgTime}
-                      </span>
-                    </p>
-                  </div>
-                </div>
+                />
               );
             })}
           </>
