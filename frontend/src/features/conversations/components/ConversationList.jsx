@@ -1,7 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { FaFacebook } from "react-icons/fa";
-import { SlNote } from "react-icons/sl";
 import {
   clearDraftConversation,
   getConversationById,
@@ -9,11 +7,14 @@ import {
   setDraftConversation,
 } from "../conversationsSlice";
 import { clearMessages, fetchConversationMessages } from "@/features/chat/messagesSlice";
-import ConversationSearch from "./ConversationSearch";
-import useUserSearch from "../hooks/useUserSearch";
+
 import ConversationHeader from "./ConversationHeader";
-import { getDisplayInfo } from "../utils/conversationHelper";
+import ConversationSearch from "./ConversationSearch";
+import DraftConversation from "./DraftConversation";
 import ConversationItem from "./ConversationItem";
+
+import useUserSearch from "../hooks/useUserSearch";
+import { getDisplayInfo } from "../utils/conversationHelper";
 
 const ConversationList = ({ activeChat, onSelectChat, onBackToList }) => {
   const {
@@ -78,10 +79,10 @@ const ConversationList = ({ activeChat, onSelectChat, onBackToList }) => {
       className={`flex-1 flex flex-col bg-[var(--bg-primary)] rounded-lg
       ${activeChat ? "hidden" : "flex"} md:flex`}
     >
-      {/* Header */}
+      {/* HEADER */}
       <ConversationHeader />
 
-      {/* Search bar */}
+      {/* SEARCH BAR */}
       <ConversationSearch
         keyword={keyword}
         isFocused={isFocused}
@@ -90,9 +91,12 @@ const ConversationList = ({ activeChat, onSelectChat, onBackToList }) => {
         resetSearch={resetSearch}
       />
 
-      {/* List conversations or users */}
+      {/* LIST CONVERSATIONS OR SEARCH RESULT */}
       <div className="flex flex-col px-4 overflow-y-auto scrollbar-thin scrollbar-thumb-[var(--color-border)] scrollbar-track-transparent">
         {isFocused ? (
+          /**------------------------------
+           * DISPLAY SEARCH RESULT
+           *----------------------------- */
           <div className="text-[var(--color-text-secondary)]">
             <p className="text-sm mb-2">Gợi ý liên hệ</p>
             {loading && <p>Kết quả tìm kiếm cho {keyword}</p>}
@@ -115,41 +119,18 @@ const ConversationList = ({ activeChat, onSelectChat, onBackToList }) => {
           </div>
         ) : (
           <>
-            {/* === HIỂN THỊ HỘI THOẠI TẠM TRƯỚC === */}
+            {/* === DRAFT CONVERSATION LIST  === */}
             {draftConversation && (
-              <div
-                className={`flex items-center gap-3 p-2 rounded-md cursor-pointer hover:bg-[var(--bg-hover-secondary)] transition  ${
-                  activeChat === "draft" ? "bg-[var(--bg-hover-secondary)]" : ""
-                }`}
-                onClick={() => onSelectChat("draft")} // mở ChatWindow
-              >
-                {/* Avatar */}
-                <div className="relative">
-                  <img
-                    src={draftConversation.avatarUrl?.url || "/img/default-avatar.png"}
-                    alt={draftConversation.username}
-                    className="w-12 h-12 rounded-full object-cover"
-                  />
-                </div>
-
-                {/* Nội dung */}
-                <div className="flex flex-col flex-1 min-w-0">
-                  <p className="text-sm text-[var(--color-text-primary)] font-medium">
-                    Tin nhắn mới đến {draftConversation.username}
-                  </p>
-                </div>
-
-                {/* Nút hủy */}
-                <button
-                  onClick={(e) => handleDeleteDraft(e)}
-                  className="text-[var(--color-text-secondary)] hover:text-red-500 transition"
-                >
-                  &#10005;
-                </button>
-              </div>
+              <DraftConversation
+                isActive={activeChat === "draft"}
+                avatar={draftConversation.avatarUrl?.url}
+                username={draftConversation.username}
+                onSelectDraft={() => onSelectChat("draft")}
+                onDeleteDraft={(e) => handleDeleteDraft(e)}
+              />
             )}
 
-            {/* === DANH SÁCH HỘI THOẠI THẬT === */}
+            {/* === REAL CONVERSATION LIST === */}
             {conversations.map((conversation) => {
               // Chuẩn hoá dữ liệu hiển thị cho mỗi conversation item
               const {
