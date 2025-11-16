@@ -1,10 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Search, CornerUpLeft } from "lucide-react";
 import { FaFacebook } from "react-icons/fa";
 import { SlNote } from "react-icons/sl";
-import { searchUsers } from "@/features/user/userSlice";
-import useDebounce from "@/hooks/useDebounce";
 import {
   clearDraftConversation,
   getConversationById,
@@ -12,38 +9,29 @@ import {
   setDraftConversation,
 } from "../conversationsSlice";
 import { clearMessages, fetchConversationMessages } from "@/features/chat/messagesSlice";
+import ConversationSearch from "./ConversationSearch";
+import useUserSearch from "../hooks/useUserSearch";
+import ConversationHeader from "./ConversationHeader";
 
 const ConversationList = ({ activeChat, onSelectChat, onBackToList }) => {
+  const {
+    keyword,
+    isFocused,
+    loading,
+    searchResults,
+    setIsFocused,
+    handleSearch,
+    handleFocus,
+    resetSearch,
+  } = useUserSearch();
+
   const dispatch = useDispatch();
-  /** Search */
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const { searchResults, loading } = useSelector((state) => state.user);
-  const [keyword, setKeyword] = useState("");
+
   /** Conversations */
   const { user } = useSelector((state) => state.auth);
   const { conversations = [], draftConversation } = useSelector(
     (state) => state.conversations
   );
-
-  // Tối ưu tần suất gọi api search
-  const debouncedSearch = useDebounce((val) => dispatch(searchUsers(val)), 500, [
-    dispatch,
-  ]);
-
-  // Xử lý search user
-  const handleSearch = (e) => {
-    const value = e.target.value;
-    setKeyword(value);
-    debouncedSearch(value);
-  };
-
-  // Xử lý khi focus search
-  const handleFocus = () => {
-    setIsSearchFocused(true);
-    if (!keyword.trim()) {
-      dispatch(searchUsers("")); // keyword rỗng => trả danh sách gợi ý
-    }
-  };
 
   // Xử lý select conversation
   const handleSelectChat = (conversationId) => {
@@ -63,7 +51,7 @@ const ConversationList = ({ activeChat, onSelectChat, onBackToList }) => {
 
   // Khi click user trong search
   const handleSelectUserFromSearch = (user) => {
-    setIsSearchFocused(false);
+    setIsFocused(false);
     const existingConv = conversations.find((conv) =>
       conv.participants.some((p) => p._id === user._id)
     );
@@ -89,52 +77,20 @@ const ConversationList = ({ activeChat, onSelectChat, onBackToList }) => {
       ${activeChat ? "hidden" : "flex"} md:flex`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 text-[var(--color-text-primary)]">
-        <h2 className="font-bold text-2xl">Chat</h2>
-        <div className="flex gap-3">
-          <button className="flex items-center rounded-full bg-[var(--bg-gray)] p-2 hover:bg-[var(--bg-hover-primary)] transition-colors">
-            <FaFacebook className="w-5 h-5" />
-          </button>
-          <button className="flex items-center rounded-full bg-[var(--bg-gray)] p-2 hover:bg-[var(--bg-hover-primary)] transition-colors">
-            <SlNote className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
-
+      <ConversationHeader />
+      
       {/* Search bar */}
-      <div className="px-4 pb-3 flex items-center gap-2">
-        {isSearchFocused && (
-          <button
-            onClick={() => setIsSearchFocused(false)}
-            className="flex items-center justify-center w-9 h-9 rounded-full 
-            bg-[var(--bg-gray)] hover:bg-[var(--bg-hover-primary)] 
-            text-[var(--color-text-primary)] transition-colors"
-          >
-            <CornerUpLeft className="w-5 h-5" />
-          </button>
-        )}
-        <div
-          className="flex-1 flex items-center gap-2 
-          text-[var(--color-text-secondary)] 
-          rounded-3xl bg-[var(--bg-gray)] px-4 py-1 transition-all duration-200"
-        >
-          <Search className="w-5 h-5" />
-          <input
-            type="text"
-            placeholder="Tìm kiếm trên Messenger"
-            className="placeholder:text-[var(--color-text-secondary)] focus:outline-none bg-transparent flex-1"
-            onFocus={handleFocus}
-            // onBlur={() => setIsSearchFocused(false)}
-            value={keyword}
-            onClick={handleSearch}
-            onChange={handleSearch}
-          />
-        </div>
-      </div>
+      <ConversationSearch
+        keyword={keyword}
+        isFocused={isFocused}
+        handleSearch={handleSearch}
+        handleFocus={handleFocus}
+        resetSearch={resetSearch}
+      />
 
       {/* List conversations or users */}
       <div className="flex flex-col px-4 overflow-y-auto scrollbar-thin scrollbar-thumb-[var(--color-border)] scrollbar-track-transparent">
-        {isSearchFocused ? (
+        {isFocused ? (
           <div className="text-[var(--color-text-secondary)]">
             <p className="text-sm mb-2">Gợi ý liên hệ</p>
             {loading && <p>Kết quả tìm kiếm cho {keyword}</p>}
@@ -145,7 +101,7 @@ const ConversationList = ({ activeChat, onSelectChat, onBackToList }) => {
                 onClick={() => handleSelectUserFromSearch(user)}
               >
                 <img
-                  src={user.avatarUrl?.url}
+                  src={user.avatarUrl?.url || "/img/default-avatar.png"}
                   alt={user.username}
                   className="w-10 h-10 rounded-full"
                 />
