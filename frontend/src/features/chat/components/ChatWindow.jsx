@@ -52,7 +52,9 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
           )}
           <div className="flex flex-col">
             <h3 className="text-[var(--color-text-primary)] font-semibold">
-              {isDraft ? `Nội dung đến: ${partner.username}` : partner?.username}
+              {isDraft
+                ? `Nội dung đến: ${partner?.username || "Người dùng ẩn danh"}`
+                : partner?.username || "Người dùng ẩn danh"}
             </h3>
             {!isDraft && (
               <span className="text-xs text-[var(--color-text-secondary)]">
