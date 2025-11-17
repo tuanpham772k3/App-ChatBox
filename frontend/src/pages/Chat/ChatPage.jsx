@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import ChatWindow from "@/features/chat/components/ChatWindow";
-import ConversationList from "@/features/conversations/components/ConversationList";
+import ConversationContainer from "@/features/conversations/ConversationsContainer";
 
 const ChatPage = () => {
   const [activeChat, setActiveChat] = useState(null);
@@ -21,7 +21,7 @@ const ChatPage = () => {
         <Sidebar />
 
         {/* Conversations List */}
-        <ConversationList
+        <ConversationContainer
           activeChat={activeChat}
           onActiveChatId={handleActiveChatId}
           onBackToList={handleBackToList}

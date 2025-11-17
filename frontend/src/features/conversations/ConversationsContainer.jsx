@@ -16,7 +16,7 @@ import ConversationItem from "./ConversationItem";
 import useUserSearch from "../hooks/useUserSearch";
 import { getDisplayInfo } from "../utils/conversationHelper";
 
-const ConversationList = ({ activeChat, onActiveChatId }) => {
+const ConversationContainer = ({ activeChat, onActiveChatId }) => {
   const {
     keyword,
     isFocused,
@@ -66,7 +66,7 @@ const ConversationList = ({ activeChat, onActiveChatId }) => {
       onActiveChatId("draft"); // để hiển thị ChatWindow
     }
   };
-  
+
   return (
     <section
       className={`flex-1 flex flex-col bg-[var(--bg-primary)] rounded-lg
@@ -144,4 +144,4 @@ const ConversationList = ({ activeChat, onActiveChatId }) => {
   );
 };
 
-export default ConversationList;
+export default ConversationContainer;
