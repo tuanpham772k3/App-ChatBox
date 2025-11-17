@@ -5,16 +5,16 @@ import {
   getConversationById,
   getConversations,
   setDraftConversation,
-} from "../conversationsSlice";
+} from "./conversationsSlice";
 import { clearMessages, fetchConversationMessages } from "@/features/chat/messagesSlice";
 
-import ConversationHeader from "./ConversationHeader";
-import ConversationSearch from "./ConversationSearch";
-import DraftConversation from "./DraftConversation";
-import ConversationItem from "./ConversationItem";
+import ConversationHeader from "./components/ConversationHeader";
+import ConversationSearch from "./components/ConversationSearch";
+import DraftConversation from "./components/DraftConversation";
+import ConversationItem from "./components/ConversationItem";
 
-import useUserSearch from "../hooks/useUserSearch";
-import { getDisplayInfo } from "../utils/conversationHelper";
+import useUserSearch from "./hooks/useUserSearch";
+import { getDisplayInfo } from "./utils/conversationHelper";
 
 const ConversationContainer = ({ activeChat, onActiveChatId }) => {
   const {
