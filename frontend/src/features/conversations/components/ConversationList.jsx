@@ -16,7 +16,7 @@ import ConversationItem from "./ConversationItem";
 import useUserSearch from "../hooks/useUserSearch";
 import { getDisplayInfo } from "../utils/conversationHelper";
 
-const ConversationList = ({ activeChat, onSelectChat, onBackToList }) => {
+const ConversationList = ({ activeChat, onActiveChatId, onBackToList }) => {
   const {
     keyword,
     isFocused,
@@ -37,14 +37,14 @@ const ConversationList = ({ activeChat, onSelectChat, onBackToList }) => {
   );
 
   // Xử lý select conversation
-  const handleSelectChat = (conversationId) => {
+  const handleSelectConversation = (conversationId) => {
     dispatch(getConversationById(conversationId));
 
     dispatch(clearMessages());
 
     dispatch(fetchConversationMessages({ conversationId }));
 
-    onSelectChat(conversationId); // giữ logic hiển thị ChatWindow
+    onActiveChatId(conversationId); // giữ logic hiển thị ChatWindow
   };
 
   // Xử lý logic gọi api lấy danh sách hội thoại khi giao diện vừa bật lên
@@ -60,10 +60,10 @@ const ConversationList = ({ activeChat, onSelectChat, onBackToList }) => {
     );
 
     if (existingConv) {
-      handleSelectChat(existingConv._id); // hội thoại đã tồn tại
+      handleSelectConversation(existingConv._id); // hội thoại đã tồn tại
     } else {
       dispatch(setDraftConversation(user)); // tạo hội thoại giả
-      onSelectChat("draft"); // để hiển thị ChatWindow
+      onActiveChatId("draft"); // để hiển thị ChatWindow
     }
   };
 
@@ -125,23 +125,13 @@ const ConversationList = ({ activeChat, onSelectChat, onBackToList }) => {
                 isActive={activeChat === "draft"}
                 avatar={draftConversation.avatarUrl?.url}
                 username={draftConversation.username}
-                onSelectDraft={() => onSelectChat("draft")}
+                onSelectDraft={() => onActiveChatId("draft")}
                 onDeleteDraft={(e) => handleDeleteDraft(e)}
               />
             )}
 
             {/* === REAL CONVERSATION LIST === */}
             {conversations.map((conversation) => {
-              // Chuẩn hoá dữ liệu hiển thị cho mỗi conversation item
-              const {
-                partner,
-                displayName,
-                displayAvatar,
-                lastMsgSender,
-                lastMsgContent,
-                lastMsgTime,
-              } = getDisplayInfo(conversation, user.id);
-
               return (
                 /** =========================
                  *     CONVERSATION ITEM
@@ -149,13 +139,8 @@ const ConversationList = ({ activeChat, onSelectChat, onBackToList }) => {
                 <ConversationItem
                   key={conversation._id}
                   isActive={activeChat === conversation._id}
-                  partner={partner}
-                  displayName={displayName}
-                  displayAvatar={displayAvatar}
-                  lastMsgSender={lastMsgSender}
-                  lastMsgContent={lastMsgContent}
-                  lastMsgTime={lastMsgTime}
-                  onClick={() => handleSelectChat(conversation._id)}
+                  display={getDisplayInfo(conversation, user.id)}
+                  onClick={() => handleSelectConversation(conversation._id)}
                 />
               );
             })}

@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import Sidebar from "@/components/Sidebar";
-import ConversationList from "@/features/conversations/components/ConversationList";
 import ChatWindow from "@/features/chat/components/ChatWindow";
+import ConversationList from "@/features/conversations/components/ConversationList";
 
 const ChatPage = () => {
   const [activeChat, setActiveChat] = useState(null);
 
-  const handleSelectChat = (chatId) => {
+  const handleActiveChatId = (chatId) => {
     setActiveChat(chatId);
   };
 
@@ -23,7 +23,7 @@ const ChatPage = () => {
         {/* Conversations List */}
         <ConversationList
           activeChat={activeChat}
-          onSelectChat={handleSelectChat}
+          onActiveChatId={handleActiveChatId}
           onBackToList={handleBackToList}
         />
 
