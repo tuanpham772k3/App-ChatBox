@@ -16,7 +16,7 @@ import ConversationItem from "./ConversationItem";
 import useUserSearch from "../hooks/useUserSearch";
 import { getDisplayInfo } from "../utils/conversationHelper";
 
-const ConversationList = ({ activeChat, onActiveChatId, onBackToList }) => {
+const ConversationList = ({ activeChat, onActiveChatId }) => {
   const {
     keyword,
     isFocused,
@@ -66,14 +66,7 @@ const ConversationList = ({ activeChat, onActiveChatId, onBackToList }) => {
       onActiveChatId("draft"); // để hiển thị ChatWindow
     }
   };
-
-  // Xử lý xóa draftConversation
-  const handleDeleteDraft = (e) => {
-    e.stopPropagation();
-    dispatch(clearDraftConversation());
-    onBackToList(); // quay về danh sách => activeChat = null
-  };
-
+  
   return (
     <section
       className={`flex-1 flex flex-col bg-[var(--bg-primary)] rounded-lg
@@ -126,7 +119,7 @@ const ConversationList = ({ activeChat, onActiveChatId, onBackToList }) => {
                 avatar={draftConversation.avatarUrl?.url}
                 username={draftConversation.username}
                 onSelectDraft={() => onActiveChatId("draft")}
-                onDeleteDraft={(e) => handleDeleteDraft(e)}
+                onDeleteDraft={() => dispatch(clearDraftConversation())}
               />
             )}
 

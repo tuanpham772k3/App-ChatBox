@@ -32,7 +32,10 @@ const DraftConversation = ({
 
       {/* Nút hủy */}
       <button
-        onClick={onDeleteDraft}
+        onClick={(e) => {
+          e.stopPropagation();
+          onDeleteDraft();
+        }}
         className="text-[var(--color-text-secondary)] hover:text-red-500 transition"
       >
         &#10005;
