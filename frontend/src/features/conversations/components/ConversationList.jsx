@@ -86,9 +86,9 @@ const ConversationList = ({ activeChat, onActiveChatId, onBackToList }) => {
       <ConversationSearch
         keyword={keyword}
         isFocused={isFocused}
-        handleSearch={handleSearch}
-        handleFocus={handleFocus}
-        resetSearch={resetSearch}
+        onSearch={handleSearch}
+        onFocus={handleFocus}
+        onBack={resetSearch}
       />
 
       {/* LIST CONVERSATIONS OR SEARCH RESULT */}

@@ -4,9 +4,9 @@ import { CornerUpLeft, Search } from "lucide-react";
 const ConversationSearch = ({
   keyword,
   isFocused,
-  handleSearch,
-  handleFocus,
-  resetSearch,
+  onSearch,
+  onFocus,
+  onBack,
 }) => {
   return (
     <>
@@ -14,7 +14,7 @@ const ConversationSearch = ({
       <div className="px-4 pb-3 flex items-center gap-2">
         {isFocused && (
           <button
-            onClick={() => resetSearch(false)}
+            onClick={onBack}
             className="flex items-center justify-center w-9 h-9 rounded-full 
             bg-[var(--bg-gray)] hover:bg-[var(--bg-hover-primary)] 
             text-[var(--color-text-primary)] transition-colors"
@@ -34,8 +34,8 @@ const ConversationSearch = ({
             placeholder="Tìm kiếm trên Messenger"
             className="placeholder:text-[var(--color-text-secondary)] focus:outline-none bg-transparent flex-1"
             value={keyword}
-            onFocus={handleFocus}
-            onChange={(e) => handleSearch(e.target.value)}
+            onFocus={onFocus}
+            onChange={(e) => onSearch(e.target.value)}
           />
         </div>
       </div>
