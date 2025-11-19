@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   clearDraftConversation,
@@ -17,6 +17,11 @@ import useUserSearch from "./hooks/useUserSearch";
 import { getDisplayInfo } from "./utils/conversationHelper";
 
 const ConversationContainer = ({ activeChat, onActiveChatId }) => {
+  const dispatch = useDispatch();
+  const [openMenuId, setOpenMenuId] = useState(null);
+
+  const menuRef = useRef(null);
+
   const {
     keyword,
     isFocused,
@@ -28,9 +33,6 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
     resetSearch,
   } = useUserSearch();
 
-  const dispatch = useDispatch();
-
-  /** Conversations */
   const { user } = useSelector((state) => state.auth);
   const { conversations = [], draftConversation } = useSelector(
     (state) => state.conversations
@@ -66,6 +68,26 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
       onActiveChatId("draft"); // để hiển thị ChatWindow
     }
   };
+
+  // Mở menu
+  const openMoreMenu = (conversationId) => {
+    setOpenMenuId(conversationId);
+  };
+
+  // Click ngoài → đóng menu (chỉ 1 listener cho toàn app)
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(event.target) &&
+        !event.target.closest("[data-conversation-menu]")
+      ) {
+        setOpenMenuId(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <section
@@ -129,12 +151,18 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
                 /** =========================
                  *     CONVERSATION ITEM
                  ============================*/
-                <ConversationItem
+                <div
                   key={conversation._id}
-                  isActive={activeChat === conversation._id}
-                  display={getDisplayInfo(conversation, user.id)}
-                  onClick={() => handleSelectConversation(conversation._id)}
-                />
+                  ref={openMenuId === conversation._id ? menuRef : null}
+                >
+                  <ConversationItem
+                    isActive={activeChat === conversation._id}
+                    display={getDisplayInfo(conversation, user.id)}
+                    onClick={() => handleSelectConversation(conversation._id)}
+                    onMoreClick={() => openMoreMenu(conversation._id)}
+                    isMenuOpen={openMenuId === conversation._id}
+                  />
+                </div>
               );
             })}
           </>
