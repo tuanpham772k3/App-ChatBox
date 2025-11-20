@@ -1,13 +1,27 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { Ellipsis } from "lucide-react";
 import { createPortal } from "react-dom";
-import { useFloating, offset, flip, shift, autoUpdate, arrow } from "@floating-ui/react";
+import {
+  useFloating,
+  offset,
+  flip,
+  shift,
+  autoUpdate,
+  arrow,
+  useInteractions,
+  useClick,
+  useDismiss,
+} from "@floating-ui/react";
 
-const ConversationItem = ({ isActive, display, onClick, onMoreClick, isMenuOpen }) => {
+const ConversationItem = ({ isActive, display, onClick, onDeleteConversation }) => {
+  const [open, setOpen] = useState(false);
+
   const arrowRef = useRef(null); //tham chiếu arrow
 
   // Xử lý định vị menu
-  const { refs, floatingStyles, placement, middlewareData } = useFloating({
+  const { refs, floatingStyles, placement, middlewareData, context } = useFloating({
+    open,
+    onOpenChange: setOpen,
     placement: "bottom",
     middleware: [
       offset(12),
@@ -18,16 +32,32 @@ const ConversationItem = ({ isActive, display, onClick, onMoreClick, isMenuOpen 
     whileElementsMounted: autoUpdate,
   });
 
+  // Dùng dismiss để handle click outside, ESC, blur
+  const dismiss = useDismiss(context, {
+    outsidePress: true, // click ngoài sẽ đóng
+    escapeKey: true,
+  });
+
+  // Nếu muốn toggle theo click vào ellipsis
+  const click = useClick(context);
+
+  // Combine các behavior
+  const { getReferenceProps, getFloatingProps } = useInteractions([dismiss, click]);
+
   //Xử lý khi click vào cả item
   const handleRowClick = () => {
     onClick?.();
   };
 
-  //Xử lý click vào ellipsis
-  const handleMoreClick = (e) => {
-    e.stopPropagation(); // Không cho click ở ellip bubble lên row
-    onMoreClick?.();
-  };
+  // Định vị arrow
+  const arrowData = middlewareData.arrow || {};
+  const side = placement.split("-")[0];
+  const staticSide = {
+    top: "bottom",
+    right: "left",
+    bottom: "top",
+    left: "right",
+  }[side];
 
   return (
     <div
@@ -70,53 +100,57 @@ const ConversationItem = ({ isActive, display, onClick, onMoreClick, isMenuOpen 
         {/* Ellipsis */}
         <button
           ref={refs.setReference}
+          {...getReferenceProps({
+            onClick(e) {
+              e.stopPropagation();
+            },
+          })}
           type="button"
-          onClick={handleMoreClick}
           className={`p-1 mr-6 rounded-full  ${
-            isMenuOpen
-              ? "opacity-100 bg-[var(--bg-hover-primary)]"
-              : "opacity-0 group-hover:opacity-100"
+            open ? "opacity-100" : "opacity-0 group-hover:opacity-100"
           } hover:bg-[var(--bg-hover-primary)] transition`}
         >
           <Ellipsis className="w-5 h-5" color="var(--color-text-secondary)" />
         </button>
 
         {/* Menu action */}
-        {isMenuOpen &&
+        {open &&
           createPortal(
             <div
               ref={refs.setFloating} // attach menu cho floating
               style={floatingStyles}
-              onClick={(e) => e.stopPropagation()}
-              className={`w-[150px] p-1 bg-[var(--bg-gray)] rounded-md z-999`}
+              {...getFloatingProps({
+                onClick(e) {
+                  e.stopPropagation();
+                },
+              })}
+              className={`w-[344px] p-1 bg-[var(--bg-gray)] rounded-md z-999`}
               data-conversation-menu
             >
               {/* Arrow – tự động xoay theo placement */}
               <div
                 ref={arrowRef}
-                className="absolute w-3 h-3 bg-[var(--bg-gray)]"
+                className="absolute w-3 h-3 bg-[var(--bg-gray)] rotate-45"
                 style={{
-                  left: middlewareData.arrow?.x ?? undefined,
-                  top: middlewareData.arrow?.y ?? undefined,
-                  ...(placement.startsWith("top") && {
-                    bottom: -6,
-                    transform: "rotate(45deg)",
-                    borderTop: "none",
-                    borderLeft: "none",
-                  }),
-                  ...(placement.startsWith("bottom") && {
-                    top: -6,
-                    transform: "rotate(45deg)",
-                    borderBottom: "none",
-                    borderRight: "none",
-                  }),
+                  left: arrowData.x != null ? `${arrowData.x}px` : "",
+                  top: arrowData.y != null ? `${arrowData.y}px` : "",
+                  [staticSide]: "-6px",
                 }}
               />
               <button className="text-white w-full px-2 py-1 text-start hover:bg-gray-600 rounded">
-                Thu hồi
+                Đánh dấu chưa đọc
+              </button>
+              <button
+                onClick={onDeleteConversation}
+                className="text-white w-full px-2 py-1 text-start hover:bg-gray-600 rounded"
+              >
+                Xóa đoạn chat
               </button>
               <button className="text-white w-full px-2 py-1 text-start hover:bg-gray-600 rounded">
-                Chỉnh sửa
+                Xem trang cá nhân
+              </button>
+              <button className="text-white w-full px-2 py-1 text-start hover:bg-gray-600 rounded">
+                Lưu trữ đoạn chat
               </button>
             </div>,
             document.body
