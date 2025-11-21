@@ -1,63 +1,40 @@
-import React, { useRef, useState } from "react";
+import React from "react";
 import { Ellipsis } from "lucide-react";
-import { createPortal } from "react-dom";
-import {
-  useFloating,
-  offset,
-  flip,
-  shift,
-  autoUpdate,
-  arrow,
-  useInteractions,
-  useClick,
-  useDismiss,
-} from "@floating-ui/react";
+import { useFloatingMenu } from "@/hooks/useFloatingMenu";
+import FloatingMenu from "@/components/ui/FloatingMenu";
 
 const ConversationItem = ({ isActive, display, onClick, onDeleteConversation }) => {
-  const [open, setOpen] = useState(false);
-
-  const arrowRef = useRef(null); //tham chiếu arrow
-
-  // Xử lý định vị menu
-  const { refs, floatingStyles, placement, middlewareData, context } = useFloating({
+  // Sử dụng hook useFloatingMenu
+  const {
     open,
-    onOpenChange: setOpen,
-    placement: "bottom",
-    middleware: [
-      offset(12),
-      flip({ fallbackPlacements: ["top", "bottom"] }),
-      shift({ padding: 8 }),
-      arrow({ element: arrowRef }),
-    ],
-    whileElementsMounted: autoUpdate,
-  });
-
-  // Dùng dismiss để handle click outside, ESC, blur
-  const dismiss = useDismiss(context, {
-    outsidePress: true, // click ngoài sẽ đóng
-    escapeKey: true,
-  });
-
-  // Nếu muốn toggle theo click vào ellipsis
-  const click = useClick(context);
-
-  // Combine các behavior
-  const { getReferenceProps, getFloatingProps } = useInteractions([dismiss, click]);
+    setOpen,
+    arrowRef,
+    refs,
+    floatingStyles,
+    getReferenceProps,
+    getFloatingProps,
+    arrowStyle,
+  } = useFloatingMenu("bottom");
 
   //Xử lý khi click vào cả item
   const handleRowClick = () => {
     onClick?.();
   };
 
-  // Định vị arrow
-  const arrowData = middlewareData.arrow || {};
-  const side = placement.split("-")[0];
-  const staticSide = {
-    top: "bottom",
-    right: "left",
-    bottom: "top",
-    left: "right",
-  }[side];
+  // Các hành động trong menu
+  const actions = [
+    { label: "Đánh dấu chưa đọc", onClick: () => {} },
+    {
+      label: "Xóa đoạn chat",
+      danger: true,
+      onClick: () => {
+        onDeleteConversation && onDeleteConversation();
+        setOpen(false);
+      },
+    },
+    { label: "Xem trang cá nhân", onClick: () => {} },
+    { label: "Lưu trữ đoạn chat", onClick: () => {} },
+  ];
 
   return (
     <div
@@ -113,48 +90,17 @@ const ConversationItem = ({ isActive, display, onClick, onDeleteConversation }) 
           <Ellipsis className="w-5 h-5" color="var(--color-text-secondary)" />
         </button>
 
-        {/* Menu action */}
-        {open &&
-          createPortal(
-            <div
-              ref={refs.setFloating} // attach menu cho floating
-              style={floatingStyles}
-              {...getFloatingProps({
-                onClick(e) {
-                  e.stopPropagation();
-                },
-              })}
-              className={`w-[344px] p-1 bg-[var(--bg-gray)] rounded-md z-999`}
-              data-conversation-menu
-            >
-              {/* Arrow – tự động xoay theo placement */}
-              <div
-                ref={arrowRef}
-                className="absolute w-3 h-3 bg-[var(--bg-gray)] rotate-45"
-                style={{
-                  left: arrowData.x != null ? `${arrowData.x}px` : "",
-                  top: arrowData.y != null ? `${arrowData.y}px` : "",
-                  [staticSide]: "-6px",
-                }}
-              />
-              <button className="text-white w-full px-2 py-1 text-start hover:bg-gray-600 rounded">
-                Đánh dấu chưa đọc
-              </button>
-              <button
-                onClick={onDeleteConversation}
-                className="text-white w-full px-2 py-1 text-start hover:bg-gray-600 rounded"
-              >
-                Xóa đoạn chat
-              </button>
-              <button className="text-white w-full px-2 py-1 text-start hover:bg-gray-600 rounded">
-                Xem trang cá nhân
-              </button>
-              <button className="text-white w-full px-2 py-1 text-start hover:bg-gray-600 rounded">
-                Lưu trữ đoạn chat
-              </button>
-            </div>,
-            document.body
-          )}
+        {/* Menu */}
+        <FloatingMenu
+          open={open}
+          refs={refs}
+          floatingStyles={floatingStyles}
+          getFloatingProps={getFloatingProps}
+          arrowRef={arrowRef}
+          arrowStyle={arrowStyle}
+          actions={actions}
+          width={344}
+        />
       </div>
     </div>
   );
