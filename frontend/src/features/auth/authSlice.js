@@ -90,13 +90,14 @@ const authSlice = createSlice({
         state.loading = false;
         state.user = action.payload.user;
         state.accessToken = action.payload.accessToken;
+        localStorage.setItem("accessToken", action.payload.accessToken);
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
 
-      //logout
+      // logout
       .addCase(logoutUser.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -105,6 +106,7 @@ const authSlice = createSlice({
         state.loading = false;
         state.user = null;
         state.accessToken = null;
+        localStorage.removeItem("accessToken");
       })
       .addCase(logoutUser.rejected, (state, action) => {
         state.loading = false;
@@ -113,5 +115,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout } = authSlice.actions;
+export const {} = authSlice.actions;
 export default authSlice.reducer;
