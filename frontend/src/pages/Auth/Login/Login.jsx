@@ -27,7 +27,6 @@ const Login = () => {
                     description: res.message || "Login successful!",
                 });
 
-                localStorage.setItem("accessToken", res.accessToken);
                 navigate("/"); // chuyển hướng
             }
         } catch (err) {
