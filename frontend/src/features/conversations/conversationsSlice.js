@@ -87,7 +87,6 @@ const conversationsSlice = createSlice({
   initialState: {
     conversations: [],
     currentConversation: null,
-    draftConversation: null,
     loading: false,
     error: null,
   },
@@ -95,21 +94,6 @@ const conversationsSlice = createSlice({
   reducers: {
     // Có thể dùng cho socket realtime
     addConversation: (state, action) => {
-      state.conversations.unshift(action.payload);
-    },
-
-    // === DRAFT conversation (local only) ===
-    setDraftConversation: (state, action) => {
-      state.draftConversation = action.payload; // { user: {...} }
-      state.currentConversation = null;
-    },
-    clearDraftConversation: (state) => {
-      state.draftConversation = null;
-    },
-    promoteDraftToReal: (state, action) => {
-      // Khi gửi tin đầu tiên -> nhận về conversation thật
-      state.draftConversation = null;
-      state.currentConversation = action.payload; // {conversation}
       state.conversations.unshift(action.payload);
     },
   },
@@ -170,10 +154,5 @@ const conversationsSlice = createSlice({
   },
 });
 
-export const {
-  addConversation,
-  setDraftConversation,
-  clearDraftConversation,
-  promoteDraftToReal,
-} = conversationsSlice.actions;
+export const { addConversation } = conversationsSlice.actions;
 export default conversationsSlice.reducer;

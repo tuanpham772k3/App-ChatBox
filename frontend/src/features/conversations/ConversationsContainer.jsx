@@ -1,17 +1,14 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  clearDraftConversation,
   deleteConversation,
   getConversationById,
   getConversations,
-  setDraftConversation,
 } from "./conversationsSlice";
 import { clearMessages, fetchConversationMessages } from "@/features/chat/messagesSlice";
 
 import ConversationHeader from "./components/ConversationHeader";
 import ConversationSearch from "./components/ConversationSearch";
-import DraftConversation from "./components/DraftConversation";
 import ConversationItem from "./components/ConversationItem";
 
 import useUserSearch from "./hooks/useUserSearch";
@@ -61,9 +58,6 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
 
     if (existingConv) {
       handleSelectConversation(existingConv._id); // hội thoại đã tồn tại
-    } else {
-      dispatch(setDraftConversation(user)); // tạo hội thoại giả
-      onActiveChatId("draft"); // để hiển thị ChatWindow
     }
   };
 
@@ -117,18 +111,7 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
           </div>
         ) : (
           <>
-            {/* === DRAFT CONVERSATION LIST  === */}
-            {draftConversation && (
-              <DraftConversation
-                isActive={activeChat === "draft"}
-                avatar={draftConversation.avatarUrl?.url}
-                username={draftConversation.username}
-                onSelectDraft={() => onActiveChatId("draft")}
-                onDeleteDraft={() => dispatch(clearDraftConversation())}
-              />
-            )}
-
-            {/* === REAL CONVERSATION LIST === */}
+            {/* === CONVERSATION LIST === */}
             {conversations.map((conversation) => {
               return (
                 /** =========================

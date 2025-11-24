@@ -29,7 +29,7 @@ const MessageItem = ({ msg, isMine, showTime, onDeleteMessage, onEditClick }) =>
   };
 
   // Lấy avatar người gửi, nếu không có thì dùng avatar mặc định
-  const avatar = msg.sender.avatarUrl?.url || "/img/default-avatar.png";
+  const avatar = msg.sender?.avatarUrl?.url || "/img/default-avatar.png";
   // Chuyển createdAt thành đối tượng Date
   const msgTime = new Date(msg.createdAt); // Date tin hiện tại
 
@@ -64,7 +64,7 @@ const MessageItem = ({ msg, isMine, showTime, onDeleteMessage, onEditClick }) =>
         {!isMine && (
           <img
             src={avatar}
-            alt={msg.sender.username}
+            alt={msg.sender?.username}
             className="w-8 h-8 rounded-full object-cover cursor-pointer"
           />
         )}
