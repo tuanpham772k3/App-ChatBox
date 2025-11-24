@@ -1,5 +1,7 @@
 import React from "react";
 import { Archive, Menu, MessageCircle, MessageCircleMore, Store } from "lucide-react";
+import { logoutUser } from "@/features/auth/authSlice";
+import { useDispatch } from "react-redux";
 
 const appIcons = [
   "../../assets/img/app1.jpg",
@@ -11,6 +13,11 @@ const appIcons = [
 ];
 
 const Sidebar = () => {
+  const dispatch = useDispatch();
+  const handleLogout = () => {
+    dispatch(logoutUser());
+  };
+
   return (
     <aside
       className="flex flex-col justify-between text-[var(--color-text-secondary)]
@@ -50,6 +57,13 @@ const Sidebar = () => {
 
       {/* BOTTOM ICONS */}
       <div className="flex flex-col items-center gap-4 mb-4">
+        {/* đăng xuất */}
+        <button
+          onClick={handleLogout}
+          className="rounded-full bg-[var(--bg-gray)] p-2 hover:bg-[var(--bg-hover-primary)] transition-colors"
+        >
+          Logout
+        </button>
         <img
           src="/img/user.jpg"
           alt="user"

@@ -37,6 +37,24 @@ export const loginUser = createAsyncThunk(
   }
 );
 
+//logout
+export const logoutUser = createAsyncThunk(
+  "auth/logout",
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await authApi.logout();
+      return res;
+    } catch (err) {
+      const data = err.response?.data;
+      return rejectWithValue({
+        message: data?.message || "Lỗi không xác định",
+        idCode: data?.idCode || -1,
+        status: err.response?.status,
+      });
+    }
+  }
+);
+
 // Tạo slice
 const authSlice = createSlice({
   name: "auth",
@@ -47,14 +65,7 @@ const authSlice = createSlice({
     loading: false,
     error: null,
   },
-  reducers: {
-    logout: (state) => {
-      state.user = null;
-      state.accessToken = null;
-      state.error = null;
-      localStorage.removeItem("accessToken");
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
       //register
@@ -81,6 +92,21 @@ const authSlice = createSlice({
         state.accessToken = action.payload.accessToken;
       })
       .addCase(loginUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      //logout
+      .addCase(logoutUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(logoutUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = null;
+        state.accessToken = null;
+      })
+      .addCase(logoutUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
