@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { ArrowLeft, Ellipsis, Phone, Video } from "lucide-react";
 import MessageInput from "./MessageInput";
 import Messages from "./Messages";
+import { useMessages } from "../hooks/useMessages";
 
 const ChatWindow = ({ activeChat, onBackToList }) => {
   const { currentConversation } = useSelector((state) => state.conversations);
@@ -13,7 +14,10 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
   const [editContent, setEditContent] = useState("");
   const [editOriginalContent, setEditOriginalContent] = useState("");
 
+  // Tìm đối tác trong cuộc trò chuyện hiện tại
   const partner = currentConversation?.participants?.find((p) => p._id !== user.id);
+
+  useMessages(activeChat); // Custom hook để quản lý tin nhắn
 
   return (
     <main
