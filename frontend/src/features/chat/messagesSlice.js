@@ -109,11 +109,28 @@ const messagesSlice = createSlice({
   },
 
   reducers: {
-    // Dùng khi nhận tin nhắn qua socket realtime
+    // Thêm tin nhắn đến từ socket
     addIncomingMessage: (state, action) => {
       const newMsg = action.payload;
       const exists = state.messages.some((m) => m._id === newMsg._id);
       if (!exists) state.messages.push(newMsg);
+    },
+
+    // Cập nhật tin nhắn đến từ socket
+    updateMessage: (state, action) => {
+      const updated = action.payload;
+      const index = state.messages.findIndex((m) => m._id === updated._id);
+      if (index !== -1) state.messages[index] = updated;
+    },
+
+    // Xóa tin nhắn đến từ socket
+    removeMessage: (state, action) => {
+      const messageId = action.payload;
+      const msg = state.messages.find((m) => m._id === messageId);
+      if (msg) {
+        msg.isDeleted = true;
+        msg.content = "This message has been deleted.";
+      }
     },
 
     // Clear khi đổi sang cuộc trò chuyện khác
@@ -135,7 +152,6 @@ const messagesSlice = createSlice({
       })
       .addCase(createNewMessage.fulfilled, (state, action) => {
         state.sending = false;
-        state.messages.push(action.payload);
       })
       .addCase(createNewMessage.rejected, (state, action) => {
         state.sending = false;
@@ -157,41 +173,10 @@ const messagesSlice = createSlice({
       .addCase(fetchConversationMessages.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-      })
-
-      // -------------------------------
-      // MARK AS READ
-      // -------------------------------
-      .addCase(markMessageAsRead.fulfilled, (state, action) => {
-        const { messageId } = action.payload;
-        const msg = state.messages.find((m) => m._id === messageId);
-        if (msg) msg.status = "delivered";
-      })
-
-      // -------------------------------
-      // DELETE MESSAGE
-      // -------------------------------
-      .addCase(deleteMessageById.fulfilled, (state, action) => {
-        const { messageId } = action.payload;
-        const msg = state.messages.find((m) => m._id === messageId);
-        if (msg) {
-          msg.isDeleted = true;
-          msg.content = "This message has been deleted.";
-        }
-      })
-
-      // -------------------------------
-      // EDIT MESSAGE
-      // -------------------------------
-      .addCase(editMessageById.fulfilled, (state, action) => {
-        const updated = action.payload;
-        const index = state.messages.findIndex((m) => m._id === updated._id);
-        if (index !== -1) {
-          state.messages[index] = updated;
-        }
       });
   },
 });
 
-export const { addIncomingMessage, clearMessages } = messagesSlice.actions;
+export const { addIncomingMessage, updateMessage, removeMessage, clearMessages } =
+  messagesSlice.actions;
 export default messagesSlice.reducer;
