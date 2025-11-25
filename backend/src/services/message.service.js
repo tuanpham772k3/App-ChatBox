@@ -265,6 +265,8 @@ export const deleteMessage = async (messageId, userId) => {
     return {
       success: true,
       message: "Message deleted successfully",
+      messageId,
+      conversationId: message.conversation,
     };
   } catch (error) {
     console.log("Error in deleteMessage service:", error);

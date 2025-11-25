@@ -3,6 +3,7 @@ import User from "../models/user.model.js";
 import Session from "../models/session.model.js";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
+import { getSocket } from "../socket.js";
 
 // Time To Live for refresh token (7 days)
 const REFRESH_TTL_MS = 7 * 24 * 60 * 60 * 1000; // change to ms
@@ -270,6 +271,7 @@ export const logoutCurrent = async (req, res) => {
 
       // Nếu có socketId, ngắt kết nối socket tương ứng
       if (session.socketId) {
+        io = getSocket();
         const socket = io.sockets.sockets.get(session.socketId);
         if (socket) socket.disconnect(true);
       }

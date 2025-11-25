@@ -3,19 +3,19 @@ import express from "express";
 import cors from "cors";
 import http from "http"; //module core có sẵn của Node.js, để tạo HTTP server
 import cookieParser from "cookie-parser";
-import { Server } from "socket.io";
 import { connectDB } from "./config/db.js";
 import { chatSocket } from "./sockets/chat.socket.js";
 import authRoutes from "./routes/auth.route.js";
 import userRoutes from "./routes/user.route.js";
 import conversationRoutes from "./routes/conversation.route.js";
 import messageRoutes from "./routes/message.route.js";
+import { initSocket } from "./socket.js";
 
 connectDB();
 
 const app = express(); // khởi tạo app Express
 const server = http.createServer(app); // tạo HTTP server
-const io = new Server(server, { cors: { origin: "*" } }); // tạo socket.io chạy trên HTTP server, cho phép tất cả nguồn (origin) kết nối
+const io = initSocket(server); // Khởi tạo Socket.IO
 
 // middleware
 app.use(express.json()); // parse JSON body của request
