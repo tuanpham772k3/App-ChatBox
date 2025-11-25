@@ -2,13 +2,14 @@ import { createContext, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { notification } from "antd";
 import { useSelector } from "react-redux";
-import socket, { connectSocket, disconnectSocket } from "./lib/socket";
+import { connectSocket, disconnectSocket, initSocket } from "./lib/socket";
 
 // import pages
 import Login from "./pages/Auth/Login/Login";
 import Register from "./pages/Auth/Register/Register";
 import ProfilePage from "./pages/Profile/ProfilePage";
 import ChatPage from "./pages/Chat/ChatPage";
+import { useSocket } from "./hooks/useSocket";
 
 export const NotificationContext = createContext(null);
 
@@ -21,23 +22,20 @@ function App() {
   const [api, contextHolder] = notification.useNotification();
   const { accessToken } = useSelector((state) => state.auth);
 
+  // Khởi tạo và kết nối socket khi có accessToken
   useEffect(() => {
-    if (accessToken) connectSocket(accessToken); // Chỉ connect sau khi login
-
-    socket.on("connect", () => {
-      console.log("Socket connected:", socket.id);
-    });
-
-    socket.on("disconnect", (reason) => {
-      console.log("Socket disconnected:", reason);
-    });
-
-    return () => {
-      socket.off("connect");
-      socket.off("disconnect");
+    if (!accessToken) {
       disconnectSocket();
-    };
-  }, []);
+      return;
+    }
+
+    initSocket(accessToken);
+    connectSocket();
+
+    return () => disconnectSocket();
+  }, [accessToken]);
+
+  useSocket(); // Kết nối socket và lắng nghe sự kiện global
 
   return (
     <NotificationContext.Provider value={api}>
