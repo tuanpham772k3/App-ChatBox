@@ -1,7 +1,9 @@
 import React from "react";
 import { Archive, Menu, MessageCircle, MessageCircleMore, Store } from "lucide-react";
 import { logoutUser } from "@/features/auth/authSlice";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { clearMessages } from "@/features/chat/messagesSlice";
+import { disconnectSocket } from "@/lib/socket";
 
 const appIcons = [
   "../../assets/img/app1.jpg",
@@ -14,8 +16,22 @@ const appIcons = [
 
 const Sidebar = () => {
   const dispatch = useDispatch();
-  const handleLogout = () => {
-    dispatch(logoutUser());
+  const { conversations } = useSelector((state) => state.conversations);
+
+  const handleLogout = async () => {
+    try {
+      conversations.forEach((conversation) => {
+        emitEvent("leave_conversation", conversation._id);
+      }); // Rời tất cả các phòng conversation
+
+      await dispatch(logoutUser()).unwrap(); // Thực hiện logout
+
+      dispatch(clearMessages()); // Xóa tin nhắn khỏi store
+
+      disconnectSocket(); // Ngắt kết nối socket
+    } catch (error) {
+      console.error("Logout error:", err);
+    }
   };
 
   return (
