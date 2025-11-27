@@ -1,8 +1,9 @@
 import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { offEvent, onEvent } from "@/lib/socket";
+import { useDispatch } from "react-redux";
+import { emitEvent, offEvent, onEvent } from "@/lib/socket";
 import {
   userStartTyping,
+  userStatus,
   userStopTyping,
 } from "@/features/conversations/conversationsSlice";
 
@@ -10,11 +11,12 @@ export const useSocket = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    // Xử lý sự kiện global tại đây - hãy viết tiếp để hoàn th
-    const onStatus = (data) => {
-      dispatch(statusUser(data));
+    // Xử lý sự kiện thay đổi trạng thái người dùng
+    const onStatusChanged = (data) => {
+      dispatch(userStatus(data));
     };
 
+    // Xử lý sự kiện gõ phím
     const onTypingStart = (data) => {
       dispatch(userStartTyping(data));
     };
@@ -24,12 +26,12 @@ export const useSocket = () => {
     };
 
     // Lắng nghe sự kiện từ server
-    onEvent("user:status", onStatus);
+    onEvent("user_status_changed", onStatusChanged);
     onEvent("user_typing", onTypingStart);
     onEvent("user_stop_typing", onTypingStop);
 
     return () => {
-      offEvent("user:status", onStatus);
+      offEvent("user_status_changed", onStatusChanged);
       offEvent("user_typing", onTypingStart);
       offEvent("user_stop_typing", onTypingStop);
     };

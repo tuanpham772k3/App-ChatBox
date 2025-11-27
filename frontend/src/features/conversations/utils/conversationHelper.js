@@ -50,5 +50,5 @@ export const getDisplayInfo = (conversation, currentUserId) => {
 export const getTypingNames = (typingUsers, currentUserId) => {
   if (!typingUsers) return [];
 
-  return Object.values(typingUsers).filter(([name]) => name !== currentUserId);
+  return Object.values(typingUsers).filter(([userId]) => userId !== currentUserId);
 };

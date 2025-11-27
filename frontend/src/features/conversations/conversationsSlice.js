@@ -88,7 +88,7 @@ const conversationsSlice = createSlice({
     conversations: [],
     currentConversation: null,
     typingUsers: {},
-    statusUser: {},
+    statusUsers: {},
     loading: false,
     error: null,
   },
@@ -97,6 +97,15 @@ const conversationsSlice = createSlice({
     // Có thể dùng cho socket realtime
     addConversation: (state, action) => {
       state.conversations.unshift(action.payload);
+    },
+
+    // User status
+    userStatus: (state, action) => {
+      const { userId, status, lastSeenAt } = action.payload;
+      if (!state.statusUsers) {
+        state.statusUsers = {};
+      }
+      state.statusUsers[userId] = { status, lastSeenAt };
     },
 
     // User typing
@@ -179,6 +188,6 @@ const conversationsSlice = createSlice({
   },
 });
 
-export const { addConversation, userStartTyping, userStopTyping } =
+export const { addConversation, userStatus, userStartTyping, userStopTyping } =
   conversationsSlice.actions;
 export default conversationsSlice.reducer;

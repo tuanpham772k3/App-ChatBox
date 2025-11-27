@@ -54,6 +54,40 @@ export const chatSocket = (io) => {
       // Join user vào room của chính họ (để gửi thông báo cá nhân)
       socket.join(`user_${socket.userId}`);
 
+      /**
+       * ================================
+       *   BẮT ĐẦU: xử lý ONLINE tại đây
+       * ================================
+       */
+      const conversations = await Conversation.find({
+        participants: socket.userId,
+        isActive: true,
+      });
+
+      const payload = {
+        userId: socket.userId,
+        status: "online",
+        lastSeenAt: new Date(),
+      };
+
+      conversations.forEach((conversation) => {
+        io.to(`conversation_${conversation._id}`).emit("user_status_changed", payload);
+        console.log(
+          `Notified conversation ${conversation._id} that user ${socket.user.username} is online`
+        );
+      });
+
+      await User.findByIdAndUpdate(socket.userId, {
+        lastSeenAt: new Date(),
+        status: "online",
+      });
+      /**
+       * ===============================
+       *   KẾT THÚC: xử lý ONLINE
+       * ===============================
+       */
+
+      
       // Lắng nghe sự kiện join conversation
       socket.on("join_conversation", (conversationId) => {
         // Join vào room của conversation
@@ -116,29 +150,6 @@ export const chatSocket = (io) => {
           conversationId,
         });
       });
-
-      // Lắng nghe sự kiện user online/offline
-      socket.on("user_online", async () => {
-        // Cập nhật trạng thái online
-        await User.findByIdAndUpdate(socket.userId, {
-          lastSeenAt: new Date(),
-          status: "active",
-        });
-
-        // Thông báo cho tất cả conversation mà user tham gia
-        const conversations = await Conversation.find({
-          participants: socket.userId,
-          isActive: true,
-        });
-
-        conversations.forEach((conversation) => {
-          io.to(`conversation_${conversation._id}`).emit("user_status_changed", {
-            userId: socket.userId,
-            status: "online",
-            lastSeenAt: new Date(),
-          });
-        });
-      });
     } catch (error) {
       console.error("Error in socket connection:", error);
     }
@@ -151,7 +162,6 @@ export const chatSocket = (io) => {
         // Cập nhật trạng thái offline
         await User.findByIdAndUpdate(socket.userId, {
           lastSeenAt: new Date(),
-          status: "inactive",
         });
 
         // Xóa socketId khỏi session
@@ -172,6 +182,9 @@ export const chatSocket = (io) => {
             status: "offline",
             lastSeenAt: new Date(),
           });
+          console.log(
+            `Notified conversation ${conversation._id} that user ${socket.user.username} is offline`
+          );
         });
       } catch (error) {
         console.error("Error handling disconnect:", error);
