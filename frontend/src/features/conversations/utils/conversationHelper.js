@@ -1,4 +1,3 @@
-//
 /**
  * Xử lý dữ liệu hiển thị thông tin conversation
  * @param {Object} conversation - đối tượng conversation

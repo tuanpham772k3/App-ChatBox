@@ -77,7 +77,7 @@ const ConversationItem = ({
             {/* Phần nội dung chính (last message hoặc đang gõ) */}
             <span className="flex-1 min-w-0 truncate">
               {typingNames.length > 0 ? (
-                <span className="text-[var(--color-text-primary)] text-xs italic text-blue-500">
+                <span className="text-xs italic text-[var(--color-primary)]">
                   {typingNames.join(", ")} đang gõ...
                 </span>
               ) : (
