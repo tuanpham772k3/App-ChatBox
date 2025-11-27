@@ -3,7 +3,7 @@ import { Archive, Menu, MessageCircle, MessageCircleMore, Store } from "lucide-r
 import { logoutUser } from "@/features/auth/authSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { clearMessages } from "@/features/chat/messagesSlice";
-import { disconnectSocket } from "@/lib/socket";
+import { disconnectSocket, emitEvent } from "@/lib/socket";
 
 const appIcons = [
   "../../assets/img/app1.jpg",
@@ -30,7 +30,7 @@ const Sidebar = () => {
 
       disconnectSocket(); // Ngắt kết nối socket
     } catch (error) {
-      console.error("Logout error:", err);
+      console.error("Logout error:", error);
     }
   };
 
