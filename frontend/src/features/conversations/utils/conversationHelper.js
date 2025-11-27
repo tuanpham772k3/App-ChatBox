@@ -1,4 +1,10 @@
-// Xử lý dữ liệu hiển thị thông tin
+//
+/**
+ * Xử lý dữ liệu hiển thị thông tin conversation
+ * @param {Object} conversation - đối tượng conversation
+ * @param {string} currentUserId - id của chính mình
+ * @returns {Object|null} thông tin hiển thị của conversation
+ */
 export const getDisplayInfo = (conversation, currentUserId) => {
   if (!conversation) return null;
 
@@ -34,4 +40,16 @@ export const getDisplayInfo = (conversation, currentUserId) => {
     lastMsgContent,
     lastMsgTime,
   };
+};
+
+/**
+ * Lấy danh sách tên những user đang gõ (loại bỏ chính mình)
+ * @param {Object|null|undefined} typingUsers - map { userId: username }
+ * @param {string} currentUserId - id của chính mình
+ * @returns {string[]} danh sách username đang gõ
+ */
+export const getTypingNames = (typingUsers, currentUserId) => {
+  if (!typingUsers) return [];
+
+  return Object.values(typingUsers).filter(([name]) => name !== currentUserId);
 };

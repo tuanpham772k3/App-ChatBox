@@ -87,6 +87,8 @@ const conversationsSlice = createSlice({
   initialState: {
     conversations: [],
     currentConversation: null,
+    typingUsers: {},
+    statusUser: {},
     loading: false,
     error: null,
   },
@@ -95,6 +97,29 @@ const conversationsSlice = createSlice({
     // Có thể dùng cho socket realtime
     addConversation: (state, action) => {
       state.conversations.unshift(action.payload);
+    },
+
+    // User typing
+    userStartTyping: (state, action) => {
+      const { conversationId, userId, username } = action.payload;
+      if (!state.typingUsers) {
+        state.typingUsers = {};
+      }
+      if (!state.typingUsers[conversationId]) {
+        state.typingUsers[conversationId] = {};
+      }
+      state.typingUsers[conversationId][userId] = username;
+    },
+
+    // User stop typing
+    userStopTyping: (state, action) => {
+      const { conversationId, userId } = action.payload;
+      if (state.typingUsers[conversationId]) {
+        delete state.typingUsers[conversationId][userId];
+        if (Object.keys(state.typingUsers[conversationId]).length === 0) {
+          delete state.typingUsers[conversationId];
+        }
+      }
     },
   },
 
@@ -154,5 +179,6 @@ const conversationsSlice = createSlice({
   },
 });
 
-export const { addConversation } = conversationsSlice.actions;
+export const { addConversation, userStartTyping, userStopTyping } =
+  conversationsSlice.actions;
 export default conversationsSlice.reducer;

@@ -2,8 +2,19 @@ import React from "react";
 import { Ellipsis } from "lucide-react";
 import { useFloatingMenu } from "@/hooks/useFloatingMenu";
 import FloatingMenu from "@/components/ui/FloatingMenu";
+import { getTypingNames } from "../utils/conversationHelper";
 
-const ConversationItem = ({ isActive, display, onClick, onDeleteConversation }) => {
+const ConversationItem = ({
+  isActive,
+  display,
+  onClick,
+  onDeleteConversation,
+  typingUsers,
+  currentUserId,
+}) => {
+  // Lấy tên những người đang gõ trong cuộc trò chuyện này
+  const typingNames = getTypingNames(typingUsers, currentUserId);
+
   // Sử dụng hook useFloatingMenu
   const {
     open,
@@ -61,17 +72,31 @@ const ConversationItem = ({ isActive, display, onClick, onDeleteConversation }) 
           <h3 className="text-sm text-[var(--color-text-primary)] font-medium truncate">
             {display.displayName}
           </h3>
-          <p className="text-xs text-[var(--color-text-secondary)] line-clamp-1">
-            {display.lastMsgSender && (
-              <span className="font-medium text-[var(--color-text-primary)] mr-1">
-                {display.lastMsgSender}:
-              </span>
-            )}
-            {display.lastMsgContent}
+
+          <div className="flex items-center text-xs text-[var(--color-text-secondary)]">
+            {/* Phần nội dung chính (last message hoặc đang gõ) */}
+            <span className="flex-1 min-w-0 truncate">
+              {typingNames.length > 0 ? (
+                <span className="text-[var(--color-text-primary)] text-xs italic text-blue-500">
+                  {typingNames.join(", ")} đang gõ...
+                </span>
+              ) : (
+                <>
+                  {display.lastMsgSender && (
+                    <span className="font-medium text-[var(--color-text-primary)] mr-1">
+                      {display.lastMsgSender}:
+                    </span>
+                  )}
+                  <span className="last-msg">{display.lastMsgContent}</span>
+                </>
+              )}
+            </span>
+
+            {/* Thời gian */}
             <span className="ml-2 text-[var(--color-text-secondary)] whitespace-nowrap">
               {display.lastMsgTime}
             </span>
-          </p>
+          </div>
         </div>
 
         {/* Ellipsis */}

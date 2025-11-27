@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Gift, Image, Mic, Smile, Sticker, ThumbsUp } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { createNewMessage, editMessageById } from "../messagesSlice";
+import { emitEvent } from "@/lib/socket";
+import useDebounce from "@/hooks/useDebounce";
 
 const MessageInput = ({
   editMessageId,
@@ -11,7 +13,9 @@ const MessageInput = ({
   editOriginalContent,
 }) => {
   const { user } = useSelector((state) => state.auth);
-  const { currentConversation } = useSelector((state) => state.conversations);
+  const { currentConversation } = useSelector(
+    (state) => state.conversations
+  );
 
   const [text, setText] = useState("");
   const dispatch = useDispatch();
@@ -54,6 +58,37 @@ const MessageInput = ({
     }
   };
 
+  // Debounce emit typing_stop - 1s sau user ngừng gõ
+  const emitTypingStop = useDebounce(
+    () => {
+      if (currentConversation?._id) {
+        emitEvent("typing_stop", { conversationId: currentConversation._id });
+      }
+    },
+    1000,
+    [currentConversation?._id]
+  );
+
+  const handleOnchange = (e) => {
+    const value = e.target.value;
+
+    if (editMessageId) {
+      setEditContent(value);
+    } else {
+      setText(value);
+    }
+
+    if (!currentConversation._id) return;
+
+    // Emit typing_start ngay khi user gõ
+    emitEvent("typing_start", {
+      conversationId: currentConversation._id,
+    });
+
+    // Debounce typing_stop
+    emitTypingStop();
+  };
+
   return (
     <div className="flex items-center gap-3 px-2 py-3 border-t border-[var(--color-border)]">
       {/* Action btn */}
@@ -80,10 +115,7 @@ const MessageInput = ({
       <div className="flex-1 flex items-center justify-between bg-[var(--bg-gray)] rounded-full">
         <input
           value={editMessageId ? editContent : text}
-          onChange={(e) => {
-            if (editMessageId) setEditContent(e.target.value);
-            else setText(e.target.value);
-          }}
+          onChange={handleOnchange}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               editMessageId ? handleEdit() : handleSend();

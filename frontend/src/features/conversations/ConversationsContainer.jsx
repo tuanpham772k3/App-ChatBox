@@ -13,6 +13,7 @@ import ConversationItem from "./components/ConversationItem";
 
 import useUserSearch from "./hooks/useUserSearch";
 import { getDisplayInfo } from "./utils/conversationHelper";
+import { emitEvent } from "@/lib/socket";
 
 const ConversationContainer = ({ activeChat, onActiveChatId }) => {
   const dispatch = useDispatch();
@@ -29,9 +30,18 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
   } = useUserSearch();
 
   const { user } = useSelector((state) => state.auth);
-  const { conversations = [], draftConversation } = useSelector(
+  const { conversations = [], typingUsers = {} } = useSelector(
     (state) => state.conversations
   );
+
+  // Join tất cả các phòng conversation khi có danh sách conversation
+  useEffect(() => {
+    if (!conversations.length) return;
+
+    conversations.forEach((conversation) => {
+      emitEvent("join_conversation", conversation._id);
+    });
+  }, [conversations]);
 
   // Xử lý select conversation
   const handleSelectConversation = (conversationId) => {
@@ -113,6 +123,7 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
           <>
             {/* === CONVERSATION LIST === */}
             {conversations.map((conversation) => {
+              const typingInThisConversation = typingUsers[conversation._id] || null;
               return (
                 /** =========================
                  *     CONVERSATION ITEM
@@ -123,6 +134,8 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
                   display={getDisplayInfo(conversation, user.id)}
                   onClick={() => handleSelectConversation(conversation._id)}
                   onDeleteConversation={() => removeConversation(conversation._id)}
+                  typingUsers={typingInThisConversation}
+                  currentUserId={user.id}
                 />
               );
             })}

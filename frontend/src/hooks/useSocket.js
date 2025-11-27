@@ -1,28 +1,37 @@
 import { useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { offEvent, onEvent } from "@/lib/socket";
+import {
+  userStartTyping,
+  userStopTyping,
+} from "@/features/conversations/conversationsSlice";
 
 export const useSocket = () => {
-  const accessToken = useSelector((state) => state.auth.accessToken);
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    if (!accessToken) return;
-
-    // Xử lý sự kiện global
+    // Xử lý sự kiện global tại đây - hãy viết tiếp để hoàn th
     const onStatus = (data) => {
-      console.log("User status changed:", data);
+      dispatch(statusUser(data));
     };
-    const onTyping = (data) => {
-      console.log("User typing:", data);
+
+    const onTypingStart = (data) => {
+      dispatch(userStartTyping(data));
+    };
+
+    const onTypingStop = (data) => {
+      dispatch(userStopTyping(data));
     };
 
     // Lắng nghe sự kiện từ server
     onEvent("user:status", onStatus);
-    onEvent("user:typing", onTyping);
+    onEvent("user_typing", onTypingStart);
+    onEvent("user_stop_typing", onTypingStop);
 
     return () => {
       offEvent("user:status", onStatus);
-      offEvent("user:typing", onTyping);
+      offEvent("user_typing", onTypingStart);
+      offEvent("user_stop_typing", onTypingStop);
     };
-  }, [accessToken]);
+  }, []);
 };
