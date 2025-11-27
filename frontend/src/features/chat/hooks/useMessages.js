@@ -1,28 +1,16 @@
 import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { emitEvent, isSocketConnected, offEvent, onEvent } from "@/lib/socket";
 import { addIncomingMessage, updateMessage, removeMessage } from "../messagesSlice";
 
 export const useMessages = (conversationId) => {
   const dispatch = useDispatch();
-  const accessToken = useSelector((state) => state.auth.accessToken);
 
   useEffect(() => {
-    if (!conversationId || !accessToken) return;
-
-    // Join phòng cuộc trò chuyện
-    const joinRoom = () => emitEvent("join_conversation", conversationId);
-
-    if (isSocketConnected()) {
-      joinRoom();
-    } else {
-      onEvent("connect", joinRoom);
-    }
+    if (!conversationId) return;
 
     // Nhận tin nhắn mới
     const onNewMessage = (msg) => {
-      console.log(msg);
-
       if (msg.conversation === conversationId) {
         dispatch(addIncomingMessage(msg));
       }
@@ -46,15 +34,11 @@ export const useMessages = (conversationId) => {
     onEvent("message:delete", onDeleteMessage);
 
     return () => {
-      offEvent("connect", joinRoom);
-      if (isSocketConnected()) {
-        emitEvent("leave_conversation", conversationId);
-      }
       offEvent("message:new", onNewMessage);
       offEvent("message:edit", onEditMessage);
       offEvent("message:delete", onDeleteMessage);
     };
-  }, [conversationId, accessToken, dispatch]);
+  }, [conversationId]);
 
   return {};
 };
