@@ -30,9 +30,16 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
   } = useUserSearch();
 
   const { user } = useSelector((state) => state.auth);
-  const { conversations = [], typingUsers = {} } = useSelector(
-    (state) => state.conversations
-  );
+  const {
+    conversations = [],
+    typingUsers = {},
+    statusUsers = {},
+  } = useSelector((state) => state.conversations);
+
+  // Xử lý logic gọi api lấy danh sách hội thoại khi giao diện vừa bật lên
+  useEffect(() => {
+    dispatch(getConversations());
+  }, [dispatch]);
 
   // Join tất cả các phòng conversation khi có danh sách conversation
   useEffect(() => {
@@ -53,11 +60,6 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
 
     onActiveChatId(conversationId); // giữ logic hiển thị ChatWindow
   };
-
-  // Xử lý logic gọi api lấy danh sách hội thoại khi giao diện vừa bật lên
-  useEffect(() => {
-    dispatch(getConversations());
-  }, [dispatch]);
 
   // Khi click user trong search
   const handleSelectUserFromSearch = (user) => {
@@ -124,6 +126,11 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
             {/* === CONVERSATION LIST === */}
             {conversations.map((conversation) => {
               const typingInThisConversation = typingUsers[conversation._id] || null;
+
+              const displayInfo = getDisplayInfo(conversation, user.id);
+              const partnerId = displayInfo.partner?._id;
+              const partnerStatus = partnerId ? statusUsers[partnerId] : null;
+
               return (
                 /** =========================
                  *     CONVERSATION ITEM
@@ -131,11 +138,12 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
                 <ConversationItem
                   key={conversation._id}
                   isActive={activeChat === conversation._id}
-                  display={getDisplayInfo(conversation, user.id)}
+                  display={displayInfo}
                   onClick={() => handleSelectConversation(conversation._id)}
                   onDeleteConversation={() => removeConversation(conversation._id)}
                   typingUsers={typingInThisConversation}
                   currentUserId={user.id}
+                  partnerStatus={partnerStatus}
                 />
               );
             })}

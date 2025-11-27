@@ -11,6 +11,7 @@ const ConversationItem = ({
   onDeleteConversation,
   typingUsers,
   currentUserId,
+  partnerStatus,
 }) => {
   // Lấy tên những người đang gõ trong cuộc trò chuyện này
   const typingNames = getTypingNames(typingUsers, currentUserId);
@@ -61,7 +62,7 @@ const ConversationItem = ({
           alt={display.displayName}
           className="w-12 h-12 rounded-full object-cover"
         />
-        {display.partner?.status === "active" && (
+        {partnerStatus?.status === "online" && (
           <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[var(--bg-black)] rounded-full"></span>
         )}
       </div>

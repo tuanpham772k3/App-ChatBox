@@ -6,7 +6,9 @@ import Messages from "./Messages";
 import { useMessages } from "../hooks/useMessages";
 
 const ChatWindow = ({ activeChat, onBackToList }) => {
-  const { currentConversation } = useSelector((state) => state.conversations);
+  const { currentConversation, statusUsers = {} } = useSelector(
+    (state) => state.conversations
+  );
   const { user } = useSelector((state) => state.auth);
 
   //edit state
@@ -16,6 +18,7 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
 
   // Tìm đối tác trong cuộc trò chuyện hiện tại
   const partner = currentConversation?.participants?.find((p) => p._id !== user.id);
+  const partnerStatus = statusUsers[partner?._id]; // Lấy trạng thái của đối tác
 
   useMessages(activeChat); // Custom hook để quản lý tin nhắn
 
@@ -42,7 +45,7 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
               alt={partner?.username}
               className="w-10 h-10 rounded-full object-cover"
             />
-            {partner?.status === "active" && (
+            {partnerStatus?.status === "online" && (
               <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[var(--bg-primary)] rounded-full"></span>
             )}
           </div>
