@@ -18,17 +18,6 @@ import { emitEvent } from "@/lib/socket";
 const ConversationContainer = ({ activeChat, onActiveChatId }) => {
   const dispatch = useDispatch();
 
-  const {
-    keyword,
-    isFocused,
-    loading,
-    searchResults,
-    setIsFocused,
-    handleSearch,
-    handleFocus,
-    resetSearch,
-  } = useUserSearch();
-
   const { user } = useSelector((state) => state.auth);
   const {
     conversations = [],
@@ -61,18 +50,6 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
     onActiveChatId(conversationId); // giữ logic hiển thị ChatWindow
   };
 
-  // Khi click user trong search
-  const handleSelectUserFromSearch = (user) => {
-    setIsFocused(false);
-    const existingConv = conversations.find((conv) =>
-      conv.participants.some((p) => p._id === user._id)
-    );
-
-    if (existingConv) {
-      handleSelectConversation(existingConv._id); // hội thoại đã tồn tại
-    }
-  };
-
   // xóa conversation
   const removeConversation = (conversationId) => {
     dispatch(deleteConversation(conversationId));
@@ -87,43 +64,16 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
       <ConversationHeader />
 
       {/* SEARCH BAR */}
-      <ConversationSearch
-        keyword={keyword}
-        isFocused={isFocused}
-        onSearch={handleSearch}
-        onFocus={handleFocus}
-        onBack={resetSearch}
-      />
+      <ConversationSearch />
 
-      {/* LIST CONVERSATIONS OR SEARCH RESULT */}
+      {/* LIST CONVERSATIONS */}
       <div className="flex flex-col px-4 overflow-y-auto scrollbar-thin scrollbar-thumb-[var(--color-border)] scrollbar-track-transparent">
-        {isFocused ? (
-          /**------------------------------
-           * DISPLAY SEARCH RESULT
-           *----------------------------- */
-          <div className="text-[var(--color-text-secondary)]">
-            <p className="text-sm mb-2">Gợi ý liên hệ</p>
-            {loading && <p>Kết quả tìm kiếm cho {keyword}</p>}
-            {searchResults.map((user) => (
-              <div
-                key={user._id}
-                className="flex items-center gap-3 p-2 rounded-md cursor-pointer hover:bg-[var(--bg-hover-secondary)] transition"
-                onClick={() => handleSelectUserFromSearch(user)}
-              >
-                <img
-                  src={user.avatarUrl?.url || "/img/default-avatar.png"}
-                  alt={user.username}
-                  className="w-10 h-10 rounded-full"
-                />
-                <span className="text-[var(--color-text-primary)] font-medium">
-                  {user.username}
-                </span>
-              </div>
-            ))}
+        {conversations.length === 0 ? (
+          <div className="text-center text-gray-400 mt-8">
+            Không có cuộc trò chuyện nào
           </div>
         ) : (
           <>
-            {/* === CONVERSATION LIST === */}
             {conversations.map((conversation) => {
               const typingInThisConversation = typingUsers[conversation._id] || null;
 
@@ -132,9 +82,7 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
               const partnerStatus = partnerId ? statusUsers[partnerId] : null;
 
               return (
-                /** =========================
-                 *     CONVERSATION ITEM
-                 ============================*/
+                // CONVERSATION ITEM
                 <ConversationItem
                   key={conversation._id}
                   isActive={activeChat === conversation._id}

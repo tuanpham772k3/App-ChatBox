@@ -84,7 +84,7 @@ const ConversationItem = ({
               ) : (
                 <>
                   {display.lastMsgSender && (
-                    <span className="font-medium text-[var(--color-text-primary)] mr-1">
+                    <span className="text-[var(--color-text-secondary)] mr-1">
                       {display.lastMsgSender}:
                     </span>
                   )}
