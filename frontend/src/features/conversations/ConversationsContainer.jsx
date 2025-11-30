@@ -11,7 +11,6 @@ import ConversationHeader from "./components/ConversationHeader";
 import ConversationSearch from "./components/ConversationSearch";
 import ConversationItem from "./components/ConversationItem";
 
-import useUserSearch from "./hooks/useUserSearch";
 import { getDisplayInfo } from "./utils/conversationHelper";
 import { emitEvent } from "@/lib/socket";
 
