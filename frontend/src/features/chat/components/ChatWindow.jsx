@@ -6,9 +6,11 @@ import Messages from "./Messages";
 import { useMessages } from "../hooks/useMessages";
 
 const ChatWindow = ({ activeChat, onBackToList }) => {
-  const { currentConversation, statusUsers = {} } = useSelector(
-    (state) => state.conversations
-  );
+  const {
+    currentConversation,
+    statusUsers = {},
+    typingUsers = {},
+  } = useSelector((state) => state.conversations);
   const { user } = useSelector((state) => state.auth);
 
   //edit state
@@ -19,6 +21,12 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
   // Tìm đối tác trong cuộc trò chuyện hiện tại
   const partner = currentConversation?.participants?.find((p) => p._id !== user.id);
   const partnerStatus = statusUsers[partner?._id]; // Lấy trạng thái của đối tác
+
+  // typingUsers: { [conversationId]: { [userId]: username } }
+  const currentTypingMap = typingUsers[currentConversation?._id] || {};
+  const typingNames = Object.values(currentTypingMap).filter(
+    ([userId]) => userId !== user.id
+  );
 
   useMessages(activeChat); // Custom hook để quản lý tin nhắn
 
@@ -55,9 +63,16 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
             <h3 className="text-[var(--color-text-primary)] font-semibold">
               {partner?.username || "Người dùng ẩn danh"}
             </h3>
-            <span className="text-xs text-[var(--color-text-secondary)]">
-              {partner?.status === "active" ? "Đang hoạt động" : "Ngoại tuyến"}
-            </span>
+            {/* Trạng thái người dùng + đang gõ */}
+            {typingNames.length > 0 ? (
+              <span className="text-xs italic text-[var(--color-primary)]">
+                {typingNames.join(", ")} đang gõ...
+              </span>
+            ) : (
+              <span className="text-xs text-[var(--color-text-secondary)]">
+                {partnerStatus?.status === "online" ? "Đang hoạt động" : "Ngoại tuyến"}
+              </span>
+            )}
           </div>
         </div>
 
