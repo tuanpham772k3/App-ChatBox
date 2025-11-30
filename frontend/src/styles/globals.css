@@ -2,70 +2,70 @@
 @import url("https://fonts.googleapis.com/css2?family=MuseoModerno:ital,wght@0,100..900;1,100..900&display=swap");
 
 :root {
-    /* Dark theme*/
-    --bg-primary: #242526;
-    --bg-black: #1f1f1f;
-    --bg-gray: #57575c;
-    /* Text-icon color */
-    --color-text-primary: #ffffff;
-    --color-text-secondary: #b0b3b8;
-    /* Border */
-    --color-border: #7e8184;
-    /* Hover */
-    --bg-hover-primary: #777a7e;
-    --bg-hover-secondary: #3a3b3c;
-    /* End dark theme */
+  /* Dark theme*/
+  --bg-primary: #242526;
+  --bg-black: #1f1f1f;
+  --bg-gray: #57575c;
+  /* Text-icon color */
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #b0b3b8;
+  /* Border */
+  --color-border: #4b4b4b;
+  /* Hover */
+  --bg-hover-primary: #777a7e;
+  --bg-hover-secondary: #3a3b3c;
+  /* End dark theme */
 
-    /* Accent */
-    --color-primary: #2e89ff;
+  /* Accent */
+  --color-primary: #2e89ff;
 
-    /* Font */
-    --font-primary: "MuseoModerno", sans-serif; /* body */
-    --font-secondary: "Segoe UI", sans-serif; /* description, content */
-    --font-product: "Product Sans", sans-serif; /* Header logo text */
+  /* Font */
+  --font-primary: "MuseoModerno", sans-serif; /* body */
+  --font-secondary: "Segoe UI", sans-serif; /* description, content */
+  --font-product: "Product Sans", sans-serif; /* Header logo text */
 }
 
 /* Reset/Normalize CSS */
 html {
-    margin: 0;
-    padding: 0;
-    line-height: 1.5;
-    box-sizing: border-box;
-    scroll-behavior: smooth;
-    font-family: "MuseoModerno", sans-serif;
+  margin: 0;
+  padding: 0;
+  line-height: 1.5;
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+  font-family: "Segoe UI", sans-serif;
 }
 
 *,
 *:before,
 *:after {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 input,
 textarea,
 select,
 button {
-    outline: none;
-    font: inherit;
-    border: none;
+  outline: none;
+  font: inherit;
+  border: none;
 }
 
 input {
-    line-height: normal;
+  line-height: normal;
 }
 
 label,
 button {
-    cursor: pointer;
-    user-select: none !important;
+  cursor: pointer;
+  user-select: none !important;
 }
 
 ul {
-    list-style: none;
+  list-style: none;
 }
 
 a {
-    text-decoration: none;
+  text-decoration: none;
 }
 
 img,
@@ -73,7 +73,12 @@ picture,
 video,
 canvas,
 svg {
-    display: block;
-    max-width: 100%;
-    user-select: none !important;
+  display: block;
+  max-width: 100%;
+  user-select: none !important;
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;              /* Firefox */
+  scrollbar-color: #555 transparent;  /* thumb màu #555, track trong suốt */
 }
