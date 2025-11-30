@@ -1,7 +1,7 @@
 import React from "react";
 import { Ellipsis } from "lucide-react";
 import { useFloatingMenu } from "@/hooks/useFloatingMenu";
-import FloatingMenu from "@/components/ui/FloatingMenu";
+import FloatingMenu from "@/components/ui/popover/FloatingMenu";
 import { getTypingNames } from "../utils/conversationHelper";
 
 const ConversationItem = ({
