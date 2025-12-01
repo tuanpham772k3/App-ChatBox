@@ -10,7 +10,7 @@ import {
 const router = express.Router();
 
 // Tạo conversation 1-1 mới
-router.post("/", verifyToken, createConversation);
+router.post("/private", verifyToken, createConversation);
 
 // Lấy danh sách conversation của user hiện tại
 router.get("/", verifyToken, getConversations);

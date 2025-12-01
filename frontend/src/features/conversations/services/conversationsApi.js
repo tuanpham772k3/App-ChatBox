@@ -3,11 +3,11 @@ import instance from "@/lib/axios";
 const conversationsApi = {
   /**
    * Tạo hội thoại 1-1
-   * POST /conversations
+   * POST /conversations/private
    * @param {string} participantId - id của người muốn chat cùng
    */
   createConversationApi: async (participantId) => {
-    const res = await instance.post("/conversations", { participantId });
+    const res = await instance.post("/conversations/private", { participantId });
     return res.data;
   },
 
