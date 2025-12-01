@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import conversationsApi from "./services/conversationsApi";
+import conversationApi from "./services/conversationApi";
 
 /* =============================
  *  Thunk actions
@@ -10,7 +10,7 @@ export const createConversation = createAsyncThunk(
   "conversations/create",
   async (participantId, { rejectWithValue }) => {
     try {
-      const res = await conversationsApi.createConversationApi(participantId);
+      const res = await conversationApi.createConversationApi(participantId);
       return res.data; // backend trả về { conversation, isNew }
     } catch (err) {
       const data = err.response?.data;
@@ -28,7 +28,7 @@ export const getConversations = createAsyncThunk(
   "conversations/getAll",
   async (_, { rejectWithValue }) => {
     try {
-      const res = await conversationsApi.getConversationsApi();
+      const res = await conversationApi.getConversationsApi();
       return res.data; // backend trả về danh sách conversations
     } catch (err) {
       const data = err.response?.data;
@@ -48,7 +48,7 @@ export const getConversationById = createAsyncThunk(
   "conversations/getById",
   async (conversationId, { rejectWithValue }) => {
     try {
-      const res = await conversationsApi.getConversationByIdApi(conversationId);
+      const res = await conversationApi.getConversationByIdApi(conversationId);
       return res.data;
     } catch (err) {
       const data = err.response?.data;
@@ -67,7 +67,7 @@ export const deleteConversation = createAsyncThunk(
   "conversations/delete",
   async (conversationId, { rejectWithValue }) => {
     try {
-      const res = await conversationsApi.deleteConversationApi(conversationId);
+      const res = await conversationApi.deleteConversationApi(conversationId);
       return { conversationId };
     } catch (err) {
       const data = err.response?.data;

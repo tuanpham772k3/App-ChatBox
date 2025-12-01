@@ -1,6 +1,6 @@
 import instance from "@/lib/axios";
 
-const conversationsApi = {
+const conversationApi = {
   /**
    * Tạo hội thoại 1-1
    * POST /conversations/private
@@ -39,4 +39,4 @@ const conversationsApi = {
   },
 };
 
-export default conversationsApi;
+export default conversationApi;
