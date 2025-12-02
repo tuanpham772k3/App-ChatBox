@@ -3,6 +3,9 @@ import {
   getUserConversations,
   getConversationById,
   deleteConversation,
+  createGroupConversationService,
+  addMemberToGroupService,
+  removeMemberFromGroupService,
 } from "../services/conversation.service.js";
 
 /**
@@ -12,7 +15,7 @@ import {
 
 /**
  * Tạo conversation 1-1
- * POST /api/conversations
+ * POST /api/conversations/private
  *
  * Flow:
  * 1. Nhận request từ client với participantId
@@ -83,6 +86,223 @@ export const createConversation = async (req, res) => {
     }
 
     // Lỗi server
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      idCode: 5,
+    });
+  }
+};
+
+/**
+ * Tạo group conversation
+ * POST /api/conversations/group
+ *
+ * Flow:
+ * 1. Nhận request từ client với participantId
+ * 2. Lấy userId từ JWT token (đã được middleware xác thực)
+ * 3. Gọi service tạo conversation
+ * 4. Trả về response cho client
+ */
+export const createGroupConversation = async (req, res) => {
+  try {
+    // Lấy userId từ JWT token
+    const { userId } = req.user;
+
+    // Lấy request body
+    const { name, members = [], avatar = null } = req.body;
+
+    // Validate base
+    if (!name || typeof name !== "string" || name.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Group name is required",
+        idCode: 1,
+      });
+    }
+
+    if (!Array.isArray(members)) {
+      return res.status(400).json({
+        success: false,
+        message: "Member must be an array of user IDs",
+        idCode: 2,
+      });
+    }
+
+    if (members.length < 2) {
+      return res.status(400).json({
+        success: false,
+        message: "A group needs at least 3 members",
+        idCode: 3,
+      });
+    }
+
+    const result = await createGroupConversationService(userId, name, members, avatar);
+
+    // Trả kết quả
+    return res.status(201).json({
+      success: true,
+      message: result.message,
+      idCode: 0,
+      data: result.conversation,
+    });
+  } catch (error) {
+    console.error("Error in createGroupConversation controller:", error);
+
+    if (
+      error.message === "Creator not found" ||
+      error.message === "Some members not found"
+    ) {
+      return res.status(404).json({
+        success: false,
+        message: error.message,
+        idCode: 4,
+      });
+    }
+
+    if (error.message === "A group needs at least 3 members") {
+      return res.status(400).json({
+        success: false,
+        message: "A group needs at least 3 members",
+        idCode: 5,
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      idCode: 6,
+    });
+  }
+};
+
+/**
+ * Thêm thành viên vào group
+ * PUT /api/conversations/:conversationId/members
+ */
+export const addMemberToGroup = async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const { conversationId } = req.params;
+    const { memberId } = req.body;
+
+    // Validate base
+    if (
+      !conversationId.match(/^[0-9a-fA-F]{24}$/) ||
+      !memberId?.match(/^[0-9a-fA-F]{24}$/)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid ID format",
+        idCode: 1,
+      });
+    }
+
+    const conversation = await addMemberToGroupService(conversationId, userId, memberId);
+
+    return res.status(200).json({
+      success: true,
+      message: "Member added successfully",
+      idCode: 0,
+      data: conversation,
+    });
+  } catch (error) {
+    console.error("Error in addMemberToGroup controller:", error);
+
+    if (error.message === "Group conversation not found") {
+      return res.status(404).json({
+        success: false,
+        message: "Group conversation not found",
+        idCode: 2,
+      });
+    }
+
+    if (error.message === "Permission denied") {
+      return res.status(403).json({
+        success: false,
+        message: "Permission denied",
+        idCode: 3,
+      });
+    }
+
+    if (error.message === "User not found") {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+        idCode: 4,
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      idCode: 5,
+    });
+  }
+};
+
+/**
+ * Xóa thành viên khỏi group
+ * DELETE /api/conversations/:conversationId/members/:memberId
+ */
+export const removeMemberFromGroup = async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const { conversationId, memberId } = req.params;
+
+    // Validate base
+    if (
+      !conversationId.match(/^[0-9a-fA-F]{24}$/) ||
+      !memberId?.match(/^[0-9a-fA-F]{24}$/)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid ID format",
+        idCode: 1,
+      });
+    }
+
+    // Gọi service
+    const conversation = await removeMemberFromGroupService(
+      conversationId,
+      userId,
+      memberId
+    );
+
+    // Trả về kết quả
+    return res.status(200).json({
+      success: true,
+      message: "Member removed successfully",
+      idCode: 0,
+      data: conversation,
+    });
+  } catch (error) {
+    console.error("Error in removeMemberFromGroup controller:", error);
+
+    if (error.message === "Group conversation not found") {
+      return res.status(404).json({
+        success: false,
+        message: "Group conversation not found",
+        idCode: 2,
+      });
+    }
+
+    if (error.message === "Permission denied") {
+      return res.status(403).json({
+        success: false,
+        message: "Permission denied",
+        idCode: 3,
+      });
+    }
+
+    if (error.message === "Group must have at least 2 members") {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+        idCode: 4,
+      });
+    }
+
     return res.status(500).json({
       success: false,
       message: "Internal server error",

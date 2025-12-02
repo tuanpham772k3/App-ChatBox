@@ -5,12 +5,24 @@ import {
   getConversations,
   getConversation,
   deleteConversationById,
+  createGroupConversation,
+  addMemberToGroup,
+  removeMemberFromGroup,
 } from "../controllers/conversation.controller.js";
 
 const router = express.Router();
 
 // Tạo conversation 1-1 mới
 router.post("/private", verifyToken, createConversation);
+
+// Tạo conversation group
+router.post("/group", verifyToken, createGroupConversation);
+
+// Thêm thành viên vào group
+router.put("/:conversationId/members", verifyToken, addMemberToGroup);
+
+// Xóa thành viên khỏi group
+router.delete("/:conversationId/members/:memberId", verifyToken, removeMemberFromGroup);
 
 // Lấy danh sách conversation của user hiện tại
 router.get("/", verifyToken, getConversations);
