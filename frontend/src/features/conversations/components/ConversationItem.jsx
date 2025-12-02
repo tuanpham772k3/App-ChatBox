@@ -100,7 +100,14 @@ const ConversationItem = ({
           </div>
         </div>
 
-        {/* Ellipsis */}
+        {/* Unread badge + Ellipsis */}
+        <div className="flex items-center gap-2 mr-2">
+          {display.unreadCount > 0 && (
+            <span className="min-w-[20px] h-5 px-1 inline-flex items-center justify-center rounded-full bg-[var(--color-primary)] text-[10px] font-semibold text-white">
+              {display.unreadCount > 99 ? "99+" : display.unreadCount}
+            </span>
+          )}
+
         <button
           ref={refs.setReference}
           {...getReferenceProps({
@@ -109,12 +116,13 @@ const ConversationItem = ({
             },
           })}
           type="button"
-          className={`p-1 mr-6 rounded-full  ${
+          className={`p-1 rounded-full  ${
             open ? "opacity-100" : "opacity-0 group-hover:opacity-100"
           } hover:bg-[var(--bg-hover-primary)] transition`}
         >
           <Ellipsis className="w-5 h-5" color="var(--color-text-secondary)" />
         </button>
+        </div>
 
         {/* Menu */}
         <FloatingMenu

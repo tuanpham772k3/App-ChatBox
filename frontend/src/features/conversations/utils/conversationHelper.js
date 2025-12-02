@@ -30,6 +30,9 @@ export const getDisplayInfo = (conversation, currentUserId) => {
       })
     : "";
 
+  // Số tin nhắn chưa đọc (backend đã tính sẵn cho user hiện tại)
+  const unreadCount = conversation.unreadCount || 0;
+
   return {
     isGroup,
     partner,
@@ -38,6 +41,7 @@ export const getDisplayInfo = (conversation, currentUserId) => {
     lastMsgSender,
     lastMsgContent,
     lastMsgTime,
+    unreadCount,
   };
 };
 
