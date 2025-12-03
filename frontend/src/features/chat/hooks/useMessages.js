@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { offEvent, onEvent } from "@/lib/socket";
+import { offEvent, onEvent } from "@/shared/lib/socket";
 import { addIncomingMessage, updateMessage, removeMessage } from "../messagesSlice";
 
 export const useMessages = (conversationId) => {

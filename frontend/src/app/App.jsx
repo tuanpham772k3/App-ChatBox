@@ -2,14 +2,14 @@ import { createContext, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { notification } from "antd";
 import { useSelector } from "react-redux";
-import { connectSocket, disconnectSocket, initSocket } from "./lib/socket";
+import { connectSocket, disconnectSocket, initSocket } from "../shared/lib/socket";
+import Login from "@/pages/Auth/Login/Login";
+import Register from "@/pages/Auth/Register/Register";
+import ProfilePage from "@/pages/Profile/ProfilePage";
+import ChatPage from "@/pages/Chat/ChatPage";
+import { useSocket } from "@/shared/hooks/useSocket";
 
 // import pages
-import Login from "./pages/Auth/Login/Login";
-import Register from "./pages/Auth/Register/Register";
-import ProfilePage from "./pages/Profile/ProfilePage";
-import ChatPage from "./pages/Chat/ChatPage";
-import { useSocket } from "./hooks/useSocket";
 
 export const NotificationContext = createContext(null);
 

@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { Gift, Image, Mic, Smile, Sticker, ThumbsUp } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { createNewMessage, editMessageById } from "../messagesSlice";
-import { emitEvent } from "@/lib/socket";
-import useDebounce from "@/hooks/useDebounce";
+import { emitEvent } from "@/shared/lib/socket";
+import useDebounce from "@/shared/hooks/useDebounce";
 
 const MessageInput = ({
   editMessageId,
@@ -13,9 +13,7 @@ const MessageInput = ({
   editOriginalContent,
 }) => {
   const { user } = useSelector((state) => state.auth);
-  const { currentConversation } = useSelector(
-    (state) => state.conversations
-  );
+  const { currentConversation } = useSelector((state) => state.conversations);
 
   const [text, setText] = useState("");
   const dispatch = useDispatch();

@@ -2,11 +2,12 @@ import React, { useEffect, useState } from "react";
 import { Button } from "antd";
 import { Search } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import BaseModal from "@/components/ui/modal/BaseModal";
-import FriendItem from "@/components/ui/user/FriendItem";
+import BaseModal from "@/shared/components/ui/modal/BaseModal";
+import FriendItem from "@/shared/components/ui/user/FriendItem";
 import { searchUsers } from "@/features/user/userSlice";
 import { createConversation } from "../../conversationsSlice";
-import { useNotification } from "@/hooks/useNotification";
+import { useNotification } from "@/shared/hooks/useNotification";
+// import { useNotification } from "@/hooks/useNotification";
 
 const ModalSearchUser = ({ isModalOpen, handleCancel }) => {
   const dispatch = useDispatch();

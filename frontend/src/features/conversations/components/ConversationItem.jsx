@@ -1,7 +1,7 @@
 import React from "react";
 import { Ellipsis } from "lucide-react";
-import { useFloatingMenu } from "@/hooks/useFloatingMenu";
-import FloatingMenu from "@/components/ui/popover/FloatingMenu";
+import { useFloatingMenu } from "@/shared/hooks/useFloatingMenu";
+import FloatingMenu from "@/shared/components/ui/popover/FloatingMenu";
 import { getTypingNames } from "../utils/conversationHelper";
 
 const ConversationItem = ({
@@ -108,20 +108,20 @@ const ConversationItem = ({
             </span>
           )}
 
-        <button
-          ref={refs.setReference}
-          {...getReferenceProps({
-            onClick(e) {
-              e.stopPropagation();
-            },
-          })}
-          type="button"
-          className={`p-1 rounded-full  ${
-            open ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-          } hover:bg-[var(--bg-hover-primary)] transition`}
-        >
-          <Ellipsis className="w-5 h-5" color="var(--color-text-secondary)" />
-        </button>
+          <button
+            ref={refs.setReference}
+            {...getReferenceProps({
+              onClick(e) {
+                e.stopPropagation();
+              },
+            })}
+            type="button"
+            className={`p-1 rounded-full  ${
+              open ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+            } hover:bg-[var(--bg-hover-primary)] transition`}
+          >
+            <Ellipsis className="w-5 h-5" color="var(--color-text-secondary)" />
+          </button>
         </div>
 
         {/* Menu */}

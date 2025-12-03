@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Sidebar from "@/components/layout/Sidebar";
+import Sidebar from "@/shared/components/layout/Sidebar";
 import ChatWindow from "@/features/chat/components/ChatWindow";
 import ConversationContainer from "@/features/conversations/ConversationsContainer";
 

@@ -1,4 +1,4 @@
-import socket from "@/lib/socket";
+import socket from "@/shared/lib/socket";
 import { useEffect, useState } from "react";
 
 export const useConversations = () => {

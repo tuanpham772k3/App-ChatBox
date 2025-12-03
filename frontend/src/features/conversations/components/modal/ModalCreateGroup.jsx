@@ -3,10 +3,10 @@ import { Button } from "antd";
 import { Camera, Search } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { searchUsers } from "@/features/user/userSlice";
-import { useNotification } from "@/hooks/useNotification";
 import { createConversation } from "@/features/conversations/conversationsSlice";
-import BaseModal from "@/components/ui/modal/BaseModal";
-import FriendItem from "@/components/ui/user/FriendItem";
+import BaseModal from "@/shared/components/ui/modal/BaseModal";
+import FriendItem from "@/shared/components/ui/user/FriendItem";
+import { useNotification } from "@/shared/hooks/useNotification";
 
 // Component chính
 const ModalCreateGroup = ({ isModalOpen, handleCancel }) => {

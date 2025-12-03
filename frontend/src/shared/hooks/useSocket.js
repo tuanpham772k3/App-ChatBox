@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { emitEvent, offEvent, onEvent } from "@/lib/socket";
+import { emitEvent, offEvent, onEvent } from "@/shared/lib/socket";
 import {
   userStartTyping,
   userStatus,

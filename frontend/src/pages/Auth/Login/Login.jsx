@@ -3,7 +3,7 @@ import Title from "antd/es/typography/Title";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from "@/features/auth/authSlice";
-import { useNotification } from "@/hooks/useNotification";
+import { useNotification } from "@/shared/hooks/useNotification";
 
 const Login = () => {
   const dispatch = useDispatch();

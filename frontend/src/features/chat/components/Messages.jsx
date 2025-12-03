@@ -1,15 +1,10 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Lock } from "lucide-react";
-import { showTimestamp } from "@/lib/utils";
+import { showTimestamp } from "@/shared/lib/utils";
 import { deleteMessageById } from "../messagesSlice";
 import MessageItem from "./MessageItem";
 
-const Messages = ({
-  setEditContent,
-  setEditMessageId,
-  setEditOriginalContent,
-}) => {
+const Messages = ({ setEditContent, setEditMessageId, setEditOriginalContent }) => {
   const { messages, loading } = useSelector((state) => state.messages);
   const { user } = useSelector((state) => state.auth);
 

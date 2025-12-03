@@ -3,8 +3,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { Card, Form, Input, Button, Upload } from "antd";
 import { User, Phone, Home, FileText } from "lucide-react";
 import { AiOutlineCloudUpload } from "react-icons/ai";
-import { fetchProfile, editProfile } from "@/features/user/userSlice";
-import { useNotification } from "@/hooks/useNotification";
+import { useNotification } from "@/shared/hooks/useNotification";
+import { editProfile, fetchProfile } from "@/features/user/userSlice";
 
 const { TextArea } = Input;
 

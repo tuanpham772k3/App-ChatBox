@@ -1,7 +1,7 @@
 import React from "react";
 import { EllipsisVertical } from "lucide-react";
-import { useFloatingMenu } from "@/hooks/useFloatingMenu";
-import FloatingMenu from "@/components/ui/popover/FloatingMenu";
+import FloatingMenu from "@/shared/components/ui/popover/FloatingMenu";
+import { useFloatingMenu } from "@/shared/hooks/useFloatingMenu";
 
 const MessageItem = ({ msg, isMine, showTime, onDeleteMessage, onEditClick }) => {
   // Sử dụng hook useFloatingMenu

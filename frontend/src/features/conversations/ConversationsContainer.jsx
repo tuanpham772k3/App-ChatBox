@@ -12,7 +12,7 @@ import ConversationSearch from "./components/ConversationSearch";
 import ConversationItem from "./components/ConversationItem";
 
 import { getDisplayInfo } from "./utils/conversationHelper";
-import { emitEvent } from "@/lib/socket";
+import { emitEvent } from "@/shared/lib/socket";
 
 const ConversationContainer = ({ activeChat, onActiveChatId }) => {
   const dispatch = useDispatch();
