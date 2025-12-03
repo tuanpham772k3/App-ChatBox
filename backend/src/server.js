@@ -4,12 +4,12 @@ import cors from "cors";
 import http from "http"; //module core có sẵn của Node.js, để tạo HTTP server
 import cookieParser from "cookie-parser";
 import { connectDB } from "./config/db.js";
-import { chatSocket } from "./sockets/chat.socket.js";
-import authRoutes from "./routes/auth.route.js";
-import userRoutes from "./routes/user.route.js";
-import conversationRoutes from "./routes/conversation.route.js";
-import messageRoutes from "./routes/message.route.js";
+import authRoutes from "./modules/auth/auth.route.js";
+import userRoutes from "./modules/users/user.route.js";
+import conversationRoutes from "./modules/conversations/conversation.route.js";
+import messageRoutes from "./modules/messages/message.route.js";
 import { initSocket } from "./socket.js";
+import { chatSocket } from "./sockets/chat/chat.socket.js";
 
 connectDB();
 

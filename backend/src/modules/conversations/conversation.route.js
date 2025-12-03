@@ -1,5 +1,4 @@
 import express from "express";
-import { verifyToken } from "../controllers/middleware.controller.js";
 import {
   createConversation,
   getConversations,
@@ -8,7 +7,8 @@ import {
   createGroupConversation,
   addMemberToGroup,
   removeMemberFromGroup,
-} from "../controllers/conversation.controller.js";
+} from "./conversation.controller.js";
+import { verifyToken } from "../../middlewares/middleware.controller.js";
 
 const router = express.Router();
 
@@ -34,4 +34,3 @@ router.get("/:conversationId", verifyToken, getConversation);
 router.delete("/:conversationId", verifyToken, deleteConversationById);
 
 export default router;
-

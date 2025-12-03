@@ -1,9 +1,9 @@
 import jwt from "jsonwebtoken";
-import User from "../models/user.model.js";
-import Session from "../models/session.model.js";
-import Message from "../models/message.model.js";
-import Conversation from "../models/conversation.model.js";
-import { markMessageAsRead } from "../services/message.service.js";
+import User from "../../modules/users/user.model.js";
+import Session from "../../modules/auth/session.model.js";
+import Message from "../../modules/messages/message.model.js";
+import Conversation from "../../modules/conversations/conversation.model.js";
+import { markMessageAsRead } from "../../modules/messages/message.service.js";
 
 /**
  * Socket.IO handler cho chat realtime
@@ -87,7 +87,6 @@ export const chatSocket = (io) => {
        * ===============================
        */
 
-      
       // Lắng nghe sự kiện join conversation
       socket.on("join_conversation", (conversationId) => {
         // Join vào room của conversation

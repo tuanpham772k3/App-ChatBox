@@ -1,4 +1,4 @@
-import User from "../models/user.model.js";
+import User from "./user.model.js";
 
 /**
  * @param {string} userId - ID của người dùng hiện tại

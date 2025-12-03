@@ -1,12 +1,12 @@
 import express from "express";
-import { verifyToken } from "../controllers/middleware.controller.js";
+import { verifyToken } from "../../middlewares/middleware.controller.js";
 import {
   createNewMessage,
   getConversationMessages,
   markAsRead,
   deleteMessageById,
-  editMessageById
-} from "../controllers/message.controller.js";
+  editMessageById,
+} from "./message.controller.js";
 
 const router = express.Router();
 
@@ -26,4 +26,3 @@ router.delete("/:messageId", verifyToken, deleteMessageById);
 router.put("/:messageId", verifyToken, editMessageById);
 
 export default router;
-

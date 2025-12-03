@@ -1,11 +1,7 @@
 import express from "express";
-import { verifyToken } from "../controllers/middleware.controller.js";
-import {
-  getProfile,
-  searchUsers,
-  updateProfile,
-} from "../controllers/user.controller.js";
-import { upload } from "../config/multer.js";
+import { verifyToken } from "../../middlewares/middleware.controller.js";
+import { upload } from "../../config/multer.js";
+import { getProfile, searchUsers, updateProfile } from "./user.controller.js";
 
 const router = express.Router();
 

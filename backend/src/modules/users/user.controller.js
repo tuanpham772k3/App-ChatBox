@@ -1,6 +1,6 @@
-import cloudinary from "../config/cloudinary.js";
-import User from "../models/user.model.js";
-import { searchUserService } from "../services/user.service.js";
+import cloudinary from "../../config/cloudinary.js";
+import User from "./user.model.js";
+import { searchUserService } from "./user.service.js";
 
 // lấy thông tin người dùng
 export const getProfile = async (req, res) => {

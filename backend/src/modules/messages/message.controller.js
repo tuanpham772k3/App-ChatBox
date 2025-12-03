@@ -4,8 +4,8 @@ import {
   editMessage,
   getMessages,
   markMessageAsRead,
-} from "../services/message.service.js";
-import { getSocket } from "../socket.js";
+} from "./message.service.js";
+import { getSocket } from "../../socket.js";
 
 /**Tạo tin nhắn mới
  * POST /api/messages
@@ -289,7 +289,10 @@ export const deleteMessageById = async (req, res) => {
     // Emit message mới tới client
     try {
       let io = getSocket();
-      io.to(`conversation_${result.conversationId}`).emit("message:delete", result.messageId);
+      io.to(`conversation_${result.conversationId}`).emit(
+        "message:delete",
+        result.messageId
+      );
       console.log(
         `User ${userId} deleted message ${messageId} to conversation ${conversationObjId}`
       );

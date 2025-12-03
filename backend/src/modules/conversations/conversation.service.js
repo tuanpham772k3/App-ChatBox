@@ -1,6 +1,6 @@
-import Conversation from "../models/conversation.model.js";
-import User from "../models/user.model.js";
-import Message from "../models/message.model.js";
+import Conversation from "./conversation.model.js";
+import User from "../users/user.model.js";
+import Message from "../messages/message.model.js";
 
 /**
  * Service layer xử lý logic nghiệp vụ cho Conversation

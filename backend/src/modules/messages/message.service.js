@@ -1,6 +1,6 @@
-import User from "../models/user.model.js";
-import Message from "../models/message.model.js";
-import Conversation from "../models/conversation.model.js";
+import User from "../users/user.model.js";
+import Message from "./message.model.js";
+import Conversation from "../conversations/conversation.model.js";
 
 /**Tạo tin nhắn mới
  * @param {string} conversationId - ID của conversation

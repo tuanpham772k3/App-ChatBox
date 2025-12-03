@@ -6,7 +6,7 @@ import {
   createGroupConversationService,
   addMemberToGroupService,
   removeMemberFromGroupService,
-} from "../services/conversation.service.js";
+} from "./conversation.service.js";
 
 /**
  * Controller layer xử lý HTTP request/response cho Conversation
