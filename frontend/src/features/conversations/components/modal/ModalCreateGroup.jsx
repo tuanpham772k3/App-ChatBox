@@ -51,10 +51,18 @@ const ModalCreateGroup = ({ isModalOpen, handleCancel }) => {
   // Xử lý khi nhấn nút "Tạo nhóm"
   const handleCreateGroup = async () => {
     try {
-      if (selectedFriends.length === 0) {
+      if (selectedFriends.length < 2) {
         notification.warning({
           message: "No members selected",
-          description: "Please select at least one member to create a group.",
+          description: "Please select at least two members to create a group.",
+        });
+        return;
+      }
+
+      if (groupName === "") {
+        notification.warning({
+          message: "Group name is empty",
+          description: "Please enter a group name to create a group",
         });
         return;
       }
@@ -68,6 +76,7 @@ const ModalCreateGroup = ({ isModalOpen, handleCancel }) => {
       setSelectedFriends([]);
       setGroupName("");
       setSearchText("");
+      handleCancel();
     } catch (error) {
       console.log("Error handle create conversation", error);
     }

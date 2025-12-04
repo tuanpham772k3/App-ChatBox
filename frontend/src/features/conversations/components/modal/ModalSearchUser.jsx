@@ -7,7 +7,6 @@ import FriendItem from "@/shared/components/ui/user/FriendItem";
 import { searchUsers } from "@/features/user/userSlice";
 import { createConversation } from "../../conversationsSlice";
 import { useNotification } from "@/shared/hooks/useNotification";
-// import { useNotification } from "@/hooks/useNotification";
 
 const ModalSearchUser = ({ isModalOpen, handleCancel }) => {
   const dispatch = useDispatch();
@@ -55,8 +54,9 @@ const ModalSearchUser = ({ isModalOpen, handleCancel }) => {
       await dispatch(createConversation(selectedFriend)).unwrap();
 
       // Reset state
-      setSelectedFriend([]);
+      setSelectedFriend("");
       setSearchText("");
+      handleCancel();
     } catch (error) {
       console.log("Error handle create conversation", error);
     }
