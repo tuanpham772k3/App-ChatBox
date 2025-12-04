@@ -173,6 +173,23 @@ const messagesSlice = createSlice({
       .addCase(fetchConversationMessages.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+
+      // -------------------------------
+      // MARK MESSAGE AS READ
+      // -------------------------------
+      .addCase(markMessageAsRead.fulfilled, (state, action) => {
+        const { messageId, message } = action.payload || {};
+        const idx = state.messages.findIndex((m) => m._id === messageId);
+        if (idx === -1) return;
+
+        // Nếu backend trả về message đã cập nhật, replace luôn
+        if (message) {
+          state.messages[idx] = message;
+        } else {
+          // Nếu không, tự đánh dấu isRead trên client
+          state.messages[idx].isRead = true;
+        }
       });
   },
 });
