@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { offEvent, onEvent } from "@/shared/lib/socket";
 import { addIncomingMessage, updateMessage, removeMessage } from "../messagesSlice";
+import { updateConversationLastMessage } from "@/features/conversations/conversationsSlice";
 
 export const useMessages = (conversationId) => {
   const dispatch = useDispatch();
@@ -11,6 +12,16 @@ export const useMessages = (conversationId) => {
 
     // Nhận tin nhắn mới
     const onNewMessage = (msg) => {
+      if (!msg?.conversation) return;
+
+      // Cập nhật list hội thoại luôn có last message mới nhất
+      dispatch(
+        updateConversationLastMessage({
+          conversationId: msg.conversation,
+          message: msg,
+        })
+      );
+
       if (msg.conversation === conversationId) {
         dispatch(addIncomingMessage(msg));
       }
