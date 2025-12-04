@@ -109,9 +109,12 @@ export const addMemberToGroup = createAsyncThunk(
   /**
    * payload: { conversationId, userId }
    */
-  async ({ conversationId, userIds }, { rejectWithValue }) => {
+  async ({ conversationId, memberIds }, { rejectWithValue }) => {
     try {
-      const res = await conversationApi.addMemberToGroupApi({ conversationId, userIds });
+      const res = await conversationApi.addMemberToGroupApi({
+        conversationId,
+        memberIds,
+      });
       return { conversationId, ...res.data };
     } catch (err) {
       const data = err.response?.data;
@@ -219,7 +222,7 @@ const conversationsSlice = createSlice({
   },
 
   extraReducers: (builder) => {
-  builder
+    builder
       /** -----CREATE CONVERSATION----- */
       .addCase(createConversation.pending, (state) => {
         state.loading = true;

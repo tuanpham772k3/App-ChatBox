@@ -184,7 +184,7 @@ export const addMemberToGroup = async (req, res) => {
   try {
     const { userId } = req.user;
     const { conversationId } = req.params;
-    const { memberIds } = req.body;
+    const { memberIds = [] } = req.body;
 
     // Validate base
     if (!conversationId.match(/^[0-9a-fA-F]{24}$/)) {
@@ -203,7 +203,7 @@ export const addMemberToGroup = async (req, res) => {
       });
     }
 
-    const conversation = await addMemberToGroupService(conversationId, userId, memberId);
+    const conversation = await addMemberToGroupService(conversationId, userId, memberIds);
 
     return res.status(200).json({
       success: true,

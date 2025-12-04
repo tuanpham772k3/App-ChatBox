@@ -44,11 +44,11 @@ const conversationApi = {
   /**
    * Thêm 1 thành viên vào nhóm
    * POST /conversations/:id/members
-   * body: { userIds: [] } //mảng
+   * body: { memberIds: [] } //mảng
    */
-  addMemberToGroupApi: async ({ conversationId, userIds }) => {
-    const res = await instance.post(`/conversations/${conversationId}/members`, {
-      userIds,
+  addMemberToGroupApi: async ({ conversationId, memberIds }) => {
+    const res = await instance.put(`/conversations/${conversationId}/members`, {
+      memberIds,
     });
     return res.data;
   },
