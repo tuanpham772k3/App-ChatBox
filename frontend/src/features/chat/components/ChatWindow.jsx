@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
-import { ArrowLeft, Ellipsis, Phone, Video } from "lucide-react";
+import { ArrowLeft, Ellipsis, PanelRight, Phone, Users, Video } from "lucide-react";
 import MessageInput from "./MessageInput";
 import Messages from "./Messages";
 import { useMessages } from "../hooks/useMessages";
 import { getTypingNames } from "@/features/conversations/utils/conversationHelper";
+import AddMembersModal from "./modal/AddMembersModal";
 
 const ChatWindow = ({ activeChat, onBackToList }) => {
   const {
@@ -14,10 +15,12 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
   } = useSelector((state) => state.conversations);
   const { user } = useSelector((state) => state.auth);
 
-  //edit state
+  // Edit state
   const [editMessageId, setEditMessageId] = useState(null);
   const [editContent, setEditContent] = useState("");
   const [editOriginalContent, setEditOriginalContent] = useState("");
+  // Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Tìm đối tác trong cuộc trò chuyện hiện tại
   const partner = currentConversation?.participants?.find((p) => p._id !== user.id);
@@ -27,7 +30,16 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
   const currentTypingMap = typingUsers[currentConversation?._id] || {};
   const typingNames = getTypingNames(currentTypingMap, user.id);
 
-  useMessages(activeChat); // Custom hook để quản lý tin nhắn
+  useMessages(activeChat); // Custom hook để quản lý tin nhắn realtime
+
+  // Modal group
+  const showModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const cancelModal = () => {
+    setIsModalOpen(false);
+  };
 
   return (
     <main
@@ -76,7 +88,13 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
         </div>
 
         {/* Action icons */}
-        <div className="flex items-center gap-3 text-[var(--color-text-primary)]">
+        <div className="flex items-center gap-1 text-[var(--color-text-primary)]">
+          {currentConversation.type === "group" && (
+            // Nếu type = group thì add members
+            <button className="hover:bg-[var(--bg-hover-primary)] p-2 rounded-full">
+              <Users onClick={showModal} className=" w-5 h-5" />
+            </button>
+          )}
           <button className="hover:bg-[var(--bg-hover-primary)] p-2 rounded-full">
             <Phone className=" w-5 h-5" />
           </button>
@@ -84,25 +102,32 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
             <Video className="w-5 h-5" />
           </button>
           <button className="hover:bg-[var(--bg-hover-primary)] p-2 rounded-full">
-            <Ellipsis className="w-5 h-5" />
+            <PanelRight className="w-5 h-5" />
           </button>
         </div>
       </div>
 
-      {/* ===== Messages ====== */}
+      {/* Messages */}
       <Messages
         setEditMessageId={setEditMessageId}
         setEditContent={setEditContent}
         setEditOriginalContent={setEditOriginalContent}
       />
 
-      {/* ===== Input Message ====== */}
+      {/* Input Message */}
       <MessageInput
         editMessageId={editMessageId}
         editContent={editContent}
         setEditMessageId={setEditMessageId}
         setEditContent={setEditContent}
         editOriginalContent={editOriginalContent}
+      />
+
+      {/* Modal */}
+      <AddMembersModal
+        isModalOpen={isModalOpen}
+        handleCancel={cancelModal}
+        conversationId={currentConversation._id}
       />
     </main>
   );
