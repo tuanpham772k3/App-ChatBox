@@ -4,6 +4,7 @@ import { ArrowLeft, Ellipsis, Phone, Video } from "lucide-react";
 import MessageInput from "./MessageInput";
 import Messages from "./Messages";
 import { useMessages } from "../hooks/useMessages";
+import { getTypingNames } from "@/features/conversations/utils/conversationHelper";
 
 const ChatWindow = ({ activeChat, onBackToList }) => {
   const {
@@ -24,15 +25,13 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
 
   // typingUsers: { [conversationId]: { [userId]: username } }
   const currentTypingMap = typingUsers[currentConversation?._id] || {};
-  const typingNames = Object.values(currentTypingMap).filter(
-    ([userId]) => userId !== user.id
-  );
+  const typingNames = getTypingNames(currentTypingMap, user.id);
 
   useMessages(activeChat); // Custom hook để quản lý tin nhắn
 
   return (
     <main
-      className={`flex-[2] bg-[var(--bg-primary)] flex flex-col rounded-lg overflow-hidden
+      className={`flex-2 bg-[var(--bg-primary)] flex flex-col rounded-lg overflow-hidden
       ${activeChat ? "flex" : "hidden"} md:flex`}
     >
       {/* Header */}
