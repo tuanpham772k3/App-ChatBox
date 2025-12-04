@@ -30,6 +30,41 @@ const conversationApi = {
   },
 
   /**
+   * Tạo nhóm chat
+   * POST /conversations/group
+   * body: { name, memberIds }
+   * (Đường dẫn có thể khác tuỳ backend của bạn, chỉnh lại cho khớp)
+   */
+  createGroupConversationApi: async (payload) => {
+    // payload: { name: string, memberIds: string[] }
+    const res = await instance.post("/conversations/group", payload);
+    return res.data;
+  },
+
+  /**
+   * Thêm 1 thành viên vào nhóm
+   * POST /conversations/:id/members
+   * body: { userIds: [] } //mảng
+   */
+  addMemberToGroupApi: async ({ conversationId, userIds }) => {
+    const res = await instance.post(`/conversations/${conversationId}/members`, {
+      userIds,
+    });
+    return res.data;
+  },
+
+  /**
+   * Xoá 1 thành viên khỏi nhóm
+   * DELETE /conversations/:id/members/:userId
+   */
+  removeMemberFromGroupApi: async ({ conversationId, userId }) => {
+    const res = await instance.delete(
+      `/conversations/${conversationId}/members/${userId}`
+    );
+    return res.data;
+  },
+
+  /**
    * Xoá hội thoại (soft delete)
    * DELETE /conversations/:conversationId
    */

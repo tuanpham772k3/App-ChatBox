@@ -23,6 +23,28 @@ export const createConversation = createAsyncThunk(
   }
 );
 
+// Tạo nhóm chat
+export const createGroupConversation = createAsyncThunk(
+  "conversations/createGroup",
+  /**
+   * payload: { name: string, memberIds: string[] }
+   */
+  async (payload, { rejectWithValue }) => {
+    try {
+      const res = await conversationApi.createGroupConversationApi(payload);
+      // Giả sử backend trả về { conversation }
+      return res.data;
+    } catch (err) {
+      const data = err.response?.data;
+      return rejectWithValue({
+        message: data?.message || "Không thể tạo nhóm chat",
+        idCode: data?.idCode || -1,
+        status: err.response?.status,
+      });
+    }
+  }
+);
+
 // Lấy danh sách hội thoại của user hiện tại
 export const getConversations = createAsyncThunk(
   "conversations/getAll",
@@ -79,6 +101,55 @@ export const deleteConversation = createAsyncThunk(
   }
 );
 
+/**
+ * Thêm 1 thành viên mới vào nhóm chat
+ */
+export const addMemberToGroup = createAsyncThunk(
+  "conversations/addMemberToGroup",
+  /**
+   * payload: { conversationId, userId }
+   */
+  async ({ conversationId, userIds }, { rejectWithValue }) => {
+    try {
+      const res = await conversationApi.addMemberToGroupApi({ conversationId, userIds });
+      return { conversationId, ...res.data };
+    } catch (err) {
+      const data = err.response?.data;
+      return rejectWithValue({
+        message: data?.message || "Không thể thêm thành viên vào nhóm",
+        idCode: data?.idCode || -1,
+        status: err.response?.status,
+      });
+    }
+  }
+);
+
+/**
+ * Xoá 1 thành viên khỏi nhóm chat
+ */
+export const removeMemberFromGroup = createAsyncThunk(
+  "conversations/removeMemberFromGroup",
+  /**
+   * payload: { conversationId, userId }
+   */
+  async ({ conversationId, userId }, { rejectWithValue }) => {
+    try {
+      const res = await conversationApi.removeMemberFromGroupApi({
+        conversationId,
+        userId,
+      });
+      return { conversationId, userId, ...res.data };
+    } catch (err) {
+      const data = err.response?.data;
+      return rejectWithValue({
+        message: data?.message || "Không thể xoá thành viên khỏi nhóm",
+        idCode: data?.idCode || -1,
+        status: err.response?.status,
+      });
+    }
+  }
+);
+
 /* =============================
  *  Slice setup
  * ============================= */
@@ -97,6 +168,21 @@ const conversationsSlice = createSlice({
     // Có thể dùng cho socket realtime
     addConversation: (state, action) => {
       state.conversations.unshift(action.payload);
+    },
+
+    // Cập nhật lastMessage và đưa hội thoại lên đầu khi có tin nhắn mới
+    updateConversationLastMessage: (state, action) => {
+      const { conversationId, message } = action.payload || {};
+      if (!conversationId || !message) return;
+
+      const idx = state.conversations.findIndex((c) => c._id === conversationId);
+      if (idx === -1) return;
+
+      state.conversations[idx].lastMessage = message;
+
+      // Đưa hội thoại lên đầu danh sách giống các app chat
+      const [conv] = state.conversations.splice(idx, 1);
+      state.conversations.unshift(conv);
     },
 
     // User status
@@ -133,7 +219,7 @@ const conversationsSlice = createSlice({
   },
 
   extraReducers: (builder) => {
-    builder
+  builder
       /** -----CREATE CONVERSATION----- */
       .addCase(createConversation.pending, (state) => {
         state.loading = true;
@@ -146,6 +232,27 @@ const conversationsSlice = createSlice({
         if (!exists) state.conversations.unshift(newConv);
       })
       .addCase(createConversation.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message;
+      })
+
+      /** -----CREATE GROUP CONVERSATION----- */
+      .addCase(createGroupConversation.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createGroupConversation.fulfilled, (state, action) => {
+        state.loading = false;
+        const newGroup = action.payload.conversation || action.payload;
+        if (!newGroup) return;
+
+        const exists = state.conversations.find((c) => c._id === newGroup._id);
+        if (!exists) {
+          // Đưa nhóm mới lên đầu danh sách
+          state.conversations.unshift(newGroup);
+        }
+      })
+      .addCase(createGroupConversation.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.message;
       })
@@ -184,10 +291,41 @@ const conversationsSlice = createSlice({
         state.conversations = state.conversations.filter(
           (conv) => conv._id !== action.payload.conversationId
         );
+      })
+
+      /** -----ADD MEMBER TO GROUP----- */
+      .addCase(addMemberToGroup.fulfilled, (state, action) => {
+        const { conversationId } = action.payload;
+        const updatedConv = action.payload.conversation;
+        const idx = state.conversations.findIndex((c) => c._id === conversationId);
+        if (idx === -1 || !updatedConv) return;
+
+        state.conversations[idx] = updatedConv;
+        if (state.currentConversation?._id === conversationId) {
+          state.currentConversation = updatedConv;
+        }
+      })
+
+      /** -----REMOVE MEMBER FROM GROUP----- */
+      .addCase(removeMemberFromGroup.fulfilled, (state, action) => {
+        const { conversationId } = action.payload;
+        const updatedConv = action.payload.conversation;
+        const idx = state.conversations.findIndex((c) => c._id === conversationId);
+        if (idx === -1 || !updatedConv) return;
+
+        state.conversations[idx] = updatedConv;
+        if (state.currentConversation?._id === conversationId) {
+          state.currentConversation = updatedConv;
+        }
       });
   },
 });
 
-export const { addConversation, userStatus, userStartTyping, userStopTyping } =
-  conversationsSlice.actions;
+export const {
+  addConversation,
+  updateConversationLastMessage,
+  userStatus,
+  userStartTyping,
+  userStopTyping,
+} = conversationsSlice.actions;
 export default conversationsSlice.reducer;

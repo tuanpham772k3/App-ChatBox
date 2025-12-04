@@ -110,7 +110,7 @@ export const createGroupConversation = async (req, res) => {
     const { userId } = req.user;
 
     // Lấy request body
-    const { name, members = [], avatar = null } = req.body;
+    const { name, memberIds = [], avatar = null } = req.body;
 
     // Validate base
     if (!name || typeof name !== "string" || name.trim().length === 0) {
@@ -121,7 +121,7 @@ export const createGroupConversation = async (req, res) => {
       });
     }
 
-    if (!Array.isArray(members)) {
+    if (!Array.isArray(memberIds)) {
       return res.status(400).json({
         success: false,
         message: "Member must be an array of user IDs",
@@ -129,7 +129,7 @@ export const createGroupConversation = async (req, res) => {
       });
     }
 
-    if (members.length < 2) {
+    if (memberIds.length < 2) {
       return res.status(400).json({
         success: false,
         message: "A group needs at least 3 members",
@@ -137,7 +137,7 @@ export const createGroupConversation = async (req, res) => {
       });
     }
 
-    const result = await createGroupConversationService(userId, name, members, avatar);
+    const result = await createGroupConversationService(userId, name, memberIds, avatar);
 
     // Trả kết quả
     return res.status(201).json({
@@ -184,17 +184,22 @@ export const addMemberToGroup = async (req, res) => {
   try {
     const { userId } = req.user;
     const { conversationId } = req.params;
-    const { memberId } = req.body;
+    const { memberIds } = req.body;
 
     // Validate base
-    if (
-      !conversationId.match(/^[0-9a-fA-F]{24}$/) ||
-      !memberId?.match(/^[0-9a-fA-F]{24}$/)
-    ) {
+    if (!conversationId.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({
         success: false,
         message: "Invalid ID format",
         idCode: 1,
+      });
+    }
+
+    if (!Array.isArray(memberIds) || memberIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "memberIds must be a non-empty array",
+        idCode: 2,
       });
     }
 
@@ -213,7 +218,7 @@ export const addMemberToGroup = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: "Group conversation not found",
-        idCode: 2,
+        idCode: 3,
       });
     }
 
@@ -221,7 +226,7 @@ export const addMemberToGroup = async (req, res) => {
       return res.status(403).json({
         success: false,
         message: "Permission denied",
-        idCode: 3,
+        idCode: 4,
       });
     }
 
@@ -229,14 +234,14 @@ export const addMemberToGroup = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: "User not found",
-        idCode: 4,
+        idCode: 5,
       });
     }
 
     return res.status(500).json({
       success: false,
       message: "Internal server error",
-      idCode: 5,
+      idCode: 6,
     });
   }
 };

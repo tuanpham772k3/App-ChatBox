@@ -99,7 +99,7 @@ export const createPrivateConversation = async (creatorId, participantId) => {
 export const createGroupConversationService = async (
   creatorId,
   name,
-  members,
+  memberIds,
   avatarUrl
 ) => {
   try {
@@ -113,7 +113,7 @@ export const createGroupConversationService = async (
     //    - Đảm bảo là mảng các string
     //    - Loại bỏ trùng lặp
     //    - Đảm bảo creator cũng là 1 participant
-    const rawMemberIds = Array.isArray(members) ? members : [];
+    const rawMemberIds = Array.isArray(memberIds) ? memberIds : [];
     const memberSet = new Set(rawMemberIds.map((id) => id.toString()));
     memberSet.add(creatorId.toString());
     const finalMemberIds = Array.from(memberSet);
@@ -249,7 +249,7 @@ export const getUserConversations = async (userId, page = 1, limit = 20) => {
 export const addMemberToGroupService = async (
   conversationId,
   currentUserId,
-  memberId
+  memberIds
 ) => {
   try {
     // Kiểm tra hội thoại tồn tại
@@ -267,20 +267,19 @@ export const addMemberToGroupService = async (
       throw new Error("Permission denied");
     }
 
-    // Kiểm tra user tồn tại
-    const user = await User.findById(memberId);
-    if (!user) {
-      throw new Error("User not found");
+    // Kiểm tra tất cả user tồn tại
+    const users = await User.find({ _id: { $in: memberIds } });
+    if (users.length !== memberIds.length) {
+      throw new Error("One or more users not found");
     }
 
-    // Nếu đã là thành viên thì bỏ qua
-    const alreadyInGroup = conversation.participants.some(
-      (id) => id.toString() === memberId.toString()
+    // Lọc ra những người không có trong group
+    const newMembers = memberIds.filter(
+      (id) => !conversation.participants.some((p) => p.toString() === id.toString())
     );
-    if (!alreadyInGroup) {
-      conversation.participants.push(memberId);
-      await conversation.save();
-    }
+
+    conversation.participants.push(...newMembers);
+    await conversation.save();
 
     const populatedConversation = await Conversation.findById(conversationId)
       .populate("participants", "username email avatarUrl bio status lastSeenAt")

@@ -3,7 +3,7 @@ import { Button } from "antd";
 import { Camera, Search } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { searchUsers } from "@/features/user/userSlice";
-import { createConversation } from "@/features/conversations/conversationsSlice";
+import { createGroupConversation } from "@/features/conversations/conversationsSlice";
 import BaseModal from "@/shared/components/ui/modal/BaseModal";
 import FriendItem from "@/shared/components/ui/user/FriendItem";
 import { useNotification } from "@/shared/hooks/useNotification";
@@ -60,12 +60,9 @@ const ModalCreateGroup = ({ isModalOpen, handleCancel }) => {
       }
 
       // Create conversation
-      await dispatch(createConversation({ selectedFriends })).unwrap();
-
-      const selectedMembers = searchResults.filter((f) => selectedFriends.includes(f.id));
-
-      console.log("Tên nhóm:", groupName || "Nhóm mới");
-      console.log("Thành viên:", selectedMembers);
+      await dispatch(
+        createGroupConversation({ name: groupName, memberIds: selectedFriends })
+      ).unwrap();
 
       // Reset state
       setSelectedFriends([]);
