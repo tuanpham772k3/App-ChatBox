@@ -1,5 +1,14 @@
 import React from "react";
-import { Archive, Menu, MessageCircle, MessageCircleMore, Store } from "lucide-react";
+import {
+  Archive,
+  BarChart2,
+  FileText,
+  Menu,
+  MessageCircle,
+  MessageCircleMore,
+  Phone,
+  Users,
+} from "lucide-react";
 import { logoutUser } from "@/features/auth/authSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { clearMessages } from "@/features/chat/messagesSlice";
@@ -17,6 +26,7 @@ const appIcons = [
 const Sidebar = () => {
   const dispatch = useDispatch();
   const { conversations } = useSelector((state) => state.conversations);
+  const { user } = useSelector((state) => state.auth);
 
   const handleLogout = async () => {
     try {
@@ -36,57 +46,79 @@ const Sidebar = () => {
 
   return (
     <aside
-      className="flex flex-col justify-between text-[var(--color-text-secondary)]
-                transition-all duration-300 w-11"
+      className="flex flex-col justify-between bg-[var(--bg-primary)] rounded-2xl shadow-sm
+                text-[var(--color-text-secondary)] transition-all duration-300 w-60 px-4 py-5"
     >
-      {/* TOP ICONS */}
-      <div className="flex flex-col items-center">
-        <button className="relative group w-11 h-11 flex items-center justify-center rounded-lg hover:bg-[var(--bg-hover-primary)]">
+      {/* TOP: Logo + workspace */}
+      <div className="flex items-center gap-3 mb-8">
+        <div className="w-9 h-9 rounded-2xl bg-[var(--color-primary)] flex items-center justify-center text-white font-semibold">
           <MessageCircle className="w-5 h-5" />
-          <span className="absolute top-3 right-3 block w-2 h-2 bg-[var(--color-primary)] rounded-full"></span>
-        </button>
-
-        {[Store, MessageCircleMore, Archive].map((Icon, i) => (
-          <button
-            key={i}
-            className="w-11 h-11 flex items-center justify-center rounded-lg hover:bg-[var(--bg-hover-primary)]"
-          >
-            <Icon className="w-5 h-5" />
-          </button>
-        ))}
-
-        {/* Divider */}
-        <div className="w-8 h-[1px] bg-[var(--color-border)] my-6"></div>
-
-        {/* APP ICONS */}
-        <div className="flex flex-col items-center gap-3 mt-2">
-          {appIcons.map((src, idx) => (
-            <img
-              key={idx}
-              src={src}
-              alt=""
-              className="w-9 h-9 rounded-lg object-cover hover:scale-110 transition-transform cursor-pointer"
-            />
-          ))}
+        </div>
+        <div className="flex flex-col">
+          <span className="text-sm font-semibold text-[var(--color-text-primary)]">
+            Chatbox
+          </span>
+          <span className="text-xs text-[var(--color-text-secondary)]">
+            All messages
+          </span>
         </div>
       </div>
 
-      {/* BOTTOM ICONS */}
-      <div className="flex flex-col items-center gap-4 mb-4">
-        {/* đăng xuất */}
+      {/* MIDDLE: Navigation */}
+      <nav className="flex-1 flex flex-col gap-1 text-sm">
+        <button className="flex items-center gap-3 px-3 py-2 rounded-xl text-[var(--color-text-secondary)] hover:bg-[var(--bg-hover-secondary)]">
+          <BarChart2 className="w-4 h-4" />
+          <span>Dashboard</span>
+        </button>
+        <button className="flex items-center gap-3 px-3 py-2 rounded-xl text-[var(--color-text-secondary)] hover:bg-[var(--bg-hover-secondary)]">
+          <Users className="w-4 h-4" />
+          <span>Analytics</span>
+        </button>
+        <button className="flex items-center gap-3 px-3 py-2 rounded-xl text-[var(--color-text-secondary)] hover:bg-[var(--bg-hover-secondary)]">
+          <FileText className="w-4 h-4" />
+          <span>Files</span>
+        </button>
+        <button className="flex items-center gap-3 px-3 py-2 rounded-xl text-[var(--color-text-secondary)] hover:bg-[var(--bg-hover-secondary)]">
+          <Phone className="w-4 h-4" />
+          <span>Call</span>
+        </button>
+        <button className="flex items-center gap-3 px-3 py-2 rounded-xl bg-[var(--color-primary)] text-white shadow-sm">
+          <MessageCircleMore className="w-4 h-4" />
+          <span>Messages</span>
+        </button>
+        <button className="flex items-center gap-3 px-3 py-2 rounded-xl text-[var(--color-text-secondary)] hover:bg-[var(--bg-hover-secondary)]">
+          <Archive className="w-4 h-4" />
+          <span>Community</span>
+        </button>
+        <button className="flex items-center gap-3 px-3 py-2 rounded-xl text-[var(--color-text-secondary)] hover:bg-[var(--bg-hover-secondary)]">
+          <Menu className="w-4 h-4" />
+          <span>Settings</span>
+        </button>
+      </nav>
+
+      {/* BOTTOM: User summary + logout */}
+      <div className="mt-6 flex items-center justify-between gap-3 pt-4 border-t border-[var(--color-border)]">
+        <div className="flex items-center gap-3">
+          <img
+            src={user?.avatarUrl?.url || "/img/user.jpg"}
+            alt="user"
+            className="w-9 h-9 rounded-full object-cover"
+          />
+          <div className="flex flex-col">
+            <span className="text-xs font-semibold text-[var(--color-text-primary)]">
+              {user?.username || "User"}
+            </span>
+            <span className="text-[11px] text-[var(--color-text-secondary)]">
+              Online
+            </span>
+          </div>
+        </div>
+
         <button
           onClick={handleLogout}
-          className="rounded-full bg-[var(--bg-gray)] p-2 hover:bg-[var(--bg-hover-primary)] transition-colors"
+          className="text-[11px] font-medium text-[var(--color-primary)] hover:underline"
         >
           Logout
-        </button>
-        <img
-          src="/img/user.jpg"
-          alt="user"
-          className="w-9 h-9 rounded-full object-cover cursor-pointer hover:scale-110 transition-transform"
-        />
-        <button className="rounded-full bg-[var(--bg-gray)] p-2 hover:bg-[var(--bg-hover-primary)] transition-colors">
-          <Menu className="w-6 h-6 text-[var(--color-text-primary)]" />
         </button>
       </div>
     </aside>
