@@ -23,8 +23,8 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Tìm đối tác trong cuộc trò chuyện hiện tại
-  const partner = currentConversation?.participants?.find((p) => p._id !== user.id);
-  const partnerStatus = statusUsers[partner?._id]; // Lấy trạng thái của đối tác
+  const partner = currentConversation?.participants?.find((p) => p.user._id !== user.id);
+  const partnerStatus = statusUsers[partner?.user?._id]; // Lấy trạng thái của đối tác
 
   // typingUsers: { [conversationId]: { [userId]: username } }
   const currentTypingMap = typingUsers[currentConversation?._id] || {};
@@ -60,8 +60,8 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
           {/* Avatar */}
           <div className="relative">
             <img
-              src={partner?.avatarUrl?.url}
-              alt={partner?.username}
+              src={partner?.user?.avatarUrl?.url}
+              alt={partner?.user?.username}
               className="w-10 h-10 rounded-full object-cover"
             />
             {partnerStatus?.status === "online" && (
@@ -72,7 +72,7 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
           {/* Info */}
           <div className="flex flex-col">
             <h3 className="text-[var(--color-text-primary)] font-semibold">
-              {partner?.username || "Người dùng ẩn danh"}
+              {partner?.user?.username || "Người dùng ẩn danh"}
             </h3>
             {/* Trạng thái người dùng + đang gõ */}
             {typingNames.length > 0 ? (
