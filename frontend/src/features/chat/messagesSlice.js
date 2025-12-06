@@ -41,24 +41,6 @@ export const fetchConversationMessages = createAsyncThunk(
   }
 );
 
-// Đánh dấu đã đọc
-export const markMessageAsRead = createAsyncThunk(
-  "messages/markAsRead",
-  async (messageId, { rejectWithValue }) => {
-    try {
-      const res = await messagesApi.markAsReadApi(messageId);
-      return { messageId, ...res.data };
-    } catch (err) {
-      const data = err.response?.data;
-      return rejectWithValue({
-        message: data?.message || "Lỗi không xác định",
-        idCode: data?.idCode || -1,
-        status: err.response?.status,
-      });
-    }
-  }
-);
-
 // Xóa tin nhắn (xóa mềm)
 export const deleteMessageById = createAsyncThunk(
   "messages/delete",
@@ -173,23 +155,6 @@ const messagesSlice = createSlice({
       .addCase(fetchConversationMessages.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-      })
-
-      // -------------------------------
-      // MARK MESSAGE AS READ
-      // -------------------------------
-      .addCase(markMessageAsRead.fulfilled, (state, action) => {
-        const { messageId, message } = action.payload || {};
-        const idx = state.messages.findIndex((m) => m._id === messageId);
-        if (idx === -1) return;
-
-        // Nếu backend trả về message đã cập nhật, replace luôn
-        if (message) {
-          state.messages[idx] = message;
-        } else {
-          // Nếu không, tự đánh dấu isRead trên client
-          state.messages[idx].isRead = true;
-        }
       });
   },
 });

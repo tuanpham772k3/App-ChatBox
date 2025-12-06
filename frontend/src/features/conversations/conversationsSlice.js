@@ -153,6 +153,24 @@ export const removeMemberFromGroup = createAsyncThunk(
   }
 );
 
+// Đánh dấu đã đọc
+export const markConversationAsRead = createAsyncThunk(
+  "conversation/markAsRead",
+  async ({conversationId, userId}, { rejectWithValue }) => {
+    try {
+      const res = await conversationApi.markAsReadApi(conversationId);
+      return { conversationId, ...res.data };
+    } catch (err) {
+      const data = err.response?.data;
+      return rejectWithValue({
+        message: data?.message || "Lỗi không xác định",
+        idCode: data?.idCode || -1,
+        status: err.response?.status,
+      });
+    }
+  }
+);
+
 /* =============================
  *  Slice setup
  * ============================= */
@@ -319,6 +337,54 @@ const conversationsSlice = createSlice({
         state.conversations[idx] = updatedConv;
         if (state.currentConversation?._id === conversationId) {
           state.currentConversation = updatedConv;
+        }
+      })
+
+      // -------------------------------
+      // MARK CONVERSATION AS READ
+      // -------------------------------
+      .addCase(markConversationAsRead.fulfilled, (state, action) => {
+        const { conversationId } = action.payload || {};
+        const { userId } = action.meta.arg || {}; // ✅ LẤY TỪ META
+
+        if (!conversationId || !userId) return;
+
+        // 1️⃣ Update trong danh sách conversations
+        const idx = state.conversations.findIndex((c) => c._id === conversationId);
+        if (idx !== -1) {
+          const conv = state.conversations[idx];
+
+          conv.participants = conv.participants.map((p) => {
+            const pid = typeof p.user === "object" ? p.user._id : p.user;
+
+            if (pid === userId) {
+              return {
+                ...p,
+                unreadCount: 0,
+                lastReadAt: new Date().toISOString(),
+                lastReadMessage: conv.lastMessage?._id || null,
+              };
+            }
+            return p;
+          });
+        }
+
+        // 2️⃣ Update currentConversation nếu đang mở
+        if (state.currentConversation?._id === conversationId) {
+          state.currentConversation.participants =
+            state.currentConversation.participants.map((p) => {
+              const pid = typeof p.user === "object" ? p.user._id : p.user;
+
+              if (pid === userId) {
+                return {
+                  ...p,
+                  unreadCount: 0,
+                  lastReadAt: new Date().toISOString(),
+                  lastReadMessage: state.currentConversation.lastMessage?._id || null,
+                };
+              }
+              return p;
+            });
         }
       });
   },

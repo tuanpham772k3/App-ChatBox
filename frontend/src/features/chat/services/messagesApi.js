@@ -29,16 +29,6 @@ const messagesApi = {
   },
 
   /**
-   * Đánh dấu tin nhắn đã đọc
-   * PUT /messages/:messageId/read
-   * @param {string} messageId - ID của tin nhắn
-   */
-  markAsReadApi: async (messageId) => {
-    const res = await instance.put(`/messages/${messageId}/read`);
-    return res.data;
-  },
-
-  /**
    * Xoá tin nhắn (soft delete)
    * DELETE /messages/:messageId
    * @param {string} messageId - ID của tin nhắn

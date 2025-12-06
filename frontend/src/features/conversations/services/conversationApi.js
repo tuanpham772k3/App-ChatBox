@@ -72,6 +72,15 @@ const conversationApi = {
     const res = await instance.delete(`/conversations/${conversationId}`);
     return res.data;
   },
+
+  /**
+   * Đánh dấu đã đọc
+   * PUT /conversations/:conversationId/read
+   */
+  markAsReadApi: async (conversationId) => {
+    const res = await instance.put(`/conversations/${conversationId}/read`);
+    return res.data;
+  },
 };
 
 export default conversationApi;
