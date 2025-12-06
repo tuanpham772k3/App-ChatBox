@@ -294,10 +294,10 @@ export const deleteMessageById = async (req, res) => {
         result.messageId
       );
       console.log(
-        `User ${userId} deleted message ${messageId} to conversation ${conversationObjId}`
+        `User ${userId} deleted message ${messageId} to conversation ${result.conversationId}`
       );
     } catch (err) {
-      console.error("Socket emit failed for conversation:", conversationObjId, err);
+      console.error("Socket emit failed for conversation:", result.conversationId, err);
     }
 
     // Trả về phản hồi thành công

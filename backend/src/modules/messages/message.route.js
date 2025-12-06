@@ -16,9 +16,6 @@ router.post("/", verifyToken, createNewMessage);
 // Lấy danh sách tin nhắn trong conversation
 router.get("/:conversationId", verifyToken, getConversationMessages);
 
-// Đánh dấu tin nhắn đã đọc
-router.put("/:messageId/read", verifyToken, markAsRead);
-
 // Xóa tin nhắn (soft delete)
 router.delete("/:messageId", verifyToken, deleteMessageById);
 

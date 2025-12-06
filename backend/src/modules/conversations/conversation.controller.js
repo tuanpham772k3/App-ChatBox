@@ -6,6 +6,7 @@ import {
   createGroupConversationService,
   addMemberToGroupService,
   removeMemberFromGroupService,
+  markConversationAsReadService,
 } from "./conversation.service.js";
 
 /**
@@ -476,5 +477,51 @@ export const deleteConversationById = async (req, res) => {
       message: "Internal server error",
       idCode: 3,
     });
+  }
+};
+
+/**
+ * Đánh dấu đã đọc (soft delete)
+ * PUT /api/conversations/:conversationId/read
+ *
+ * Flow:
+ * 1. Lấy conversationId từ URL params
+ * 2. Lấy userId từ JWT token
+ * 3. Gọi service
+ * 4. Trả về response
+ */
+export const markConversationAsRead = async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+    const { userId } = req.user;
+
+    if (!conversationId.match(/^[0-9a-fA-F]{24}$/)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid conversation ID format", idCode: 1 });
+    }
+
+    const result = await markConversationAsReadService(conversationId, userId);
+
+    return res.status(200).json({
+      success: true,
+      message: result.message,
+      idCode: 0,
+      data: { unreadBefore: result.unreadBefore },
+    });
+  } catch (error) {
+    console.error("Error in markConversationAsRead controller:", error);
+    if (error.message === "Group conversation not found") {
+      return res
+        .status(404)
+        .json({
+          success: false,
+          message: "Conversation not found or access denied",
+          idCode: 2,
+        });
+    }
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error", idCode: 3 });
   }
 };

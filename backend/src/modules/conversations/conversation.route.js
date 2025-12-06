@@ -7,6 +7,7 @@ import {
   createGroupConversation,
   addMemberToGroup,
   removeMemberFromGroup,
+  markConversationAsRead,
 } from "./conversation.controller.js";
 import { verifyToken } from "../../middlewares/middleware.controller.js";
 
@@ -32,5 +33,8 @@ router.get("/:conversationId", verifyToken, getConversation);
 
 // Xóa conversation (soft delete)
 router.delete("/:conversationId", verifyToken, deleteConversationById);
+
+// Đánh dấu tin nhắn cuối người dùng đã đọc
+router.put("/:conversationId/read", verifyToken, markConversationAsRead);
 
 export default router;

@@ -60,7 +60,7 @@ export const chatSocket = (io) => {
        * ================================
        */
       const conversations = await Conversation.find({
-        participants: socket.userId,
+        "participants.user": socket.userId,
         isActive: true,
       });
 
@@ -171,7 +171,7 @@ export const chatSocket = (io) => {
 
         // Thông báo cho tất cả conversation mà user tham gia
         const conversations = await Conversation.find({
-          participants: socket.userId,
+          "participants.user": socket.userId,
           isActive: true,
         });
 

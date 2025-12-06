@@ -28,16 +28,16 @@ export const createPrivateConversation = async (creatorId, participantId) => {
     }
 
     // 3. Kiểm tra không được tạo conversation với chính mình
-    if (creatorId === participantId) {
+    if (creatorId.toString() === participantId.toString()) {
       throw new Error("Cannot create conversation with yourself");
     }
 
     // 4. Kiểm tra đã có conversation 1-1 giữa 2 người này chưa
-    // Tìm conversation private có cả 2 người tham gia
+    // Vì participants là subdocs, ta cần kiểm tra existence bằng 2 điều kiện
     const existingConversation = await Conversation.findOne({
       type: "private",
-      participants: { $all: [creatorId, participantId] },
       isActive: true, // Chỉ tìm conversation đang hoạt động
+      $and: [{ "participants.user": creatorId }, { "participants.user": participantId }],
     });
 
     if (existingConversation) {
@@ -52,7 +52,10 @@ export const createPrivateConversation = async (creatorId, participantId) => {
     // 5. Tạo conversation mới
     const newConversation = new Conversation({
       type: "private",
-      participants: [creatorId, participantId],
+      participants: [
+        { user: creatorId, lastReadMessage: null, lastReadAt: null, unreadCount: 0 },
+        { user: participantId, lastReadMessage: null, lastReadAt: null, unreadCount: 0 },
+      ],
       // Với private chat, name và avatar sẽ là null (theo schema)
       name: null,
       avatar: {
@@ -60,8 +63,12 @@ export const createPrivateConversation = async (creatorId, participantId) => {
         public_id: null,
       },
       lastMessage: {
+        _id: null,
         sender: null,
+        type: null,
         content: null,
+        file: null,
+        isDeleted: false,
         createdAt: null,
       },
       isActive: true,
@@ -73,7 +80,7 @@ export const createPrivateConversation = async (creatorId, participantId) => {
 
     // 7. Populate thông tin người tham gia để trả về đầy đủ
     const populatedConversation = await Conversation.findById(savedConversation._id)
-      .populate("participants", "username email avatarUrl bio status lastSeenAt")
+      .populate("participants.user", "username email avatarUrl bio status lastSeenAt")
       .populate("lastMessage.sender", "username avatarUrl")
       .lean(); // lean() để trả về plain object thay vì Mongoose document
 
@@ -129,18 +136,30 @@ export const createGroupConversationService = async (
       throw new Error("Some members not found");
     }
 
-    // 5. Tạo conversation mới
+    // 5. Build participants theo ĐÚNG SUBDOC SCHEMA
+    const participants = finalMemberIds.map((userId) => ({
+      user: userId,
+      lastReadMessage: null,
+      lastReadAt: null,
+      unreadCount: 0,
+    }));
+
+    // 6. Tạo conversation mới
     const newConversation = new Conversation({
       type: "group",
-      participants: finalMemberIds,
+      participants,
       name,
       avatar: {
         url: avatarUrl || null,
         public_id: null,
       },
       lastMessage: {
+        _id: null,
         sender: null,
+        type: null,
         content: null,
+        file: null,
+        isDeleted: false,
         createdAt: null,
       },
       isActive: true,
@@ -152,7 +171,7 @@ export const createGroupConversationService = async (
 
     // 7. Populate thông tin người tham gia để trả về đầy đủ
     const populatedConversation = await Conversation.findById(savedConversation._id)
-      .populate("participants", "username email avatarUrl bio status lastSeenAt")
+      .populate("participants.user", "username email avatarUrl bio status lastSeenAt")
       .populate("lastMessage.sender", "username avatarUrl")
       .lean(); // lean() để trả về plain object thay vì Mongoose document
 
@@ -180,10 +199,10 @@ export const getUserConversations = async (userId, page = 1, limit = 20) => {
 
     // Tìm tất cả conversation mà user tham gia
     const conversations = await Conversation.find({
-      participants: userId,
+      "participants.user": userId,
       isActive: true,
     })
-      .populate("participants", "username email avatarUrl bio status lastSeenAt")
+      .populate("participants.user", "username email avatarUrl bio status lastSeenAt")
       .populate("lastMessage.sender", "username avatarUrl")
       .sort({ "lastMessage.createdAt": -1, updatedAt: -1 }) // Sắp xếp theo tin nhắn cuối hoặc thời gian cập nhật
       .skip(skip)
@@ -192,36 +211,43 @@ export const getUserConversations = async (userId, page = 1, limit = 20) => {
 
     // Tính tổng số tin nhắn chưa đọc cho từng conversation bằng aggregation
     const conversationIds = conversations.map((c) => c._id);
+    const participantLastReadMap = {};
+    conversations.forEach((c) => {
+      const p = c.participants.find((pp) =>
+        pp.user._id
+          ? pp.user._id.toString() === userId.toString()
+          : pp.user.toString() === userId.toString()
+      );
+      participantLastReadMap[c._id.toString()] = p?.lastReadAt
+        ? new Date(p.lastReadAt)
+        : new Date(0);
+    });
 
-    const unreadCounts = await Message.aggregate([
-      {
-        $match: {
-          conversation: { $in: conversationIds },
+    // 3. Aggregation: đếm messages per conversation where createdAt > participant.lastReadAt
+    const unreadCounts = {};
+    await Promise.all(
+      conversationIds.map(async (cid) => {
+        const lastReadAt = participantLastReadMap[cid.toString()] || new Date(0);
+        const cnt = await Message.countDocuments({
+          conversation: cid,
           isDeleted: false,
-          "readBy.user": { $ne: userId },
-        },
-      },
-      {
-        $group: {
-          _id: "$conversation",
-          count: { $sum: 1 },
-        },
-      },
-    ]);
+          createdAt: { $gt: lastReadAt },
+          // optionally exclude messages from the user themself:
+          // sender: { $ne: userId },
+        });
+        unreadCounts[cid.toString()] = cnt;
+      })
+    );
 
-    const unreadMap = unreadCounts.reduce((acc, item) => {
-      acc[item._id.toString()] = item.count;
-      return acc;
-    }, {});
-
+    // 4. Attach unreadCount into conversations
     const conversationsWithUnread = conversations.map((conv) => ({
       ...conv,
-      unreadCount: unreadMap[conv._id.toString()] || 0,
+      unreadCount: unreadCounts[conv._id.toString()] || 0,
     }));
 
-    // Đếm tổng số conversation
+    // 5. Total
     const total = await Conversation.countDocuments({
-      participants: userId,
+      "participants.user": userId,
       isActive: true,
     });
 
@@ -275,14 +301,22 @@ export const addMemberToGroupService = async (
 
     // Lọc ra những người không có trong group
     const newMembers = memberIds.filter(
-      (id) => !conversation.participants.some((p) => p.toString() === id.toString())
+      (id) => !conversation.participants.some((p) => p.user.toString() === id.toString())
     );
 
-    conversation.participants.push(...newMembers);
+    // Chuẩn hóa theo schema mới
+    const formattedNewMembers = newMembers.map((id) => ({
+      user: id,
+      lastReadMessage: null,
+      lastReadAt: null,
+      unreadCount: 0,
+    }));
+
+    conversation.participants.push(...formattedNewMembers);
     await conversation.save();
 
     const populatedConversation = await Conversation.findById(conversationId)
-      .populate("participants", "username email avatarUrl bio status lastSeenAt")
+      .populate("participants.user", "username email avatarUrl bio status lastSeenAt")
       .populate("lastMessage.sender", "username avatarUrl")
       .lean();
 
@@ -331,7 +365,7 @@ export const removeMemberFromGroupService = async (
     await conversation.save();
 
     const populatedConversation = await Conversation.findById(conversationId)
-      .populate("participants", "username email avatarUrl bio status lastSeenAt")
+      .populate("participants.user", "username email avatarUrl bio status lastSeenAt")
       .populate("lastMessage.sender", "username avatarUrl")
       .lean();
 
@@ -353,10 +387,10 @@ export const getConversationById = async (conversationId, userId) => {
     // Tìm conversation và kiểm tra user có tham gia không
     const conversation = await Conversation.findOne({
       _id: conversationId,
-      participants: userId,
+      "participants.user": userId,
       isActive: true,
     })
-      .populate("participants", "username email avatarUrl bio status lastSeenAt")
+      .populate("participants.user", "username email avatarUrl bio status lastSeenAt")
       .populate("lastMessage.sender", "username avatarUrl")
       .lean();
 
@@ -382,7 +416,7 @@ export const deleteConversation = async (conversationId, userId) => {
     // Kiểm tra user có tham gia conversation không
     const conversation = await Conversation.findOne({
       _id: conversationId,
-      participants: userId,
+      "participants.user": userId,
       isActive: true,
     });
 
@@ -401,6 +435,58 @@ export const deleteConversation = async (conversationId, userId) => {
     };
   } catch (error) {
     console.error("Error in deleteConversation service:", error);
+    throw error;
+  }
+};
+
+/**
+ * Đánh dấu đã đọc
+ * @param {string} conversationId - ID của conversation
+ * @param {string} userId - ID của user thực hiện xóa
+ * @returns {Object} - Kết quả xóa
+ */
+export const markConversationAsReadService = async (conversationId, userId) => {
+  try {
+    const conv = await Conversation.findOne({
+      _id: conversationId,
+      "participants.user": userId,
+      isActive: true,
+    });
+
+    if (!conv) throw new Error("Group conversation not found");
+
+    // trước khi cập nhật, tính unread count: đếm messages createdAt > participant.lastReadAt (hoặc > 0 nếu null)
+    const participant = conv.participants.find(
+      (p) => p.user.toString() === userId.toString()
+    );
+    const lastReadAt = participant?.lastReadAt || new Date(0);
+
+    const unreadCount = await Message.countDocuments({
+      conversation: conversationId,
+      isDeleted: false,
+      createdAt: { $gt: lastReadAt },
+      sender: { $ne: userId }, // optional: chỉ đếm message của người khác
+    });
+
+    // cập nhật participant.lastReadAt và lastReadMessage + reset unreadCount cho participant
+    conv.participants = conv.participants.map((p) => {
+      if (p.user.toString() === userId.toString()) {
+        p.lastReadAt = new Date();
+        p.lastReadMessage = conv.lastMessage?._id || null;
+        p.unreadCount = 0;
+      }
+      return p;
+    });
+
+    await conv.save();
+
+    return {
+      success: true,
+      message: "Conversation marked as read",
+      unreadBefore: unreadCount,
+    };
+  } catch (error) {
+    console.error("Error in markConversationAsReadService:", error);
     throw error;
   }
 };

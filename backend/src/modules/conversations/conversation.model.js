@@ -10,9 +10,24 @@ const conversationSchema = new mongoose.Schema(
 
     participants: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-        required: true,
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+
+        lastReadMessage: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Message",
+          default: null,
+        }, // tin nhắn cuối mà người dùng đã đọc
+
+        lastReadAt: {
+          type: Date,
+          default: null,
+        }, // mốc thời gian đã đọc tin nhắn cuối
+
+        unreadCount: { type: Number, default: 0 }, // số lượng tin nhắn chưa đọc
       },
     ], // Danh sách người tham gia cuộc trò chuyện (tối thiểu 2 người)
 
@@ -33,19 +48,13 @@ const conversationSchema = new mongoose.Schema(
     }, // Ảnh đại diện nhóm (chỉ dùng cho group chat)
 
     lastMessage: {
-      sender: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-        default: null,
-      }, // Người gửi tin nhắn cuối cùng
-      content: {
-        type: String,
-        default: null,
-      }, // Nội dung tin nhắn cuối cùng
-      createdAt: {
-        type: Date,
-        default: null,
-      }, // Thời gian gửi tin nhắn cuối cùng
+      _id: { type: mongoose.Schema.Types.ObjectId, ref: "Message", default: null },
+      sender: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+      type: { type: String, default: null },
+      content: { type: String, default: null },
+      file: { type: Object, default: null },
+      isDeleted: { type: Boolean, default: false },
+      createdAt: { type: Date, default: null }, // Thời gian gửi tin nhắn cuối cùng
     }, // Thông tin tin nhắn cuối cùng để hiển thị preview
 
     // Trạng thái cuộc trò chuyện
@@ -64,22 +73,6 @@ const conversationSchema = new mongoose.Schema(
   },
   { timestamps: true } // Tự động thêm createdAt và updatedAt
 );
-
-// Validation: Đảm bảo có ít nhất 2 người tham gia
-conversationSchema.pre("save", function (next) {
-  if (this.participants.length < 2) {
-    return next(new Error("Conversation must have at least 2 participants"));
-  }
-  next();
-});
-
-// Validation: Đối với group chat, name là bắt buộc
-conversationSchema.pre("save", function (next) {
-  if (this.type === "group" && !this.name) {
-    return next(new Error("Group conversation must have a name"));
-  }
-  next();
-});
 
 // Index để tối ưu truy vấn
 conversationSchema.index({ participants: 1 }); // Tìm cuộc trò chuyện theo người tham gia

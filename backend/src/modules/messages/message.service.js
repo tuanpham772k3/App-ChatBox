@@ -23,7 +23,7 @@ export const createMessage = async (
     //1. Kiểm tra conversationId tồn tại và user có quyền truy cập không
     const conversation = await Conversation.findOne({
       _id: conversationId,
-      participants: senderId,
+      "participants.user": senderId,
       isActive: true,
     });
 
@@ -64,12 +64,11 @@ export const createMessage = async (
       conversation: conversationId,
       sender: senderId,
       content: content.trim(),
-      type: type,
+      type,
       replyTo: replyTo || null,
       status: "sent",
     };
 
-    // 6. Thêm thông tin file nếu có
     if (fileInfo && (type === "image" || type === "file")) {
       messageData.file = {
         url: fileInfo.url || null,
@@ -79,11 +78,51 @@ export const createMessage = async (
       };
     }
 
-    // 7. Tạo và lưu message
     const newMessage = new Message(messageData);
     const savedMessage = await newMessage.save();
 
-    // 8. Populate thông tin sender và replyTo để trả về đầy đủ
+    // 6. Cập nhật conversation.lastMessage và tăng unreadCount cho participants khác
+    const lastMessagePreview = {
+      _id: savedMessage._id,
+      sender: senderId,
+      type,
+      content: type === "text" ? content.trim() : fileInfo?.filename || type,
+      file: fileInfo
+        ? {
+            url: fileInfo.url || null,
+            filename: fileInfo.filename || null,
+            size: fileInfo.size || null,
+          }
+        : null,
+      isDeleted: false,
+      createdAt: savedMessage.createdAt,
+    };
+
+    // Update lastMessage and increment unreadCount for other participants
+    await Conversation.updateOne(
+      { _id: conversationId },
+      {
+        $set: { lastMessage: lastMessagePreview, updatedAt: new Date() },
+        $inc: {
+          // increment unreadCount only for participants != sender
+          // Mongo can't conditional-inc per array element with simple operator,
+          // so we use positional filtered array update (Mongo 3.6+). Simpler: pull/push map:
+        },
+      }
+    );
+
+    // Because conditional $inc for array elements is complex in one update
+    const conv = await Conversation.findById(conversationId);
+    conv.participants = conv.participants.map((p) => {
+      if (p.user.toString() !== senderId.toString()) {
+        p.unreadCount = (p.unreadCount || 0) + 1;
+      }
+      return p;
+    });
+    conv.lastMessage = lastMessagePreview;
+    await conv.save();
+
+    // 7. Populate thông tin sender và replyTo để trả về đầy đủ
     const populatedMessage = await Message.findById(savedMessage._id)
       .populate("sender", "username email avatarUrl")
       .populate("replyTo", "content sender createdAt")
@@ -110,7 +149,7 @@ export const getMessages = async (conversationId, userId, page = 1, limit = 20) 
     // 1. Kiểm tra user có quyền truy cập conversation không
     const conversation = await Conversation.findOne({
       _id: conversationId,
-      participants: userId,
+      "participants.user": userId,
       isActive: true,
     });
 
@@ -176,7 +215,7 @@ export const markMessageAsRead = async (messageId, userId) => {
     // 2. Kiểm tra user có quyền truy cập conversation không
     const conversation = await Conversation.findOne({
       _id: message.conversation,
-      participants: userId,
+      "participants.user": userId,
       isActive: true,
     });
 
@@ -261,7 +300,54 @@ export const deleteMessage = async (messageId, userId) => {
       },
     });
 
-    //7. Trả về kết quả
+    // 5. Nếu message này là lastMessage của conversation -> cập nhật lại lastMessage
+    const conversation = await Conversation.findById(message.conversation);
+    if (!conversation) {
+      // tạm thời trả về (shouldn't happen)
+      return {
+        success: true,
+        message: "Message deleted successfully",
+        messageId,
+        conversationId: message.conversation,
+      };
+    }
+
+    const lastMsgId = conversation.lastMessage?._id?.toString?.();
+    if (lastMsgId && lastMsgId === messageId.toString()) {
+      // tìm message mới nhất (không bị xóa)
+      const prev = await Message.findOne({
+        conversation: message.conversation,
+        isDeleted: false,
+      })
+        .sort({ createdAt: -1 })
+        .lean();
+
+      if (prev) {
+        conversation.lastMessage = {
+          _id: prev._id,
+          sender: prev.sender,
+          type: prev.type,
+          content: prev.type === "text" ? prev.content : prev.file?.filename || prev.type,
+          file: prev.file || null,
+          isDeleted: false,
+          createdAt: prev.createdAt,
+        };
+      } else {
+        // không còn message nào -> reset lastMessage
+        conversation.lastMessage = {
+          _id: null,
+          sender: null,
+          type: null,
+          content: null,
+          file: null,
+          isDeleted: false,
+          createdAt: null,
+        };
+      }
+      await conversation.save();
+    }
+
+    //Trả về kết quả
     return {
       success: true,
       message: "Message deleted successfully",

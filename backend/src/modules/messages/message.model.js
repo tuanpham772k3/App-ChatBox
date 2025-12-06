@@ -60,27 +60,6 @@ const messageSchema = new mongoose.Schema(
       default: null,
     }, // Người gửi tin nhắn gốc (nếu là tin nhắn chuyển tiếp)
 
-    // Trạng thái tin nhắn
-    status: {
-      type: String,
-      enum: ["sent", "delivered", "read"],
-      default: "sent",
-    }, // Trạng thái: đã gửi, đã giao, đã đọc
-
-    // Thông tin đọc tin nhắn
-    readBy: [
-      {
-        user: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
-        }, // Người đã đọc
-        readAt: {
-          type: Date,
-          default: Date.now,
-        }, // Thời gian đọc
-      },
-    ],
-
     // Tin nhắn đã bị xóa
     isDeleted: {
       type: Boolean,
@@ -96,6 +75,13 @@ const messageSchema = new mongoose.Schema(
       type: Date,
       default: null,
     }, // Thời gian chỉnh sửa
+
+    // Trạng thái tin nhắn
+    status: {
+      type: String,
+      enum: ["sent", "read"],
+      default: "sent",
+    }, // Trạng thái: đã gửi, đã đọc
   },
   { timestamps: true } // Tự động thêm createdAt và updatedAt
 );
@@ -104,55 +90,6 @@ const messageSchema = new mongoose.Schema(
 messageSchema.index({ conversation: 1, createdAt: -1 }); // Tìm tin nhắn theo conversation, sắp xếp theo thời gian
 messageSchema.index({ sender: 1 }); // Tìm tin nhắn theo người gửi
 messageSchema.index({ status: 1 }); // Tìm tin nhắn theo trạng thái
-
-// Middleware: Cập nhật lastMessage trong conversation khi có tin nhắn mới
-messageSchema.post("save", async function (doc) {
-  try {
-    const Conversation = mongoose.model("Conversation");
-
-    // Cập nhật lastMessage trong conversation
-    await Conversation.findByIdAndUpdate(doc.conversation, {
-      lastMessage: {
-        sender: doc.sender,
-        content: doc.content,
-        createdAt: doc.createdAt,
-      },
-    });
-  } catch (error) {
-    console.error("Error updating conversation lastMessage:", error);
-  }
-});
-
-// Middleware: Xóa lastMessage trong conversation khi tin nhắn cuối bị xóa
-messageSchema.post("remove", async function (doc) {
-  try {
-    if (doc && doc.isDeleted) {
-      const Conversation = mongoose.model("Conversation");
-
-      //Tìm tin nhắn cuối cùng còn lại trong conversation
-      const lastMessage = await mongoose
-        .model("Message")
-        .findOne({
-          conversation: doc.conversation,
-          isDeleted: false,
-        })
-        .sort({ createdAt: -1 });
-
-      //Cập nhật lastMessage
-      await Conversation.findByIdAndUpdate(doc.conversation, {
-        lastMessage: lastMessage
-          ? {
-              sender: lastMessage.sender,
-              content: lastMessage.content,
-              createdAt: lastMessage.createdAt,
-            }
-          : { sender: null, content: null, createdAt: null },
-      });
-    }
-  } catch (error) {
-    console.error("Error updating conversation lastMessage after delete:", error);
-  }
-});
 
 const Message = mongoose.model("Message", messageSchema);
 export default Message;
