@@ -4,6 +4,7 @@ import {
   deleteConversation,
   getConversationById,
   getConversations,
+  markConversationAsRead,
 } from "./conversationsSlice";
 import { clearMessages, fetchConversationMessages } from "@/features/chat/messagesSlice";
 
@@ -45,6 +46,8 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
     dispatch(clearMessages());
 
     dispatch(fetchConversationMessages({ conversationId }));
+
+    dispatch(markConversationAsRead({ conversationId, userId: user.id }));
 
     onActiveChatId(conversationId); // giữ logic hiển thị ChatWindow
   };
