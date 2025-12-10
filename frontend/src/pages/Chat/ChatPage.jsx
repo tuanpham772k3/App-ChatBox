@@ -24,7 +24,6 @@ const ChatPage = () => {
         <ConversationContainer
           activeChat={activeChat}
           onActiveChatId={handleActiveChatId}
-          onBackToList={handleBackToList}
         />
 
         {/* Chat Window */}
