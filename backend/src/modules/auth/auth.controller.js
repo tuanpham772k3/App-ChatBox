@@ -128,6 +128,7 @@ export const login = async (req, res) => {
 
     // Cập nhật trạng thái
     user.status = "active";
+    user.lastSeenAt = new Date();
     await user.save();
 
     // create accessToken

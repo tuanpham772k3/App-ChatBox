@@ -9,7 +9,7 @@ import userRoutes from "./modules/users/user.route.js";
 import conversationRoutes from "./modules/conversations/conversation.route.js";
 import messageRoutes from "./modules/messages/message.route.js";
 import { initSocket } from "./socket.js";
-import { chatSocket } from "./sockets/chat/chat.socket.js";
+import { registerSocket } from "./sockets/registerSocket.js";
 
 connectDB();
 
@@ -30,7 +30,7 @@ app.use("/api/conversations", conversationRoutes);
 app.use("/api/messages", messageRoutes);
 
 // sockets
-chatSocket(io);
+registerSocket(io);
 
 // PORT
 const port = process.env.PORT || 8080;

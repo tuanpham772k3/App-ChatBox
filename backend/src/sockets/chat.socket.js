@@ -1,9 +1,9 @@
 import jwt from "jsonwebtoken";
-import User from "../../modules/users/user.model.js";
-import Session from "../../modules/auth/session.model.js";
-import Message from "../../modules/messages/message.model.js";
-import Conversation from "../../modules/conversations/conversation.model.js";
-import { markMessageAsRead } from "../../modules/messages/message.service.js";
+import User from "../modules/users/user.model.js";
+import Session from "../modules/auth/session.model.js";
+import Message from "../modules/messages/message.model.js";
+import Conversation from "../modules/conversations/conversation.model.js";
+import { markMessageAsRead } from "../modules/messages/message.service.js";
 
 /**
  * Socket.IO handler cho chat realtime
