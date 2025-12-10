@@ -13,7 +13,6 @@ import ConversationSearch from "./components/ConversationSearch";
 import ConversationItem from "./components/ConversationItem";
 
 import { getDisplayInfo } from "./utils/conversationHelper";
-import { emitEvent } from "@/shared/lib/socket";
 
 const ConversationContainer = ({ activeChat, onActiveChatId }) => {
   const dispatch = useDispatch();
@@ -25,19 +24,10 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
     statusUsers = {},
   } = useSelector((state) => state.conversations);
 
-  // Xử lý logic gọi api lấy danh sách hội thoại khi giao diện vừa bật lên
+  // Lấy danh sách hội thoại
   useEffect(() => {
     dispatch(getConversations());
   }, [dispatch]);
-
-  // Join tất cả các phòng conversation khi có danh sách conversation
-  useEffect(() => {
-    if (!conversations.length) return;
-
-    conversations.forEach((conversation) => {
-      emitEvent("join_conversation", conversation._id);
-    });
-  }, [conversations]);
 
   // Xử lý select conversation
   const handleSelectConversation = (conversationId) => {
