@@ -1,7 +1,7 @@
 import Conversation from "../modules/conversations/conversation.model.js";
 
 export const conversationSocket = (io, socket) => {
-  socket.on("join_conversation", async (conversationId) => {
+  socket.on("join_conversation", async ({ conversationId }) => {
     if (!conversationId) {
       return socket.emit("error", {
         type: "BAD_REQUEST",
@@ -27,6 +27,11 @@ export const conversationSocket = (io, socket) => {
       }
 
       socket.join(`conversation_${conversationId}`);
+
+      // 🔥 Log join thành công
+      console.log(
+        `[SOCKET] User ${socket.userId} joined room conversation_${conversationId}`
+      );
     } catch (err) {
       console.error("join_conversation error:", {
         conversationId,
@@ -38,7 +43,7 @@ export const conversationSocket = (io, socket) => {
     }
   });
 
-  socket.on("leave_conversation", (conversationId) => {
+  socket.on("leave_conversation", ({ conversationId }) => {
     if (!conversationId) return;
     socket.leave(`conversation_${conversationId}`);
   });

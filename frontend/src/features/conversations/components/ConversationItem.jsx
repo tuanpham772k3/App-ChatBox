@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Ellipsis } from "lucide-react";
 import { useFloatingMenu } from "@/shared/hooks/useFloatingMenu";
 import FloatingMenu from "@/shared/components/ui/popover/FloatingMenu";
 import { getTypingNames } from "../utils/conversationHelper";
+import { emitEvent } from "@/shared/lib/socket";
 
 const ConversationItem = ({
   isActive,
@@ -12,6 +13,7 @@ const ConversationItem = ({
   typingUsers,
   currentUserId,
   partnerStatus,
+  conversationId,
 }) => {
   // Lấy tên những người đang gõ trong cuộc trò chuyện này
   const typingNames = getTypingNames(typingUsers, currentUserId);
@@ -47,6 +49,16 @@ const ConversationItem = ({
     { label: "Xem trang cá nhân", onClick: () => {} },
     { label: "Lưu trữ đoạn chat", onClick: () => {} },
   ];
+
+  // emit join conversation chỉ khi Active
+  useEffect(() => {
+    if (!isActive || !conversationId) return;
+    emitEvent("join_conversation", { conversationId });
+
+    return () => {
+      emitEvent("leave_conversation", { conversationId });
+    };
+  }, [conversationId, isActive]);
 
   return (
     <div

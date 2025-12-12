@@ -84,6 +84,7 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
                   typingUsers={typingInThisConversation}
                   currentUserId={user.id}
                   partnerStatus={partnerStatus}
+                  conversationId={conversation._id}
                 />
               );
             })}

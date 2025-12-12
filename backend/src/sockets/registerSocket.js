@@ -30,27 +30,13 @@ export const registerSocket = (io) => {
       // Join vào room cá nhân
       socket.join(`user_${socket.userId}`);
 
-      //Join tất cả conversation
-      let conversations = [];
+      // Phát tin trạng thái người online
       try {
-        conversations = await Conversation.find({
+        const conversations = await Conversation.find({
           "participants.user": socket.userId,
           isActive: true,
         }).select("_id");
 
-        conversations.forEach((c) => {
-          socket.join(`conversation_${c._id}`);
-        });
-
-        console.log(
-          `Joined ${conversations.length} conversations for user ${socket.user.username}`
-        );
-      } catch (err) {
-        console.error("Join all conversations failed:", err);
-      }
-
-      // Phát tin trạng thái người online
-      try {
         const payload = {
           userId: socket.userId,
           status: "online",
