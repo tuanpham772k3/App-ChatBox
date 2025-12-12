@@ -10,8 +10,6 @@ export const getDisplayInfo = (conversation, currentUserId) => {
   // Lấy người đối diện
   const partner = conversation.participants.find((p) => p.user._id !== currentUserId);
 
-  // console.log(partner);
-
   // Nếu là group thì hiển thị khác
   const isGroup = conversation.type === "group";
 
@@ -32,7 +30,7 @@ export const getDisplayInfo = (conversation, currentUserId) => {
   const lastMsgContent = lastMsg?.content || "Chưa có tin nhắn";
   const lastMsgTime = lastMsg?.createdAt ? formatConversationTime(lastMsg.createdAt) : "";
 
-  // Số tin nhắn chưa đọc (backend đã tính sẵn cho user hiện tại)
+  // Số tin nhắn chưa đọc
   const unreadCount = conversation.unreadCount || 0;
 
   return {
