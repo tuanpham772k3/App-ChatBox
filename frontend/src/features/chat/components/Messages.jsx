@@ -5,7 +5,7 @@ import { deleteMessageById } from "../messagesSlice";
 import MessageItem from "./MessageItem";
 
 const Messages = ({ setEditContent, setEditMessageId, setEditOriginalContent }) => {
-  const { messages, loading } = useSelector((state) => state.messages);
+  const { messages = [], loading } = useSelector((state) => state.messages);
   const { user } = useSelector((state) => state.auth);
 
   const dispatch = useDispatch();
