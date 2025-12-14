@@ -1,6 +1,7 @@
 import User from "../users/user.model.js";
 import Message from "./message.model.js";
 import Conversation from "../conversations/conversation.model.js";
+import { getSocket } from "../../socket.js";
 
 /**Tạo tin nhắn mới
  * @param {string} conversationId - ID của conversation
@@ -20,7 +21,7 @@ export const createMessage = async (
   replyTo = null
 ) => {
   try {
-    //1. Kiểm tra conversationId tồn tại và user có quyền truy cập không
+    //1. Kiểm tra conversation tồn tại và user có quyền truy cập không
     const conversation = await Conversation.findOne({
       _id: conversationId,
       "participants.user": senderId,
@@ -31,22 +32,7 @@ export const createMessage = async (
       throw new Error("Conversation not found or access denied");
     }
 
-    // 2. Kiểm tra sender có tồn tại không
-    const sender = await User.findById(senderId);
-    if (!sender) {
-      throw new Error("Sender not found");
-    }
-
-    // 3. Validation content
-    if (!content || content.trim() === "") {
-      throw new Error("Message content cannot be empty");
-    }
-
-    if (content.length > 2000) {
-      throw new Error("Message content too long(max 2000 characters)");
-    }
-
-    // 4. Kiểm tra replyTo message (nếu có)
+    // 2. Kiểm tra replyTo message (nếu có)
     if (replyTo) {
       const replyMessage = await Message.findOne({
         _id: replyTo,
@@ -59,7 +45,7 @@ export const createMessage = async (
       }
     }
 
-    // 5. Tạo message object
+    // 3. Tạo message object & thêm file nếu có
     const messageData = {
       conversation: conversationId,
       sender: senderId,
@@ -78,10 +64,16 @@ export const createMessage = async (
       };
     }
 
-    const newMessage = new Message(messageData);
-    const savedMessage = await newMessage.save();
+    const savedMessage = await new Message(messageData).save();
 
-    // 6. Cập nhật conversation.lastMessage và tăng unreadCount cho participants khác
+    // 4. Populate thông tin đầy đủ của message
+    const populatedMessage = await Message.findById(savedMessage._id)
+      .populate("sender", "username email avatarUrl")
+      .populate("replyTo", "content sender createdAt")
+      .populate("replyTo.sender", "username avatarUrl")
+      .lean();
+
+    // 5. Cập nhật conversation.lastMessage và tăng unreadCount cho participants khác
     const lastMessagePreview = {
       _id: savedMessage._id,
       sender: senderId,
@@ -98,38 +90,77 @@ export const createMessage = async (
       createdAt: savedMessage.createdAt,
     };
 
-    // Update lastMessage and increment unreadCount for other participants
     await Conversation.updateOne(
       { _id: conversationId },
       {
-        $set: { lastMessage: lastMessagePreview, updatedAt: new Date() },
-        $inc: {
-          // increment unreadCount only for participants != sender
-          // Mongo can't conditional-inc per array element with simple operator,
-          // so we use positional filtered array update (Mongo 3.6+). Simpler: pull/push map:
+        $set: {
+          lastMessage: lastMessagePreview,
+          updatedAt: new Date(),
         },
+        $inc: {
+          "participants.$[p].unreadCount": 1,
+        },
+      },
+      {
+        arrayFilters: [{ "p.user": { $ne: senderId } }],
       }
     );
 
-    // Because conditional $inc for array elements is complex in one update
-    const conv = await Conversation.findById(conversationId);
-    conv.participants = conv.participants.map((p) => {
-      if (p.user.toString() !== senderId.toString()) {
-        p.unreadCount = (p.unreadCount || 0) + 1;
-      }
-      return p;
-    });
-    conv.lastMessage = lastMessagePreview;
-    await conv.save();
+    // 6. Emit socket
+    let io = getSocket();
+    // Emit tin nhắn mới đến conversation socket
+    try {
+      io.to(`conversation_${conversationId}`).emit("message:new", populatedMessage);
+    } catch (err) {
+      console.error(
+        "Socket emit message:new failed for conversation:",
+        conversationId,
+        err
+      );
+    }
 
-    // 7. Populate thông tin sender và replyTo để trả về đầy đủ
-    const populatedMessage = await Message.findById(savedMessage._id)
-      .populate("sender", "username email avatarUrl")
-      .populate("replyTo", "content sender createdAt")
-      .populate("replyTo.sender", "username avatarUrl")
-      .lean();
+    try {
+      const lastMessageRealtime = {
+        _id: populatedMessage._id,
+        sender: {
+          _id: populatedMessage.sender._id,
+          username: populatedMessage.sender.username,
+          avatarUrl: populatedMessage.sender.avatarUrl,
+        },
+        type: populatedMessage.type,
+        content:
+          populatedMessage.type === "text"
+            ? populatedMessage.content
+            : populatedMessage.file?.filename || populatedMessage.type,
+        file: populatedMessage.file || null,
+        createdAt: populatedMessage.createdAt,
+      };
 
-    return populatedMessage;
+      const updatedConv = await Conversation.findById(conversationId).lean();
+
+      // Emit unreadCount realtime cho từng user (TRỪ người gửi)
+      updatedConv.participants.forEach((p) => {
+        if (p.user?.toString() !== senderId) {
+          io.to(`user_${p.user}`).emit("conversation:update", {
+            conversationId,
+            lastMessage: lastMessageRealtime,
+            unreadCount: p.unreadCount,
+            userId: p.user?.toString(),
+          });
+          // Log emit
+          console.log("[SOCKET][EMIT] conversation:update", p.unreadCount);
+        }
+      });
+    } catch (err) {
+      console.error(
+        "Socket emit conversation:unread:update failed for conversation:",
+        conversationId,
+        err
+      );
+    }
+
+    // Result
+    return { populatedMessage };
   } catch (error) {
     console.log("Error in createMessage service:", error);
     throw error;
@@ -194,69 +225,6 @@ export const getMessages = async (conversationId, userId, page = 1, limit = 20) 
     };
   } catch (error) {
     console.error("Error in getMessages service:", error);
-    throw error;
-  }
-};
-
-/**
- * Đánh dấu tin nhắn đã đọc
- * @param {string} messageId - ID của tin nhắn
- * @param {string} userId - ID của user
- * @returns {object} - Kết quả đánh dấu đã đọc
- * */
-export const markMessageAsRead = async (messageId, userId) => {
-  try {
-    //1. Tìm tin nhắn
-    const message = await Message.findById(messageId);
-    if (!message) {
-      throw new Error("Message not found");
-    }
-
-    // 2. Kiểm tra user có quyền truy cập conversation không
-    const conversation = await Conversation.findOne({
-      _id: message.conversation,
-      "participants.user": userId,
-      isActive: true,
-    });
-
-    if (!conversation) {
-      throw new Error("Access denied");
-    }
-
-    // 3. Kiểm tra user đã đọc tin nhắn này chưa
-    const alreadyRead = message.readBy.some((read) => read.user.toString() === userId);
-
-    if (alreadyRead) {
-      return {
-        success: true,
-        message: "Message already marked as read",
-        readBy: message.readBy,
-      };
-    }
-
-    // 4. Thêm user vào danh sách đã đọc
-    message.readBy.push({ user: userId, readAt: new Date() });
-
-    // 5. Cập nhật status nếu cần
-    if (message.status === "sent") {
-      message.status = "delivered";
-    }
-
-    // 6. Lưu thay đổi
-    await message.save();
-
-    // 7. Populate thông tin readBy để trả về đầy đủ
-    const updatedMessage = await Message.findById(messageId)
-      .populate("readBy.user", "username avatarUrl")
-      .lean();
-
-    return {
-      success: true,
-      message: "Message marked as read",
-      readBy: updatedMessage.readBy,
-    };
-  } catch (error) {
-    console.log("Error in markMessageAsRead service:", error);
     throw error;
   }
 };

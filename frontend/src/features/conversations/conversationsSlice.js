@@ -156,7 +156,7 @@ export const removeMemberFromGroup = createAsyncThunk(
 // Đánh dấu đã đọc
 export const markConversationAsRead = createAsyncThunk(
   "conversation/markAsRead",
-  async ({conversationId, userId}, { rejectWithValue }) => {
+  async ({ conversationId, userId }, { rejectWithValue }) => {
     try {
       const res = await conversationApi.markAsReadApi(conversationId);
       return { conversationId, ...res.data };
@@ -186,24 +186,59 @@ const conversationsSlice = createSlice({
   },
 
   reducers: {
-    // Có thể dùng cho socket realtime
+    // Thêm hội thoại realtime
     addConversation: (state, action) => {
-      state.conversations.unshift(action.payload);
+      const newConv = action.payload;
+      const exists = state.conversations.some((c) => c._id === newConv._id);
+      if (!exists) {
+        state.conversations.unshift(newConv);
+      }
     },
 
-    // Cập nhật lastMessage và đưa hội thoại lên đầu khi có tin nhắn mới
-    updateConversationLastMessage: (state, action) => {
-      const { conversationId, message } = action.payload || {};
-      if (!conversationId || !message) return;
+    // Xoá hội thoại realtime
+    removeConversationRealtime: (state, action) => {
+      const conversationId = action.payload;
+      state.conversations = state.conversations.filter((c) => c._id !== conversationId);
+
+      if (state.currentConversation?._id === conversationId) {
+        state.currentConversation = null;
+      }
+    },
+
+    // Realtime unreadCount + lastMessage
+    updateConversationMetadata: (state, action) => {
+      const { conversationId, lastMessage, unreadCount, userId } = action.payload;
 
       const idx = state.conversations.findIndex((c) => c._id === conversationId);
       if (idx === -1) return;
 
-      state.conversations[idx].lastMessage = message;
+      state.conversations[idx].lastMessage = lastMessage;
 
-      // Đưa hội thoại lên đầu danh sách giống các app chat
+      const p = state.conversations[idx].participants.find((p) => p.user._id === userId);
+      if (p) p.unreadCount = unreadCount;
+
+      // move to top
       const [conv] = state.conversations.splice(idx, 1);
       state.conversations.unshift(conv);
+    },
+
+    // ✅ Realtime đã đọc (sync cho người khác)
+    syncReadStatusRealtime: (state, action) => {
+      const { conversationId, userId, lastReadAt } = action.payload;
+
+      const conv = state.conversations.find((c) => c._id === conversationId);
+      if (!conv) return;
+
+      conv.participants = conv.participants.map((p) =>
+        p.user._id === userId ? { ...p, unreadCount: 0, lastReadAt } : p
+      );
+
+      if (state.currentConversation?._id === conversationId) {
+        state.currentConversation.participants =
+          state.currentConversation.participants.map((p) =>
+            p.user._id === userId ? { ...p, unreadCount: 0, lastReadAt } : p
+          );
+      }
     },
 
     // User status
@@ -249,7 +284,7 @@ const conversationsSlice = createSlice({
       .addCase(createConversation.fulfilled, (state, action) => {
         state.loading = false;
         const newConv = action.payload.conversation;
-        const exists = state.conversations.find((c) => c._id === newConv._id);
+        const exists = state.conversations.some((c) => c._id === newConv._id);
         if (!exists) state.conversations.unshift(newConv);
       })
       .addCase(createConversation.rejected, (state, action) => {
@@ -264,10 +299,10 @@ const conversationsSlice = createSlice({
       })
       .addCase(createGroupConversation.fulfilled, (state, action) => {
         state.loading = false;
-        const newGroup = action.payload.conversation || action.payload;
+        const newGroup = action.payload.conversation;
         if (!newGroup) return;
 
-        const exists = state.conversations.find((c) => c._id === newGroup._id);
+        const exists = state.conversations.some((c) => c._id === newGroup._id);
         if (!exists) {
           // Đưa nhóm mới lên đầu danh sách
           state.conversations.unshift(newGroup);
@@ -309,9 +344,12 @@ const conversationsSlice = createSlice({
 
       /** -----DELETE CONVERSATION----- */
       .addCase(deleteConversation.fulfilled, (state, action) => {
-        state.conversations = state.conversations.filter(
-          (conv) => conv._id !== action.payload.conversationId
-        );
+        const { conversationId } = action.payload;
+        state.conversations = state.conversations.filter((c) => c._id !== conversationId);
+
+        if (state.currentConversation?._id === conversationId) {
+          state.currentConversation = null;
+        }
       })
 
       /** -----ADD MEMBER TO GROUP----- */
@@ -345,46 +383,36 @@ const conversationsSlice = createSlice({
       // -------------------------------
       .addCase(markConversationAsRead.fulfilled, (state, action) => {
         const { conversationId } = action.payload || {};
-        const { userId } = action.meta.arg || {}; // ✅ LẤY TỪ META
+        const { userId } = action.meta.arg || {}; // LẤY TỪ META
 
-        if (!conversationId || !userId) return;
+        // Update trong danh sách conversations
+        const conv = state.conversations.find((c) => c._id === conversationId);
+        if (!conv) return;
 
-        // 1️⃣ Update trong danh sách conversations
-        const idx = state.conversations.findIndex((c) => c._id === conversationId);
-        if (idx !== -1) {
-          const conv = state.conversations[idx];
-
-          conv.participants = conv.participants.map((p) => {
-            const pid = typeof p.user === "object" ? p.user._id : p.user;
-
-            if (pid === userId) {
-              return {
+        conv.participants = conv.participants.map((p) =>
+          p.user._id === userId
+            ? {
                 ...p,
                 unreadCount: 0,
                 lastReadAt: new Date().toISOString(),
                 lastReadMessage: conv.lastMessage?._id || null,
-              };
-            }
-            return p;
-          });
-        }
+              }
+            : p
+        );
 
-        // 2️⃣ Update currentConversation nếu đang mở
+        // Update currentConversation nếu đang mở
         if (state.currentConversation?._id === conversationId) {
           state.currentConversation.participants =
-            state.currentConversation.participants.map((p) => {
-              const pid = typeof p.user === "object" ? p.user._id : p.user;
-
-              if (pid === userId) {
-                return {
-                  ...p,
-                  unreadCount: 0,
-                  lastReadAt: new Date().toISOString(),
-                  lastReadMessage: state.currentConversation.lastMessage?._id || null,
-                };
-              }
-              return p;
-            });
+            state.currentConversation.participants.map((p) =>
+              p.user._id === userId
+                ? {
+                    ...p,
+                    unreadCount: 0,
+                    lastReadAt: new Date().toISOString(),
+                    lastReadMessage: state.currentConversation.lastMessage?._id || null,
+                  }
+                : p
+            );
         }
       });
   },
@@ -392,7 +420,10 @@ const conversationsSlice = createSlice({
 
 export const {
   addConversation,
-  updateConversationLastMessage,
+  removeConversationRealtime,
+  setCurrentConversation,
+  updateConversationMetadata,
+  syncReadStatusRealtime,
   userStatus,
   userStartTyping,
   userStopTyping,

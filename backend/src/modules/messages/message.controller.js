@@ -3,7 +3,6 @@ import {
   deleteMessage,
   editMessage,
   getMessages,
-  markMessageAsRead,
 } from "./message.service.js";
 import { getSocket } from "../../socket.js";
 
@@ -15,8 +14,7 @@ import { getSocket } from "../../socket.js";
  * 2. Nhận dữ liệu từ request body
  * 3. Validation cơ bản
  * 4. Gọi service tạo tin nhắn mới
- * 5. Emit message mới tới client
- * 6. Trả về phản hồi cho client
+ * 5. Trả về phản hồi cho client
  */
 export const createNewMessage = async (req, res) => {
   try {
@@ -27,7 +25,7 @@ export const createNewMessage = async (req, res) => {
     const { conversationId, content, type = "text", replyTo = null } = req.body;
 
     // Validation cơ bản
-    if (!conversationId || !content) {
+    if (!conversationId || !content || content.trim() === "") {
       return res.status(400).json({
         success: false,
         message: "Conversation ID and content are required",
@@ -53,14 +51,6 @@ export const createNewMessage = async (req, res) => {
       null, // fileInfo
       replyTo
     );
-
-    // Gửi tin nhắn mới đến client socket
-    try {
-      let io = getSocket();
-      io.to(`conversation_${conversationId}`).emit("message:new", message);
-    } catch (err) {
-      console.error("Socket emit failed for conversation:", conversationId, err);
-    }
 
     // Trả về phản hồi thành công
     return res.status(201).json({
@@ -180,73 +170,6 @@ export const getConversationMessages = async (req, res) => {
       });
     }
 
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      idCode: 4,
-    });
-  }
-};
-
-/**
- * Đánh dấu tin nhắn đã đọc
- * PUT /api/messages/:messageId/read
- *
- * Flow:
- *1. Lấy messageId từ URL params
- *2. Lấy userId từ JWT token
- *3. Validation cơ bản
- *4. Gọi service để đánh dấu tin nhắn đã đọc
- *5. Trả về phản hồi cho client
- */
-export const markAsRead = async (req, res) => {
-  try {
-    // Lấy id của tin nhắn từ URL params
-    const { messageId } = req.params;
-
-    // Lấy userId từ JWT token
-    const { userId } = req.user;
-
-    // Validation messageId
-    if (!messageId.match(/^[0-9a-fA-F]{24}$/)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid message ID format",
-        idCode: 1,
-      });
-    }
-
-    // Gọi service để đánh dấu tin nhắn đã đọc
-    const result = await markMessageAsRead(messageId, userId);
-
-    //  Trả về phản hồi thành công
-    return res.status(200).json({
-      success: true,
-      message: result.message,
-      idCode: 0,
-      data: result,
-    });
-  } catch (error) {
-    console.log("Error in markAsRead controller:", error);
-
-    // Xử lý lỗi không tìm thấy tin nhắn
-    if (error.message === "Message not found") {
-      return res.status(404).json({
-        success: false,
-        message: "Message not found",
-        idCode: 2,
-      });
-    }
-
-    if (error.message === "Access denied") {
-      return res.status(403).json({
-        success: false,
-        message: "Access denied",
-        idCode: 3,
-      });
-    }
-
-    // Lỗi server
     return res.status(500).json({
       success: false,
       message: "Internal server error",

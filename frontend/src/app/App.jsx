@@ -8,6 +8,7 @@ import Register from "@/pages/Auth/Register/Register";
 import ProfilePage from "@/pages/Profile/ProfilePage";
 import ChatPage from "@/pages/Chat/ChatPage";
 import { useSocket } from "@/shared/hooks/useSocket";
+import { useConversations } from "@/features/conversations/hooks/useConversations";
 
 // import pages
 
@@ -36,6 +37,7 @@ function App() {
   }, [accessToken]);
 
   useSocket(); // Kết nối socket và lắng nghe sự kiện global
+  useConversations();
 
   return (
     <NotificationContext.Provider value={api}>

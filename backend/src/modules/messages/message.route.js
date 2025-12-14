@@ -3,7 +3,6 @@ import { verifyToken } from "../../middlewares/middleware.controller.js";
 import {
   createNewMessage,
   getConversationMessages,
-  markAsRead,
   deleteMessageById,
   editMessageById,
 } from "./message.controller.js";

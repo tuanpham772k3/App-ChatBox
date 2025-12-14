@@ -1,56 +1,50 @@
-import socket from "@/shared/lib/socket";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import {
+  addConversation,
+  removeConversationRealtime,
+  syncReadStatusRealtime,
+  updateConversationMetadata,
+} from "../conversationsSlice";
+import { offEvent, onEvent } from "@/shared/lib/socket";
 
 export const useConversations = () => {
-  const [conversations, setConversations] = useState([]);
-  const [activeConversation, setActiveConversation] = useState(null);
+  const dispatch = useDispatch();
 
-  // ===Lắng nghe socket events từ server===
   useEffect(() => {
-    // Khi có hội thoại mới (VD: được tạo hoặc user được thêm vào group)
-    socket.on("conversation:new", (data) => {
-      setConversations((prev) => [data, ...prev]);
-    });
+    // ✅ Hội thoại mới
+    const onNewConversation = (conversation) => {
+      dispatch(addConversation(conversation));
+    };
 
-    // Khi hội thoại có tin nhắn mới (cập nhật last message, unread, v.v.)
-    socket.on("conversation:update", (updated) => {
-      setConversations((prev) =>
-        prev.map((c) => (c._id === updated._id ? { ...c, ...updated } : c))
-      );
-    });
+    // ✅ Hội thoại bị xoá
+    const onDeleteConversation = (conversationId) => {
+      dispatch(removeConversationRealtime(conversationId));
+    };
 
-    // Khi hội thoại bị xoá / user rời nhóm
-    socket.on("conversation:delete", (conversationId) => {
-      setConversations((prev) => prev.filter((c) => c._id !== conversationId));
-      if (activeConversation?._id === conversationId) {
-        setActiveConversation(null);
-      }
-    });
+    // ✅ Realtime unread
+    const onConversationUpdate = (data) => {
+      // { conversationId, lastMessage, unreadCount, userId }
+      dispatch(updateConversationMetadata(data));
+    };
+
+    // ✅ Realtime đã đọc
+    const onReadSync = (data) => {
+      // { conversationId, userId, lastReadAt }
+      dispatch(syncReadStatusRealtime(data));
+    };
+
+    onEvent("conversation:new", onNewConversation);
+    onEvent("conversation:delete", onDeleteConversation);
+    onEvent("conversation:update", onConversationUpdate);
+    onEvent("conversation:read", onReadSync);
 
     // Cleanup khi unmount
     return () => {
-      socket.off("conversation:new");
-      socket.off("conversation:update");
-      socket.off("conversation:delete");
+      offEvent("conversation:new", onNewConversation);
+      offEvent("conversation:delete", onDeleteConversation);
+      offEvent("conversation:update", onConversationUpdate);
+      offEvent("conversation:read", onReadSync);
     };
-  }, [activeConversation]);
-
-  // === Tạo hội thoại mới ===
-  const createConversation = useCallback((data) => {
-    // data: { conversation }
-    socket.emit("conversation:create", data);
-  }, []);
-
-  // === Chọn hội thoại đang xem ===
-  const selectConversation = useCallback((conversation) => {
-    setActiveConversation(conversation);
-  }, []);
-
-  return {
-    conversations,
-    setConversations,
-    activeConversation,
-    createConversation,
-    selectConversation,
-  };
+  }, [dispatch]);
 };

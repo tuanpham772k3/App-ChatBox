@@ -31,7 +31,10 @@ export const getDisplayInfo = (conversation, currentUserId) => {
   const lastMsgTime = lastMsg?.createdAt ? formatConversationTime(lastMsg.createdAt) : "";
 
   // Số tin nhắn chưa đọc
-  const unreadCount = conversation.unreadCount || 0;
+  const selfParticipant = conversation.participants.find(
+    (p) => p.user._id === currentUserId
+  );
+  const unreadCount = selfParticipant?.unreadCount || 0;
 
   return {
     id: conversation._id,
