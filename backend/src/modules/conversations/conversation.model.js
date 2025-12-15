@@ -75,7 +75,7 @@ const conversationSchema = new mongoose.Schema(
 );
 
 // Index để tối ưu truy vấn
-conversationSchema.index({ participants: 1 }); // Tìm cuộc trò chuyện theo người tham gia
+conversationSchema.index({ "participants.user": 1 }); // Tìm cuộc trò chuyện theo người tham gia
 conversationSchema.index({ type: 1 }); // Tìm theo loại cuộc trò chuyện
 conversationSchema.index({ "lastMessage.createdAt": -1 }); // Sắp xếp theo tin nhắn cuối
 

@@ -495,30 +495,30 @@ export const markConversationAsRead = async (req, res) => {
     const { conversationId } = req.params;
     const { userId } = req.user;
 
+    // Validate
     if (!conversationId.match(/^[0-9a-fA-F]{24}$/)) {
       return res
         .status(400)
         .json({ success: false, message: "Invalid conversation ID format", idCode: 1 });
     }
 
+    // Gọi service
     const result = await markConversationAsReadService(conversationId, userId);
 
+    // Trả kết quả
     return res.status(200).json({
       success: true,
       message: result.message,
       idCode: 0,
-      data: { unreadBefore: result.unreadBefore },
     });
   } catch (error) {
     console.error("Error in markConversationAsRead controller:", error);
     if (error.message === "Group conversation not found") {
-      return res
-        .status(404)
-        .json({
-          success: false,
-          message: "Conversation not found or access denied",
-          idCode: 2,
-        });
+      return res.status(404).json({
+        success: false,
+        message: "Conversation not found or access denied",
+        idCode: 2,
+      });
     }
     return res
       .status(500)

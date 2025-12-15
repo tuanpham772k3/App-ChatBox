@@ -1,6 +1,7 @@
 import Conversation from "./conversation.model.js";
 import User from "../users/user.model.js";
 import Message from "../messages/message.model.js";
+import { getSocket } from "../../socket.js";
 
 /**
  * Service layer xử lý logic nghiệp vụ cho Conversation
@@ -197,7 +198,7 @@ export const getUserConversations = async (userId, page = 1, limit = 20) => {
   try {
     const skip = (page - 1) * limit;
 
-    // Tìm tất cả conversation mà user tham gia
+    // 1. Tìm tất cả conversation mà user tham gia
     const conversations = await Conversation.find({
       "participants.user": userId,
       isActive: true,
@@ -209,50 +210,14 @@ export const getUserConversations = async (userId, page = 1, limit = 20) => {
       .limit(limit)
       .lean();
 
-    // Tính tổng số tin nhắn chưa đọc cho từng conversation bằng aggregation
-    const conversationIds = conversations.map((c) => c._id);
-    const participantLastReadMap = {};
-    conversations.forEach((c) => {
-      const p = c.participants.find((pp) =>
-        pp.user._id
-          ? pp.user._id.toString() === userId.toString()
-          : pp.user.toString() === userId.toString()
-      );
-      participantLastReadMap[c._id.toString()] = p?.lastReadAt
-        ? new Date(p.lastReadAt)
-        : new Date(0);
-    });
-
-    // 3. Aggregation: đếm messages per conversation where createdAt > participant.lastReadAt
-    const unreadCounts = {};
-    await Promise.all(
-      conversationIds.map(async (cid) => {
-        const lastReadAt = participantLastReadMap[cid.toString()] || new Date(0);
-        const cnt = await Message.countDocuments({
-          conversation: cid,
-          isDeleted: false,
-          createdAt: { $gt: lastReadAt },
-          // optionally exclude messages from the user themself:
-          // sender: { $ne: userId },
-        });
-        unreadCounts[cid.toString()] = cnt;
-      })
-    );
-
-    // 4. Attach unreadCount into conversations
-    const conversationsWithUnread = conversations.map((conv) => ({
-      ...conv,
-      unreadCount: unreadCounts[conv._id.toString()] || 0,
-    }));
-
-    // 5. Total
+    // 2. Total conversation
     const total = await Conversation.countDocuments({
       "participants.user": userId,
       isActive: true,
     });
 
     return {
-      conversations: conversationsWithUnread,
+      conversations,
       pagination: {
         currentPage: page,
         totalPages: Math.ceil(total / limit),
@@ -442,48 +407,47 @@ export const deleteConversation = async (conversationId, userId) => {
 /**
  * Đánh dấu đã đọc
  * @param {string} conversationId - ID của conversation
- * @param {string} userId - ID của user thực hiện xóa
+ * @param {string} userId - ID của user đang đăng nhập
  * @returns {Object} - Kết quả xóa
  */
 export const markConversationAsReadService = async (conversationId, userId) => {
   try {
+    // 1. Find and validate conversation
     const conv = await Conversation.findOne({
       _id: conversationId,
       "participants.user": userId,
       isActive: true,
-    });
+    }).select("participants lastMessage");
 
-    if (!conv) throw new Error("Group conversation not found");
+    if (!conv) throw new Error("Conversation not found");
 
-    // trước khi cập nhật, tính unread count: đếm messages createdAt > participant.lastReadAt (hoặc > 0 nếu null)
-    const participant = conv.participants.find(
-      (p) => p.user.toString() === userId.toString()
-    );
-    const lastReadAt = participant?.lastReadAt || new Date(0);
-
-    const unreadCount = await Message.countDocuments({
-      conversation: conversationId,
-      isDeleted: false,
-      createdAt: { $gt: lastReadAt },
-      sender: { $ne: userId }, // optional: chỉ đếm message của người khác
-    });
-
-    // cập nhật participant.lastReadAt và lastReadMessage + reset unreadCount cho participant
-    conv.participants = conv.participants.map((p) => {
-      if (p.user.toString() === userId.toString()) {
-        p.lastReadAt = new Date();
-        p.lastReadMessage = conv.lastMessage?._id || null;
-        p.unreadCount = 0;
-      }
-      return p;
-    });
+    // 2. Cập nhật participant: thiết lập lastReadAt, lastReadMessage, unreadCount = 0
+    const participant = conv.participants.find((p) => p.user.toString() === userId);
+    participant.lastReadAt = new Date();
+    participant.lastReadMessage = conv.lastMessage?._id || null;
+    participant.unreadCount = 0;
 
     await conv.save();
+
+    // 4. Emit socket
+    try {
+      let io = getSocket();
+      io.to(`conversation_${conversationId}`).emit("conversation:read", {
+        conversationId,
+        userId,
+        lastReadAt: new Date().toISOString(),
+      });
+    } catch (err) {
+      console.error(
+        "Socket emit conversation:read failed for conversation:",
+        conversationId,
+        err
+      );
+    }
 
     return {
       success: true,
       message: "Conversation marked as read",
-      unreadBefore: unreadCount,
     };
   } catch (error) {
     console.error("Error in markConversationAsReadService:", error);
