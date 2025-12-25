@@ -5,6 +5,7 @@ import { deleteMessageById } from "../messagesSlice";
 import MessageItem from "./MessageItem";
 
 const Messages = ({ setEditContent, setEditMessageId, setEditOriginalContent }) => {
+  const { currentConversation } = useSelector((state) => state.conversations);
   const { messages = [], loading } = useSelector((state) => state.messages);
   const { user } = useSelector((state) => state.auth);
 
@@ -46,12 +47,17 @@ const Messages = ({ setEditContent, setEditMessageId, setEditOriginalContent }) 
         // Xử lý show time
         const showTime = showTimestamp(msg.createdAt, prevMsg?.createdAt);
 
+        const isLastMessage = index === messages.length - 1;
+
         return (
           <MessageItem
             key={msg._id}
             msg={msg}
             isMine={isMine}
             showTime={showTime}
+            isLastMessage={isLastMessage}
+            conversation={currentConversation}
+            currentUserId={user.id}
             onDeleteMessage={handleDeleteMessage}
             onEditClick={handleEditClick}
           />

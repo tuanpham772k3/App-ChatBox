@@ -3,7 +3,16 @@ import { EllipsisVertical } from "lucide-react";
 import FloatingMenu from "@/shared/components/ui/popover/FloatingMenu";
 import { useFloatingMenu } from "@/shared/hooks/useFloatingMenu";
 
-const MessageItem = ({ msg, isMine, showTime, onDeleteMessage, onEditClick }) => {
+const MessageItem = ({
+  msg,
+  isMine,
+  showTime,
+  isLastMessage,
+  conversation,
+  currentUserId,
+  onDeleteMessage,
+  onEditClick,
+}) => {
   // Sử dụng hook useFloatingMenu
   const {
     open,
@@ -38,6 +47,20 @@ const MessageItem = ({ msg, isMine, showTime, onDeleteMessage, onEditClick }) =>
     { label: "Thu hồi", danger: true, onClick: handleDelete },
     { label: "Chỉnh sửa", onClick: handleEdit },
   ];
+
+  let readers = [];
+
+  if (isMine && isLastMessage && conversation?.participants) {
+    readers = conversation.participants.filter((p) => {
+      if (p.user._id === currentUserId) return;
+      if (!p.lastReadMessage) return;
+
+      // So sánh ObjectId (string compare đủ dùng vì cùng collection)
+      return p.lastReadMessage >= msg._id;
+    });
+  }
+
+  console.log(readers);
 
   return (
     <>
@@ -112,6 +135,25 @@ const MessageItem = ({ msg, isMine, showTime, onDeleteMessage, onEditClick }) =>
           )}
         </div>
       </div>
+
+      {isMine && isLastMessage && !msg.isDeleted && (
+        <div className="flex justify-end mt-1">
+          {readers.length > 0 ? (
+            <div className="flex gap-1">
+              {readers.map((p) => (
+                <img
+                  key={p.user._id}
+                  src={p.user.avatarUrl?.url || "/img/default-avatar.png"}
+                  alt={p.user.username}
+                  className="w-4 h-4 rounded-full object-cover"
+                />
+              ))}
+            </div>
+          ) : (
+            <span className="text-[11px] text-[var(--color-text-secondary)]">Đã gửi</span>
+          )}
+        </div>
+      )}
     </>
   );
 };

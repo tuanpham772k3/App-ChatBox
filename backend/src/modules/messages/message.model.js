@@ -79,9 +79,9 @@ const messageSchema = new mongoose.Schema(
     // Trạng thái tin nhắn
     status: {
       type: String,
-      enum: ["sent", "read"],
+      enum: ["sent", "delivered"],
       default: "sent",
-    }, // Trạng thái: đã gửi, đã đọc
+    }, // Trạng thái: đã gửi, đã giao
   },
   { timestamps: true } // Tự động thêm createdAt và updatedAt
 );

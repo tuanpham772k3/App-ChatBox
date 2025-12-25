@@ -417,14 +417,15 @@ export const markConversationAsReadService = async (conversationId, userId) => {
       _id: conversationId,
       "participants.user": userId,
       isActive: true,
-    }).select("participants lastMessage");
+    });
 
     if (!conv) throw new Error("Conversation not found");
 
     // 2. Cập nhật participant: thiết lập lastReadAt, lastReadMessage, unreadCount = 0
+    const lastReadMessage = conv.lastMessage?._id || null;
     const participant = conv.participants.find((p) => p.user.toString() === userId);
     participant.lastReadAt = new Date();
-    participant.lastReadMessage = conv.lastMessage?._id || null;
+    participant.lastReadMessage = lastReadMessage;
     participant.unreadCount = 0;
 
     await conv.save();
@@ -435,7 +436,7 @@ export const markConversationAsReadService = async (conversationId, userId) => {
       io.to(`conversation_${conversationId}`).emit("conversation:read", {
         conversationId,
         userId,
-        lastReadAt: new Date().toISOString(),
+        lastReadMessage,
       });
     } catch (err) {
       console.error(

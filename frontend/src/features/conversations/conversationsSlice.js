@@ -224,19 +224,19 @@ const conversationsSlice = createSlice({
 
     // ✅ Realtime đã đọc (sync cho người khác)
     syncReadStatusRealtime: (state, action) => {
-      const { conversationId, userId, lastReadAt } = action.payload;
+      const { conversationId, userId, lastReadMessage } = action.payload;
 
       const conv = state.conversations.find((c) => c._id === conversationId);
       if (!conv) return;
 
       conv.participants = conv.participants.map((p) =>
-        p.user._id === userId ? { ...p, unreadCount: 0, lastReadAt } : p
+        p.user._id === userId ? { ...p, unreadCount: 0, lastReadMessage } : p
       );
 
       if (state.currentConversation?._id === conversationId) {
         state.currentConversation.participants =
           state.currentConversation.participants.map((p) =>
-            p.user._id === userId ? { ...p, unreadCount: 0, lastReadAt } : p
+            p.user._id === userId ? { ...p, unreadCount: 0, lastReadMessage } : p
           );
       }
     },
