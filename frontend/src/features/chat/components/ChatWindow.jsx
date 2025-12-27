@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
-import { ArrowLeft, Ellipsis, PanelRight, Phone, Users, Video } from "lucide-react";
+import { ArrowLeft, PanelRight, Phone, Users, Video } from "lucide-react";
 import MessageInput from "./MessageInput";
 import Messages from "./Messages";
 import { useMessages } from "../hooks/useMessages";
-import { getTypingNames } from "@/features/conversations/utils/conversationHelper";
+import { getDisplayInfo, getTypingNames } from "@/features/conversations/utils/conversationHelper";
 import AddMembersModal from "./modal/AddMembersModal";
 
 const ChatWindow = ({ activeChat, onBackToList }) => {
@@ -23,8 +23,9 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Tìm đối tác trong cuộc trò chuyện hiện tại
-  const partner = currentConversation?.participants?.find((p) => p.user._id !== user.id);
-  const partnerStatus = statusUsers[partner?.user?._id]; // Lấy trạng thái của đối tác
+  const displayInfo = getDisplayInfo(currentConversation, user.id);
+  const partnerId = displayInfo?.partner?.user?._id;
+  const partnerStatus = partnerId ? statusUsers[partnerId] : null; // Lấy trạng thái của đối tác
 
   // typingUsers: { [conversationId]: { [userId]: username } }
   const currentTypingMap = typingUsers[currentConversation?._id] || {};
@@ -43,11 +44,11 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
 
   return (
     <main
-      className={`flex-2 bg-[var(--bg-primary)] flex flex-col rounded-lg overflow-hidden
+      className={`flex-2 bg-[var(--color-app)] flex flex-col overflow-hidden
       ${activeChat ? "flex" : "hidden"} md:flex`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-border)]">
+      <div className="flex items-center justify-between px-4 h-24 border-b border-[var(--color-border)]">
         <div className="flex items-center gap-3">
           {/* Nút Back chỉ hiện trên mobile */}
           <button
@@ -60,23 +61,23 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
           {/* Avatar */}
           <div className="relative">
             <img
-              src={partner?.user?.avatarUrl?.url}
-              alt={partner?.user?.username}
-              className="w-10 h-10 rounded-full object-cover"
+              src={displayInfo.displayAvatar}
+              alt={displayInfo.displayName}
+              className="w-12 h-12 rounded-full object-cover"
             />
             {partnerStatus?.status === "online" && (
-              <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[var(--bg-primary)] rounded-full"></span>
+              <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[var(--color-app)] rounded-full" />
             )}
           </div>
 
           {/* Info */}
           <div className="flex flex-col">
             <h3 className="text-[var(--color-text-primary)] font-semibold">
-              {partner?.user?.username || "Người dùng ẩn danh"}
+              {displayInfo.displayName || "Người dùng ẩn danh"}
             </h3>
             {/* Trạng thái người dùng + đang gõ */}
             {typingNames.length > 0 ? (
-              <span className="text-xs italic text-[var(--color-primary)]">
+              <span className="text-xs italic text-green-500">
                 {typingNames.join(", ")} đang gõ...
               </span>
             ) : (
@@ -88,20 +89,20 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
         </div>
 
         {/* Action icons */}
-        <div className="flex items-center gap-1 text-[var(--color-text-primary)]">
+        <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
           {currentConversation.type === "group" && (
             // Nếu type = group thì add members
-            <button className="hover:bg-[var(--bg-hover-primary)] p-2 rounded-full">
+            <button className="p-2 rounded-full hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)]">
               <Users onClick={showModal} className=" w-5 h-5" />
             </button>
           )}
-          <button className="hover:bg-[var(--bg-hover-primary)] p-2 rounded-full">
+          <button className="p-2 rounded-full hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)]">
             <Phone className=" w-5 h-5" />
           </button>
-          <button className="hover:bg-[var(--bg-hover-primary)] p-2 rounded-full">
+          <button className="p-2 rounded-full hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)]">
             <Video className="w-5 h-5" />
           </button>
-          <button className="hover:bg-[var(--bg-hover-primary)] p-2 rounded-full">
+          <button className="p-2 rounded-full hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)]">
             <PanelRight className="w-5 h-5" />
           </button>
         </div>

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { User, Users } from "lucide-react";
+import { Search, User, Users } from "lucide-react";
 import ModalCreateGroup from "./modal/ModalCreateGroup";
 import ModalSearchUser from "./modal/ModalSearchUser";
 
@@ -28,13 +28,13 @@ const ConversationHeader = () => {
   return (
     <>
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 text-[var(--color-text-primary)]">
-        <h2 className="font-bold text-2xl">Chat</h2>
+      <div className="flex items-center justify-between px-6 h-24 border-b border-[var(--color-border)]">
+        <h2 className="font-bold text-2xl text-[var(--color-primary)]">Messages</h2>
         <div className="flex gap-3">
-          {/* Search user */}
+          {/* Private */}
           <button
             onClick={showSearchUserModal}
-            className="flex items-center rounded-full bg-[var(--bg-gray)] p-2 hover:bg-[var(--bg-hover-primary)] transition-colors"
+            className="flex items-center p-2 rounded-full bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)] transition-colors"
           >
             <User className="w-5 h-5" />
           </button>
@@ -42,9 +42,14 @@ const ConversationHeader = () => {
           {/* Group */}
           <button
             onClick={showGroupModal}
-            className="flex items-center rounded-full bg-[var(--bg-gray)] p-2 hover:bg-[var(--bg-hover-primary)] transition-colors"
+            className="flex items-center p-2 rounded-full bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)] transition-colors"
           >
             <Users className="w-5 h-5" />
+          </button>
+
+          {/* Search */}
+          <button className="flex items-center p-2 rounded-full bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)] transition-colors">
+            <Search className="w-5 h-5" />
           </button>
         </div>
       </div>

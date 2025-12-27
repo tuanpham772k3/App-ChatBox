@@ -15,8 +15,8 @@ const ChatPage = () => {
   };
 
   return (
-    <div className="w-full h-screen p-4 bg-[var(--bg-black)]">
-      <div className="w-full h-full flex justify-center gap-4">
+    <div className="w-full h-screen">
+      <div className="w-full h-full flex justify-center">
         {/* Sidebar */}
         <Sidebar />
 

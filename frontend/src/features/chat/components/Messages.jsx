@@ -1,6 +1,6 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { showTimestamp } from "@/shared/lib/utils";
+import { showAvatarDivider, showDateDivider, showSenderName, showTimeDivider } from "@/shared/lib/utils";
 import { deleteMessageById } from "../messagesSlice";
 import MessageItem from "./MessageItem";
 
@@ -28,7 +28,7 @@ const Messages = ({ setEditContent, setEditMessageId, setEditOriginalContent }) 
   };
 
   return (
-    <div className="flex-1 overflow-y-auto px-6 py-4 space-y-0.5 scrollbar-thin scrollbar-thumb-[var(--color-border)] scrollbar-track-transparent">
+    <div className="flex-1 overflow-y-auto px-6 py-4 space-y-0.5 bg-[var(--color-chat)] custom-scrollbar">
       {loading && (
         <p className="text-center text-sm text-[var(--color-text-secondary)]">
           Đang tải tin nhắn...
@@ -44,8 +44,13 @@ const Messages = ({ setEditContent, setEditMessageId, setEditOriginalContent }) 
       {messages.map((msg, index) => {
         const isMine = msg.sender?._id === user.id; // Tin của tôi
         const prevMsg = messages[index - 1]; // Tin nhắn trước
-        // Xử lý show time
-        const showTime = showTimestamp(msg.createdAt, prevMsg?.createdAt);
+        const nextMsg = messages[index + 1]; // Tin nhắn sau
+
+        // Xử lý show timestamp, tên người gửi
+        const showDate = showDateDivider(prevMsg, msg);
+        const showTime = showTimeDivider(msg, nextMsg);
+        const showName = showSenderName(prevMsg, msg, user.id);
+        const showAvatar = showAvatarDivider(prevMsg, msg, user.id);
 
         const isLastMessage = index === messages.length - 1;
 
@@ -54,7 +59,10 @@ const Messages = ({ setEditContent, setEditMessageId, setEditOriginalContent }) 
             key={msg._id}
             msg={msg}
             isMine={isMine}
+            showDate={showDate}
             showTime={showTime}
+            showName={showName}
+            showAvatar={showAvatar}
             isLastMessage={isLastMessage}
             conversation={currentConversation}
             currentUserId={user.id}

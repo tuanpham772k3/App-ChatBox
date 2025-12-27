@@ -62,9 +62,13 @@ const ConversationItem = ({
 
   return (
     <div
-      className={`group flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer transition w-full max-w-full ${
-        isActive ? "bg-[var(--color-primary)]/5" : "hover:bg-[var(--bg-hover-secondary)]"
-      }`}
+      className={`group flex items-center gap-4 px-2 py-3 rounded-xl cursor-pointer transition w-full max-w-full
+        ${
+          isActive
+            ? "bg-[var(--color-primary)]/5"
+            : "hover:bg-[var(--color-hover-surface)]"
+        }
+      `}
       onClick={handleRowClick}
     >
       {/* Avatar */}
@@ -75,35 +79,27 @@ const ConversationItem = ({
           className="w-12 h-12 rounded-full object-cover"
         />
         {partnerStatus?.status === "online" && (
-          <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[var(--bg-black)] rounded-full"></span>
+          <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[var(--color-app)] rounded-full"></span>
         )}
       </div>
 
       {/* Nội dung */}
       <div className="flex flex-1 justify-between items-center min-w-0">
         <div className="flex flex-col min-w-0">
-          <h3
-            className={`text-sm font-medium truncate ${
-              isActive
-                ? "text-[var(--color-primary)]"
-                : "text-[var(--color-text-primary)]"
-            }`}
-          >
-            {display.displayName}
-          </h3>
+          <h3 className="text-sm font-medium truncate">{display.displayName}</h3>
 
           <div className="flex items-center text-xs text-[var(--color-text-secondary)] min-w-0">
             {/* Phần nội dung chính (last message hoặc đang gõ) */}
             <span className="flex-1 min-w-0 max-w-60 overflow-hidden truncate">
               {typingNames.length > 0 ? (
-                <span className="text-xs italic text-[var(--color-primary)]">
+                <span className="text-xs italic text-green-500">
                   {typingNames.join(", ")} đang gõ...
                 </span>
               ) : (
                 <>
                   {display.lastMsgSender && (
-                    <span className="text-[var(--color-text-secondary)] mr-1">
-                      {display.lastMsgSender}:
+                    <span className="text-[var(--color-text-secondary)]">
+                      {display.lastMsgSender}:{" "}
                     </span>
                   )}
                   <span>{display.lastMsgContent}</span>
@@ -118,7 +114,7 @@ const ConversationItem = ({
           </div>
         </div>
 
-        {/* Ellipsis + Unread badge (unread nằm sau ellipsis giống Zalo) */}
+        {/* Ellipsis + Unread badge*/}
         <div className="flex items-center gap-1 ml-2 mr-2 shrink-0">
           <button
             ref={refs.setReference}
@@ -128,15 +124,14 @@ const ConversationItem = ({
               },
             })}
             type="button"
-            className={`p-1 rounded-full  ${
-              open ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-            } hover:bg-[var(--bg-hover-primary)] transition`}
+            className={`p-1 rounded-full bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)] transition 
+              ${open ? "opacity-100" : "opacity-0 group-hover:opacity-100"} `}
           >
-            <Ellipsis className="w-5 h-5" color="var(--color-text-secondary)" />
+            <Ellipsis className="w-5 h-5" />
           </button>
 
           {display.unreadCount > 0 && (
-            <span className="min-w-[20px] h-5 px-1 inline-flex items-center justify-center rounded-full bg-[var(--color-primary)] text-[10px] font-semibold text-white">
+            <span className="min-w-[20px] h-5 px-1 inline-flex items-center justify-center rounded-full bg-red-600 text-[10px] font-semibold text-white">
               {display.unreadCount > 99 ? "99+" : display.unreadCount}
             </span>
           )}

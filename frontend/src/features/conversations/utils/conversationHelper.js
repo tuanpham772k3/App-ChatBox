@@ -18,8 +18,8 @@ export const getDisplayInfo = (conversation, currentUserId) => {
     : partner?.user?.username || "Người dùng";
 
   const displayAvatar = isGroup
-    ? conversation.avatar?.url || "/img/group-default.png"
-    : partner?.user?.avatarUrl?.url || "/img/default-avatar.png";
+    ? conversation.avatar?.url || "/groupA.jpg"
+    : partner?.user?.avatarUrl.url || "/avatarA.jpg";
 
   // Thông tin tin nhắn cuối
   const lastMsg = conversation.lastMessage;

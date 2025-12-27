@@ -1,84 +1,99 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
 @import "tailwindcss";
-@import url("https://fonts.googleapis.com/css2?family=MuseoModerno:ital,wght@0,100..900;1,100..900&display=swap");
 
 :root {
-  /* Dark theme*/
-  --bg-primary: #242526;
-  --bg-black: #1f1f1f;
-  --bg-gray: #57575c;
-  /* Text-icon color */
-  --color-text-primary: #ffffff;
-  --color-text-secondary: #b0b3b8;
-  /* Border */
-  --color-border: #4b4b4b;
-  /* Hover */
-  --bg-hover-primary: #777a7e;
-  --bg-hover-secondary: #3a3b3c;
-  /* End dark theme */
-
-  /* Accent */
-  --color-primary: #2e89ff;
-
   /* Font */
-  --font-primary: "MuseoModerno", sans-serif; /* body */
-  --font-secondary: "Segoe UI", sans-serif; /* description, content */
-  --font-product: "Product Sans", sans-serif; /* Header logo text */
+  --my-font: "Inter", sans-serif;
+
+  /* Primary */
+  --color-primary: #2563eb;
+
+  /* Background */
+  --color-app: #f8fafc;
+  --color-chat: #f1f5f9;
+  --color-surface: #ffffff;
+
+  /* Hover */
+  --color-hover-surface: #f1f5f9;
+  --color-hover-soft: #e2e8f0;
+  --color-primary-hover: #1d4ed8;
+  --color-primary-active: #1e40af;
+  --color-icon-hover-bg: #e2e8f0;
+  --color-icon-hover-text: #0f172a;
+  --color-success-hover: #16a34a;
+  --color-error-hover: #dc2626;
+  --color-warning-hover: #d97706;
+
+  /* Text-Icon color */
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #64748b;
+
+  /* Border */
+  --color-border: #e5e7eb;
+
+  /* State color */
+  --color-success: #22c55e;
+  --color-error: #ef4444;
+  --color-warning: #f59e0b;
 }
 
 /* Reset/Normalize CSS */
-html {
-  margin: 0;
-  padding: 0;
-  line-height: 1.5;
-  box-sizing: border-box;
-  scroll-behavior: smooth;
-  font-family: "Segoe UI", sans-serif;
-}
+@layer base {
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    line-height: 1.5;
+    box-sizing: border-box;
+    scroll-behavior: smooth;
+    font-family: var(--my-font);
+  }
 
-*,
-*:before,
-*:after {
-  box-sizing: border-box;
-}
+  *,
+  *:before,
+  *:after {
+    box-sizing: border-box;
+  }
 
-input,
-textarea,
-select,
-button {
-  outline: none;
-  font: inherit;
-  border: none;
-}
+  input,
+  textarea,
+  select,
+  button {
+    outline: none;
+    font: inherit;
+    border: none;
+  }
 
-input {
-  line-height: normal;
-}
+  input {
+    line-height: normal;
+  }
 
-label,
-button {
-  cursor: pointer;
-  user-select: none !important;
-}
+  label,
+  button {
+    cursor: pointer;
+    user-select: none !important;
+  }
 
-ul {
-  list-style: none;
-}
+  ul {
+    list-style: none;
+  }
 
-a {
-  text-decoration: none;
-}
+  a {
+    text-decoration: none;
+  }
 
-img,
-picture,
-video,
-canvas,
-svg {
-  display: block;
-  max-width: 100%;
-  user-select: none !important;
-}
+  img,
+  picture,
+  video,
+  canvas,
+  svg {
+    display: block;
+    max-width: 100%;
+    user-select: none !important;
+  }
 
-.custom-scrollbar {
-  scrollbar-width: thin;              /* Firefox */
-  scrollbar-color: #555 transparent;  /* thumb màu #555, track trong suốt */
+  .custom-scrollbar {
+    scrollbar-width: thin; /* Firefox */
+    scrollbar-color: var(--color-border) transparent; /* thumb màu var(--color-border), track trong suốt */
+  }
 }

@@ -22,13 +22,13 @@ const FloatingMenu = ({
           e.stopPropagation();
         },
       })}
-      className="p-1 bg-[var(--bg-gray)] rounded-md z-50"
+      className="p-1 bg-[var(--color-surface)] text-[var(--color-text-primary)] rounded-md z-50"
       data-floating-menu
     >
       {/* Arrow – tự động xoay theo placement */}
       <div
         ref={arrowRef}
-        className="absolute w-3 h-3 bg-[var(--bg-gray)] rotate-45"
+        className="absolute w-3 h-3 bg-[var(--color-surface)] rotate-45"
         style={arrowStyle}
       />
       <div style={{ width: `${width}px` }}>
@@ -39,7 +39,7 @@ const FloatingMenu = ({
               e.stopPropagation();
               action.onClick && action.onClick();
             }}
-            className="text-white w-full px-2 py-1 text-start hover:bg-gray-600 rounded"
+            className="w-full px-2 py-1 text-start rounded hover:bg-[var(--color-icon-hover-bg)]"
           >
             {action.label}
           </button>

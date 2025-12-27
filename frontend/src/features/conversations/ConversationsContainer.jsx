@@ -13,6 +13,7 @@ import ConversationSearch from "./components/ConversationSearch";
 import ConversationItem from "./components/ConversationItem";
 
 import { getDisplayInfo } from "./utils/conversationHelper";
+import { MessageSquareText } from "lucide-react";
 
 const ConversationContainer = ({ activeChat, onActiveChatId }) => {
   const dispatch = useDispatch();
@@ -49,47 +50,56 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
 
   return (
     <section
-      className={`flex-1 flex flex-col bg-[var(--bg-primary)] rounded-lg
+      className={`flex-1 flex flex-col bg-[var(--color-app)] border-r border-[var(--color-border)]
       ${activeChat ? "hidden" : "flex"} md:flex`}
     >
       {/* HEADER */}
       <ConversationHeader />
 
       {/* SEARCH BAR */}
-      <ConversationSearch />
+      {/* <ConversationSearch /> */}
 
       {/* LIST CONVERSATIONS */}
-      <div className="flex flex-col px-4 overflow-y-auto scrollbar-thin scrollbar-thumb-[var(--color-border)] scrollbar-track-transparent">
-        {conversations.length === 0 ? (
-          <div className="text-center text-gray-400 mt-8">
-            Không có cuộc trò chuyện nào
-          </div>
-        ) : (
-          <>
-            {conversations.map((conversation) => {
-              const typingInThisConversation = typingUsers[conversation._id] || null;
+      <div className="px-4 py-8">
+        {/* Header */}
+        <div className="flex items-center gap-2 px-2 mb-2 text-[var(--color-text-secondary)] text-xs">
+          <MessageSquareText className="w-3 h-3" />
+          <p className="">All message</p>
+        </div>
 
-              const displayInfo = getDisplayInfo(conversation, user.id);
-              const partnerId = displayInfo.partner?._id;
-              const partnerStatus = partnerId ? statusUsers[partnerId] : null;
+        {/* Body */}
+        <div className="flex flex-col gap-2 overflow-y-auto scrollbar-thin scrollbar-thumb-[var(--color-border)] scrollbar-track-transparent">
+          {conversations.length === 0 ? (
+            <div className="text-center text-[var(--color-text-secondary)] mt-8">
+              Không có cuộc trò chuyện nào
+            </div>
+          ) : (
+            <>
+              {conversations.map((conversation) => {
+                const typingInThisConversation = typingUsers[conversation._id] || null;
 
-              return (
-                // CONVERSATION ITEM
-                <ConversationItem
-                  key={conversation._id}
-                  isActive={activeChat === conversation._id}
-                  display={displayInfo}
-                  onClick={() => handleSelectConversation(conversation._id)}
-                  onDeleteConversation={() => removeConversation(conversation._id)}
-                  typingUsers={typingInThisConversation}
-                  currentUserId={user.id}
-                  partnerStatus={partnerStatus}
-                  conversationId={conversation._id}
-                />
-              );
-            })}
-          </>
-        )}
+                const displayInfo = getDisplayInfo(conversation, user.id);
+                const partnerId = displayInfo.partner?.user?._id;
+                const partnerStatus = partnerId ? statusUsers[partnerId] : null;
+
+                return (
+                  // CONVERSATION ITEM
+                  <ConversationItem
+                    key={conversation._id}
+                    isActive={activeChat === conversation._id}
+                    display={displayInfo}
+                    onClick={() => handleSelectConversation(conversation._id)}
+                    onDeleteConversation={() => removeConversation(conversation._id)}
+                    typingUsers={typingInThisConversation}
+                    currentUserId={user.id}
+                    partnerStatus={partnerStatus}
+                    conversationId={conversation._id}
+                  />
+                );
+              })}
+            </>
+          )}
+        </div>
       </div>
     </section>
   );

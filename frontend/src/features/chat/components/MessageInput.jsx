@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Gift, Image, Mic, Smile, Sticker, ThumbsUp } from "lucide-react";
+import { Gift, Image, MapPin, Mic, Navigation, Smile, Sticker, ThumbsUp } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { createNewMessage, editMessageById } from "../messagesSlice";
 import { emitEvent } from "@/shared/lib/socket";
@@ -88,29 +88,18 @@ const MessageInput = ({
   };
 
   return (
-    <div className="flex items-center gap-3 px-2 py-3 border-t border-[var(--color-border)]">
-      {/* Action btn */}
-      <div className="flex">
+    <div className="flex items-center px-4 py-4 border-t border-[var(--color-border)]">
+      {/* Input Message */}
+      <div className="flex-1 flex items-center justify-between px-4 py-1 bg-[var(--color-chat)] rounded-full">
         {/* Micro */}
-        <button className="w-9 h-9 flex justify-center items-center rounded-full hover:bg-[var(--bg-hover-primary)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]">
+        <button
+          className="w-9 h-9 flex justify-center items-center rounded-full hover:bg-[var(--color-icon-hover-bg)] 
+        text-[var(--color-text-secondary)] hover:text-[var(--color-icon-hover-text)]"
+        >
           <Mic className="w-5 h-5" />
         </button>
-        {/* Upload */}
-        <button className="w-9 h-9 flex justify-center items-center rounded-full hover:bg-[var(--bg-hover-primary)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]">
-          <Image className="w-5 h-5" />
-        </button>
-        {/* Sticker */}
-        <button className="w-9 h-9 flex justify-center items-center rounded-full hover:bg-[var(--bg-hover-primary)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]">
-          <Sticker className="w-5 h-5" />
-        </button>
-        {/* GIF */}
-        <button className="w-9 h-9 flex justify-center items-center rounded-full hover:bg-[var(--bg-hover-primary)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]">
-          <Gift className="w-5 h-5" />
-        </button>
-      </div>
 
-      {/* Input Message */}
-      <div className="flex-1 flex items-center justify-between bg-[var(--bg-gray)] rounded-full">
+        {/* Input */}
         <input
           value={editMessageId ? editContent : text}
           onChange={handleOnchange}
@@ -120,18 +109,40 @@ const MessageInput = ({
             }
           }}
           type="text"
-          placeholder="Aa"
-          className="flex-1 bg-[var(--bg-gray)] rounded-full ps-3 text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)] focus:outline-none"
+          placeholder="Type a message..."
+          className="flex-1 bg-[var(--bg-chat)] rounded-full ps-3 text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)] placeholder:text-xs focus:outline-none"
         />
-        <button className="w-9 h-9 flex justify-center items-center rounded-full hover:bg-[var(--bg-hover-primary)] text-blue-500 hover:text-blue-400">
+
+        {/* Action buttons */}
+        {/* Upload */}
+        <button
+          className="w-9 h-9 flex justify-center items-center rounded-full hover:bg-[var(--color-icon-hover-bg)] 
+        text-[var(--color-text-secondary)] hover:text-[var(--color-icon-hover-text)]"
+        >
+          <Image className="w-5 h-5" />
+        </button>
+        {/* Smile */}
+        <button
+          className="w-9 h-9 flex justify-center items-center rounded-full hover:bg-[var(--color-icon-hover-bg)] 
+        text-[var(--color-text-secondary)] hover:text-[var(--color-icon-hover-text)]"
+        >
           <Smile className="w-5 h-5" />
         </button>
+        {/* Location */}
+        <button
+          className="w-9 h-9 flex justify-center items-center rounded-full hover:bg-[var(--color-icon-hover-bg)] 
+        text-[var(--color-text-secondary)] hover:text-[var(--color-icon-hover-text)]"
+        >
+          <Navigation className="w-5 h-5" />
+        </button>
+        {/* Map */}
+        <button
+          className="w-9 h-9 flex justify-center items-center rounded-full hover:bg-[var(--color-icon-hover-bg)] 
+        text-[var(--color-text-secondary)] hover:text-[var(--color-icon-hover-text)]"
+        >
+          <MapPin className="w-5 h-5" />
+        </button>
       </div>
-
-      {/* Like */}
-      <button className="w-9 h-9 flex justify-center items-center rounded-full hover:bg-[var(--bg-hover-primary)] text-blue-500 hover:text-blue-400">
-        <ThumbsUp className="w-5 h-5" />
-      </button>
     </div>
   );
 };

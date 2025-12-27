@@ -6,7 +6,10 @@ import { useFloatingMenu } from "@/shared/hooks/useFloatingMenu";
 const MessageItem = ({
   msg,
   isMine,
+  showDate,
   showTime,
+  showName,
+  showAvatar,
   isLastMessage,
   conversation,
   currentUserId,
@@ -48,8 +51,8 @@ const MessageItem = ({
     { label: "Chỉnh sửa", onClick: handleEdit },
   ];
 
+  // Xử lý danh sách những người đã đọc tin nhắn (chỉ hiện với tin nhắn của tôi và là tin nhắn cuối)
   let readers = [];
-
   if (isMine && isLastMessage && conversation?.participants) {
     readers = conversation.participants.filter((p) => {
       if (p.user._id === currentUserId) return;
@@ -60,18 +63,12 @@ const MessageItem = ({
     });
   }
 
-  console.log(readers);
-
   return (
     <>
       {/* Display time */}
-      {showTime && (
-        <div className="flex justify-center">
-          <span className="text-xs text-[var(--color-text-secondary)]">
-            {msgTime.toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}{" "}
+      {showDate && (
+        <div className="flex justify-center mt-4">
+          <span className="px-4 py-1 bg-[var(--color-surface)] rounded-lg text-xs text-[var(--color-text-primary)]">
             {msgTime.toLocaleDateString([], {
               weekday: "short",
               day: "2-digit",
@@ -82,29 +79,38 @@ const MessageItem = ({
       )}
 
       {/* Item Message */}
-      <div className={`flex gap-4 ${isMine ? "justify-end" : "items-end gap-2"} group`}>
+      <div
+        className={`flex items-start gap-4 ${
+          isMine ? "justify-end" : "items-end gap-2"
+        } group`}
+      >
         {/* --- Avatar ---*/}
-        {!isMine && (
-          <img
-            src={avatar}
-            alt={msg.sender?.username}
-            className="w-8 h-8 rounded-full object-cover cursor-pointer"
-          />
-        )}
+        {!isMine &&
+          (showAvatar ? (
+            <img
+              src={avatar}
+              alt={msg.sender?.username}
+              className="w-8 h-8 rounded-full object-cover cursor-pointer"
+            />
+          ) : (
+            <div className="w-8 h-8" />
+          ))}
 
         {/* Ellipsis + Menu */}
         {isMine && !msg.isDeleted && (
-          <div className="flex items-center">
+          <div className="self-center">
             {/* Ellipsis */}
             <button
               ref={refs.setReference}
               {...getReferenceProps()}
               type="button"
-              className={`p-1 rounded-full transition-opacity ${
-                open ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-              } hover:bg-gray-700`}
+              className={`p-1 rounded-full bg-[var(--color-surface)] text-[var(--color-text-secondary)]
+                hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)]
+                transition-opacity ${
+                  open ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                }`}
             >
-              <EllipsisVertical className="w-5 h-5" color="var(--color-text-secondary)" />
+              <EllipsisVertical className="w-5 h-5" />
             </button>
 
             {/* Menu */}
@@ -121,21 +127,44 @@ const MessageItem = ({
           </div>
         )}
 
-        {/* --- Bubble --- */}
-        <div
-          className={`px-3 py-2 rounded-2xl max-w-prose break-words ${
-            isMine
-              ? "bg-blue-600 text-[var(--color-text-primary)] rounded-tr-none"
-              : "bg-[var(--bg-gray)] text-[var(--color-text-primary)] rounded-tl-none"
-          }`}
-        >
-          <span className={msg.isDeleted ? "opacity-70" : ""}>{msg.content}</span>
-          {msg.isEdited && (
-            <span className="ml-1 text-[10px] opacity-70">(đã chỉnh sửa)</span>
+        {/* --- Content Column (Tên + Bubble) --- */}
+        <div className="flex flex-col items-start gap-2">
+          {/* --- Tên người gửi --- */}
+          {!isMine && showName && conversation?.type === "group" && (
+            <span className="text-sm font-medium text-[var(--color-text-primary)]">
+              {msg.sender?.username || "Người dùng ẩn danh"}
+            </span>
           )}
+
+          {/* --- Bubble --- */}
+          <div
+            className={`px-3 py-2 rounded-2xl min-w-[60px] max-w-prose break-words ${
+              isMine
+                ? "bg-[var(--color-primary)] text-white rounded-tr-none"
+                : "bg-[var(--color-surface)] text-[var(--color-text-primary)] rounded-tl-none"
+            }`}
+          >
+            {/* Content */}
+            <span className={msg.isDeleted ? "opacity-70" : ""}>{msg.content}</span>
+
+            {/* Edited */}
+            {msg.isEdited && <div className="text-[10px] opacity-70">(đã chỉnh sửa)</div>}
+
+            {/* Time */}
+            {showTime && (
+              <div
+                className={`mt-1 text-[11px] ${
+                  isMine ? " text-white" : "text-[var(--color-text-secondary)]"
+                }`}
+              >
+                {msgTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
+      {/* Hiển thị những người đã đọc tin nhắn */}
       {isMine && isLastMessage && !msg.isDeleted && (
         <div className="flex justify-end mt-1">
           {readers.length > 0 ? (
@@ -143,7 +172,7 @@ const MessageItem = ({
               {readers.map((p) => (
                 <img
                   key={p.user._id}
-                  src={p.user.avatarUrl?.url || "/img/default-avatar.png"}
+                  src={p.user.avatarUrl?.url || "/avatarA.jpg"}
                   alt={p.user.username}
                   className="w-4 h-4 rounded-full object-cover"
                 />

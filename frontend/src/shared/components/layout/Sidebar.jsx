@@ -46,80 +46,92 @@ const Sidebar = () => {
 
   return (
     <aside
-      className="flex flex-col justify-between bg-[var(--bg-primary)] rounded-2xl shadow-sm
-                text-[var(--color-text-secondary)] transition-all duration-300 w-60 px-4 py-5"
+      className="flex flex-col bg-[var(--color-app)] transition-all duration-300 w-60 px-4 border-r
+    border-[var(--color-border)]"
     >
       {/* TOP: Logo + workspace */}
-      <div className="flex items-center gap-3 mb-8">
+      <div className="flex items-center gap-2 px-3 h-24 border-b border-[var(--color-border)]">
         <div className="w-9 h-9 rounded-2xl bg-[var(--color-primary)] flex items-center justify-center text-white font-semibold">
           <MessageCircle className="w-5 h-5" />
         </div>
-        <div className="flex flex-col">
-          <span className="text-sm font-semibold text-[var(--color-text-primary)]">
-            Chatbox
-          </span>
-          <span className="text-xs text-[var(--color-text-secondary)]">
-            All messages
-          </span>
-        </div>
+        <span className="text-2xl font-bold text-[var(--color-text-primary)]">
+          Chatbox
+        </span>
       </div>
 
       {/* MIDDLE: Navigation */}
-      <nav className="flex-1 flex flex-col gap-1 text-sm">
-        <button className="flex items-center gap-3 px-3 py-2 rounded-xl text-[var(--color-text-secondary)] hover:bg-[var(--bg-hover-secondary)]">
+      <nav className="flex-1 flex flex-col gap-5 py-6 text-sm">
+        <button
+          className="flex items-center gap-6 px-3 py-2 rounded-xl text-[var(--color-text-primary)]
+        hover:bg-[var(--color-primary)] hover:text-white transition-colors duration-200 ease-out"
+        >
           <BarChart2 className="w-4 h-4" />
           <span>Dashboard</span>
         </button>
-        <button className="flex items-center gap-3 px-3 py-2 rounded-xl text-[var(--color-text-secondary)] hover:bg-[var(--bg-hover-secondary)]">
+        <button
+          className="flex items-center gap-6 px-3 py-2 rounded-xl text-[var(--color-text-primary)]
+        hover:bg-[var(--color-primary)] hover:text-white transition-colors duration-200 ease-out"
+        >
           <Users className="w-4 h-4" />
           <span>Analytics</span>
         </button>
-        <button className="flex items-center gap-3 px-3 py-2 rounded-xl text-[var(--color-text-secondary)] hover:bg-[var(--bg-hover-secondary)]">
+        <button
+          className="flex items-center gap-6 px-3 py-2 rounded-xl text-[var(--color-text-primary)]
+        hover:bg-[var(--color-primary)] hover:text-white transition-colors duration-200 ease-out"
+        >
           <FileText className="w-4 h-4" />
           <span>Files</span>
         </button>
-        <button className="flex items-center gap-3 px-3 py-2 rounded-xl text-[var(--color-text-secondary)] hover:bg-[var(--bg-hover-secondary)]">
+        <button
+          className="flex items-center gap-6 px-3 py-2 rounded-xl text-[var(--color-text-primary)]
+        hover:bg-[var(--color-primary)] hover:text-white transition-colors duration-200 ease-out"
+        >
           <Phone className="w-4 h-4" />
           <span>Call</span>
         </button>
-        <button className="flex items-center gap-3 px-3 py-2 rounded-xl bg-[var(--color-primary)] text-white shadow-sm">
+        <button
+          className="flex items-center gap-6 px-3 py-2 rounded-xl bg-[var(--color-primary)] text-white
+        shadow-sm"
+        >
           <MessageCircleMore className="w-4 h-4" />
           <span>Messages</span>
         </button>
-        <button className="flex items-center gap-3 px-3 py-2 rounded-xl text-[var(--color-text-secondary)] hover:bg-[var(--bg-hover-secondary)]">
+        <button
+          className="flex items-center gap-6 px-3 py-2 rounded-xl text-[var(--color-text-primary)]
+        hover:bg-[var(--color-primary)] hover:text-white transition-colors duration-200 ease-out"
+        >
           <Archive className="w-4 h-4" />
           <span>Community</span>
         </button>
-        <button className="flex items-center gap-3 px-3 py-2 rounded-xl text-[var(--color-text-secondary)] hover:bg-[var(--bg-hover-secondary)]">
+        <button
+          className="flex items-center gap-6 px-3 py-2 rounded-xl text-[var(--color-text-primary)]
+        hover:bg-[var(--color-primary)] hover:text-white transition-colors duration-200 ease-out"
+        >
           <Menu className="w-4 h-4" />
           <span>Settings</span>
         </button>
       </nav>
 
       {/* BOTTOM: User summary + logout */}
-      <div className="mt-6 flex items-center justify-between gap-3 pt-4 border-t border-[var(--color-border)]">
+      <div className="flex items-center justify-between gap-3 py-4">
         <div className="flex items-center gap-3">
           <img
-            src={user?.avatarUrl?.url || "/img/user.jpg"}
+            src={user?.avatar || "/avatarA.jpg"}
             alt="user"
-            className="w-9 h-9 rounded-full object-cover"
+            className="w-10 h-10 rounded-full object-cover"
           />
-          <div className="flex flex-col">
+          <div className="flex flex-col items-start">
             <span className="text-xs font-semibold text-[var(--color-text-primary)]">
               {user?.username || "User"}
             </span>
-            <span className="text-[11px] text-[var(--color-text-secondary)]">
-              Online
-            </span>
+            <button
+              onClick={handleLogout}
+              className="text-[11px] font-medium text-[var(--color-text-secondary)] hover:underline hover:text-[var(--color-primary)]"
+            >
+              Logout
+            </button>
           </div>
         </div>
-
-        <button
-          onClick={handleLogout}
-          className="text-[11px] font-medium text-[var(--color-primary)] hover:underline"
-        >
-          Logout
-        </button>
       </div>
     </aside>
   );
