@@ -42,11 +42,9 @@ export const showSenderName = (previousMsg, currentMsg, currentUserId) => {
   const prevTime = new Date(previousMsg.createdAt);
   const currTime = new Date(currentMsg.createdAt);
 
-  const diffMin = (currTime - prevTime) / 60000; // phút
   const isNewDay = currTime.toDateString() !== prevTime.toDateString();
 
-  // Nếu ngắt mạch hội thoại
-  return diffMin > 5 || isNewDay;
+  return isNewDay;
 };
 
 // Hiển thị avatar người gửi

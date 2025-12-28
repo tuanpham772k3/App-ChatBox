@@ -10,6 +10,13 @@ export const getDisplayInfo = (conversation, currentUserId) => {
   // Lấy người đối diện
   const partner = conversation.participants.find((p) => p.user._id !== currentUserId);
 
+  // Lấy danh sách thành viên (loại bỏ chính mình)
+  const participants = conversation.participants.map((p) => ({
+    id: p.user._id,
+    name: p.user.username,
+    avatarUrl: p.user.avatarUrl.url || "/avatarA.jpg",
+  }));
+
   // Nếu là group thì hiển thị khác
   const isGroup = conversation.type === "group";
 
@@ -17,9 +24,7 @@ export const getDisplayInfo = (conversation, currentUserId) => {
     ? conversation.name
     : partner?.user?.username || "Người dùng";
 
-  const displayAvatar = isGroup
-    ? conversation.avatar?.url || "/groupA.jpg"
-    : partner?.user?.avatarUrl.url || "/avatarA.jpg";
+  const displayAvatar = isGroup ? null : partner?.user?.avatarUrl.url || "/avatarA.jpg";
 
   // Thông tin tin nhắn cuối
   const lastMsg = conversation.lastMessage;
@@ -40,6 +45,7 @@ export const getDisplayInfo = (conversation, currentUserId) => {
     id: conversation._id,
     isGroup,
     partner,
+    participants,
     displayName,
     displayAvatar,
     lastMsgSender,

@@ -28,7 +28,7 @@ const Messages = ({ setEditContent, setEditMessageId, setEditOriginalContent }) 
   };
 
   return (
-    <div className="flex-1 overflow-y-auto px-6 py-4 space-y-0.5 bg-[var(--color-chat)] custom-scrollbar">
+    <div className="flex-1 overflow-y-auto px-4 py-4 space-y-0.5 bg-[var(--color-chat)] custom-scrollbar">
       {loading && (
         <p className="text-center text-sm text-[var(--color-text-secondary)]">
           Đang tải tin nhắn...

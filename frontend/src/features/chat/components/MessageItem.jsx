@@ -78,9 +78,9 @@ const MessageItem = ({
         </div>
       )}
 
-      {/* Item Message */}
+      {/* --- Item Message --- */}
       <div
-        className={`flex items-start gap-4 ${
+        className={`flex items-start gap-4 mt-1 ${
           isMine ? "justify-end" : "items-end gap-2"
         } group`}
       >
@@ -127,16 +127,16 @@ const MessageItem = ({
           </div>
         )}
 
-        {/* --- Content Column (Tên + Bubble) --- */}
+        {/* --- Content Column (Sender name + Bubble) --- */}
         <div className="flex flex-col items-start gap-2">
-          {/* --- Tên người gửi --- */}
+          {/* --- Sender name --- */}
           {!isMine && showName && conversation?.type === "group" && (
             <span className="text-sm font-medium text-[var(--color-text-primary)]">
               {msg.sender?.username || "Người dùng ẩn danh"}
             </span>
           )}
 
-          {/* --- Bubble --- */}
+          {/* --- Bubble wrapper --- */}
           <div
             className={`px-3 py-2 rounded-2xl min-w-[60px] max-w-prose break-words ${
               isMine

@@ -4,6 +4,7 @@ import { useFloatingMenu } from "@/shared/hooks/useFloatingMenu";
 import FloatingMenu from "@/shared/components/ui/popover/FloatingMenu";
 import { getTypingNames } from "../utils/conversationHelper";
 import { emitEvent } from "@/shared/lib/socket";
+import GroupAvatar from "@/shared/components/ui/avatar/GroupAvatar";
 
 const ConversationItem = ({
   isActive,
@@ -73,11 +74,16 @@ const ConversationItem = ({
     >
       {/* Avatar */}
       <div className="relative">
-        <img
-          src={display.displayAvatar}
-          alt={display.displayName}
-          className="w-12 h-12 rounded-full object-cover"
-        />
+        {display.isGroup ? (
+          <GroupAvatar users={display.participants} size={48} />
+        ) : (
+          <img
+            src={display.displayAvatar}
+            alt={display.displayName}
+            className="w-12 h-12 rounded-full object-cover"
+          />
+        )}
+
         {partnerStatus?.status === "online" && (
           <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[var(--color-app)] rounded-full"></span>
         )}
