@@ -1,0 +1,89 @@
+import React from "react";
+import { ArrowLeft, PanelRight, Phone, UserRound, Users, Video } from "lucide-react";
+import GroupAvatar from "@/shared/components/ui/avatar/GroupAvatar";
+
+const ChatHeader = ({ onBackToList, displayInfo, partnerStatus, showModal }) => {
+  return (
+    <div className="flex items-center justify-between px-4 h-24 border-b border-[var(--color-border)]">
+      <div className="flex items-center gap-3">
+        {/* Back button (only visible on mobile) */}
+        <button
+          onClick={onBackToList}
+          className="md:hidden mr-2 text-[var(--color-text-primary)]"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+
+        {/* --- Avatar --- */}
+        <div className="relative">
+          {displayInfo.isGroup ? (
+            // Nếu là nhóm thì hiển thị GroupAvatar
+            <GroupAvatar users={displayInfo.participants} size={48} />
+          ) : (
+            // Nếu là cá nhân thì hiển thị avatar người dùng
+            <>
+              <img
+                src={displayInfo.displayAvatar}
+                alt={displayInfo.displayName}
+                className="w-12 h-12 rounded-full object-cover"
+              />
+              {/* Trạng thái người dùng */}
+              {partnerStatus?.status === "online" && (
+                <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[var(--color-app)] rounded-full" />
+              )}
+            </>
+          )}
+        </div>
+
+        {/* --- Info --- */}
+        <div className="flex flex-col">
+          {/* --- Display Name --- */}
+          <h3 className="text-[var(--color-text-primary)] font-semibold">
+            {displayInfo.displayName}
+          </h3>
+
+          {/* -- User status or number of group members -- */}
+          {displayInfo.isGroup ? (
+            // Hiển thị số thành viên nếu là nhóm
+            <button type="button" className="flex items-center gap-1">
+              <UserRound className="w-4 h-4 text-[var(--color-text-secondary)]" />
+              <span className="text-sm text-[var(--color-text-secondary)]">{`${displayInfo.participants.length} thành viên`}</span>
+            </button>
+          ) : (
+            // Hiển thị trạng thái nếu là cuộc trò chuyện cá nhân
+            <span className="text-xs text-[var(--color-text-secondary)]">
+              {partnerStatus?.status === "online" ? "Đang hoạt động" : "Ngoại tuyến"}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* --- Action icons --- */}
+      <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
+        {/* --- Add members (only for group) --- */}
+        {displayInfo.isGroup && (
+          <button className="p-2 rounded-full hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)]">
+            <Users onClick={showModal} className=" w-5 h-5" />
+          </button>
+        )}
+
+        {/* --- Voice call --- */}
+        <button className="p-2 rounded-full hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)]">
+          <Phone className=" w-5 h-5" />
+        </button>
+
+        {/* --- Video call --- */}
+        <button className="p-2 rounded-full hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)]">
+          <Video className="w-5 h-5" />
+        </button>
+
+        {/* --- Info panel --- */}
+        <button className="p-2 rounded-full hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)]">
+          <PanelRight className="w-5 h-5" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default ChatHeader;

@@ -10,29 +10,38 @@ export const getDisplayInfo = (conversation, currentUserId) => {
   // Lấy người đối diện
   const partner = conversation.participants.find((p) => p.user._id !== currentUserId);
 
-  // Lấy danh sách thành viên (loại bỏ chính mình)
+  // Lấy id người đối diện
+  const partnerId = partner?.user?._id;
+
+  // Lấy danh sách thành viên && chỉ lấy thông tin cần thiết (id, name, avatarUrl)
   const participants = conversation.participants.map((p) => ({
     id: p.user._id,
     name: p.user.username,
     avatarUrl: p.user.avatarUrl.url || "/avatarA.jpg",
   }));
 
-  // Nếu là group thì hiển thị khác
+  // Lấy hội thoại nhóm
   const isGroup = conversation.type === "group";
 
+  // Tên hiển thị
   const displayName = isGroup
     ? conversation.name
     : partner?.user?.username || "Người dùng";
 
+  // Avatar hiển thị
   const displayAvatar = isGroup ? null : partner?.user?.avatarUrl.url || "/avatarA.jpg";
 
   // Thông tin tin nhắn cuối
-  const lastMsg = conversation.lastMessage;
+  const lastMsg = conversation.lastMessage; // message cuối cùng
+  const isMeLastSender = lastMsg?.sender?._id === currentUserId; // Kiểm tra người gửi có phải mình không
 
-  const isMeLastSender = lastMsg?.sender?._id === currentUserId;
+  // Người gửi tin nhắn cuối
   const lastMsgSender = isMeLastSender ? "Bạn" : lastMsg?.sender?.username || "";
 
+  // Nội dung tin nhắn cuối
   const lastMsgContent = lastMsg?.content || "Chưa có tin nhắn";
+
+  // Thời gian tin nhắn cuối
   const lastMsgTime = lastMsg?.createdAt ? formatConversationTime(lastMsg.createdAt) : "";
 
   // Số tin nhắn chưa đọc
@@ -45,6 +54,7 @@ export const getDisplayInfo = (conversation, currentUserId) => {
     id: conversation._id,
     isGroup,
     partner,
+    partnerId,
     participants,
     displayName,
     displayAvatar,
