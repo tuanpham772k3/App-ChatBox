@@ -26,12 +26,14 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Lấy trạng thái của đối tác và thông tin hiển thị
-  const displayInfo = getDisplayInfo(currentConversation, user.id);
-  const partnerStatus = displayInfo.partnerId ? statusUsers[displayInfo.partnerId] : null;
+  const displayInfo = getDisplayInfo(currentConversation, user.id) || {};
+  const partnerStatus = displayInfo.partnerId
+    ? statusUsers[displayInfo.partnerId]
+    : null;
 
   // typingUsers: { [conversationId]: { [userId]: username } }
-  const currentTypingMap = typingUsers[currentConversation?._id] || {};
-  const typingNames = getTypingNames(currentTypingMap, user.id);
+  // const currentTypingMap = typingUsers[currentConversation?._id] || {};
+  // const typingNames = getTypingNames(currentTypingMap, user.id);
 
   useMessages(activeChat); // Custom hook để quản lý tin nhắn realtime
 
@@ -77,7 +79,7 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
       <AddMembersModal
         isModalOpen={isModalOpen}
         handleCancel={cancelModal}
-        conversationId={currentConversation._id}
+        conversationId={currentConversation?._id}
       />
     </main>
   );

@@ -1,10 +1,10 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Ellipsis } from "lucide-react";
-import { useFloatingMenu } from "@/shared/hooks/useFloatingMenu";
-import FloatingMenu from "@/shared/components/ui/popover/FloatingMenu";
 import { getTypingNames } from "../utils/conversationHelper";
 import { emitEvent } from "@/shared/lib/socket";
 import GroupAvatar from "@/shared/components/ui/avatar/GroupAvatar";
+import MenuActions from "@/shared/components/ui/popover/MenuActions";
+import { Popover } from "antd";
 
 const ConversationItem = ({
   isActive,
@@ -16,40 +16,8 @@ const ConversationItem = ({
   partnerStatus,
   conversationId,
 }) => {
-  // Lấy tên những người đang gõ trong cuộc trò chuyện này
-  const typingNames = getTypingNames(typingUsers, currentUserId);
-
-  // Sử dụng hook useFloatingMenu
-  const {
-    open,
-    setOpen,
-    arrowRef,
-    refs,
-    floatingStyles,
-    getReferenceProps,
-    getFloatingProps,
-    arrowStyle,
-  } = useFloatingMenu("bottom");
-
-  //Xử lý khi click vào cả item
-  const handleRowClick = () => {
-    onClick?.();
-  };
-
-  // Các hành động trong menu
-  const actions = [
-    { label: "Đánh dấu chưa đọc", onClick: () => {} },
-    {
-      label: "Xóa đoạn chat",
-      danger: true,
-      onClick: () => {
-        onDeleteConversation && onDeleteConversation();
-        setOpen(false);
-      },
-    },
-    { label: "Xem trang cá nhân", onClick: () => {} },
-    { label: "Lưu trữ đoạn chat", onClick: () => {} },
-  ];
+  // State menu actions
+  const [open, setOpen] = useState(false);
 
   // emit join conversation chỉ khi Active
   useEffect(() => {
@@ -60,6 +28,27 @@ const ConversationItem = ({
       emitEvent("leave_conversation", { conversationId });
     };
   }, [conversationId, isActive]);
+
+  //Xử lý khi click vào cả item
+  const handleRowClick = () => {
+    onClick?.();
+  };
+
+  // Conversation menu actions
+  const conversationActions = [
+    { key: "archive_chat", label: "Ghim hội thoại", onClick: () => {} },
+    { key: "mask_unread", label: "Đánh dấu chưa đọc", onClick: () => {} },
+    { key: "categorize", label: "Phân loại", onClick: () => {} },
+    {
+      key: "delete",
+      label: "Xóa hội thoại",
+      danger: true,
+      onClick: onDeleteConversation,
+    },
+  ];
+
+  // Lấy tên những người đang gõ trong cuộc trò chuyện này
+  const typingNames = getTypingNames(typingUsers, currentUserId);
 
   return (
     <div
@@ -122,19 +111,28 @@ const ConversationItem = ({
 
         {/* Ellipsis + Unread badge*/}
         <div className="flex items-center gap-1 ml-2 mr-2 shrink-0">
-          <button
-            ref={refs.setReference}
-            {...getReferenceProps({
-              onClick(e) {
-                e.stopPropagation();
-              },
-            })}
-            type="button"
-            className={`p-1 rounded-full bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)] transition 
-              ${open ? "opacity-100" : "opacity-0 group-hover:opacity-100"} `}
+          <Popover
+            trigger="click"
+            placement="bottom"
+            open={open}
+            onOpenChange={setOpen}
+            content={<MenuActions actions={conversationActions} minWidth={160} />}
+            className="self-center"
           >
-            <Ellipsis className="w-5 h-5" />
-          </button>
+            {/* Ellipsis */}
+            <button
+              type="button"
+              onClick={(e) => e.stopPropagation()}
+              className={`p-1 rounded-full bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)] transition 
+              ${
+                open
+                  ? "opacity-100 focus:bg-[var(--color-icon-hover-bg)] focus:text-[var(--color-icon-hover-text)]"
+                  : "opacity-0 group-hover:opacity-100"
+              } `}
+            >
+              <Ellipsis size={20} />
+            </button>
+          </Popover>
 
           {display.unreadCount > 0 && (
             <span className="min-w-[20px] h-5 px-1 inline-flex items-center justify-center rounded-full bg-red-600 text-[10px] font-semibold text-white">
@@ -142,18 +140,6 @@ const ConversationItem = ({
             </span>
           )}
         </div>
-
-        {/* Menu */}
-        <FloatingMenu
-          open={open}
-          refs={refs}
-          floatingStyles={floatingStyles}
-          getFloatingProps={getFloatingProps}
-          arrowRef={arrowRef}
-          arrowStyle={arrowStyle}
-          actions={actions}
-          width={344}
-        />
       </div>
     </div>
   );

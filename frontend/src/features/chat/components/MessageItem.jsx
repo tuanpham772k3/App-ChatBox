@@ -1,7 +1,7 @@
-import React from "react";
-import { EllipsisVertical } from "lucide-react";
-import FloatingMenu from "@/shared/components/ui/popover/FloatingMenu";
-import { useFloatingMenu } from "@/shared/hooks/useFloatingMenu";
+import React, { useState } from "react";
+import { EllipsisVertical, Pencil, Trash } from "lucide-react";
+import { Popover } from "antd";
+import MenuActions from "@/shared/components/ui/popover/MenuActions";
 
 const MessageItem = ({
   msg,
@@ -16,52 +16,53 @@ const MessageItem = ({
   onDeleteMessage,
   onEditClick,
 }) => {
-  // Sử dụng hook useFloatingMenu
-  const {
-    open,
-    setOpen,
-    arrowRef,
-    refs,
-    floatingStyles,
-    getReferenceProps,
-    getFloatingProps,
-    arrowStyle,
-  } = useFloatingMenu("bottom");
+  // State menu actions
+  const [open, setOpen] = useState(false);
 
-  // Xử lý khi xóa tin nhắn
+  // Xóa tin nhắn
   const handleDelete = () => {
     onDeleteMessage(msg._id);
     setOpen(false);
   };
 
-  // Xử lý chỉnh sửa tin nhắn
+  // Chỉnh sửa tin nhắn
   const handleEdit = () => {
     onEditClick(msg);
     setOpen(false);
   };
 
-  // Lấy avatar người gửi, nếu không có thì dùng avatar mặc định
-  const avatar = msg.sender?.avatarUrl?.url || "/img/default-avatar.png";
-  // Chuyển createdAt thành đối tượng Date
-  const msgTime = new Date(msg.createdAt); // Date tin hiện tại
+  // Avatar người gửi
+  const avatar = msg.sender?.avatarUrl?.url || "/avatarA.jpg";
+  // Date tin hiện tại
+  const msgTime = new Date(msg.createdAt);
 
-  // Các hành động trong menu
-  const actions = [
-    { label: "Thu hồi", danger: true, onClick: handleDelete },
-    { label: "Chỉnh sửa", onClick: handleEdit },
-  ];
-
-  // Xử lý danh sách những người đã đọc tin nhắn (chỉ hiện với tin nhắn của tôi và là tin nhắn cuối)
+  // Danh sách những người đã đọc tin nhắn
   let readers = [];
+
   if (isMine && isLastMessage && conversation?.participants) {
     readers = conversation.participants.filter((p) => {
       if (p.user._id === currentUserId) return;
       if (!p.lastReadMessage) return;
-
-      // So sánh ObjectId (string compare đủ dùng vì cùng collection)
       return p.lastReadMessage >= msg._id;
     });
   }
+
+  // Menu actions
+  const messageActions = [
+    {
+      key: "edit",
+      icon: <Pencil size={18} />,
+      label: "Chỉnh sửa tin nhắn",
+      onClick: handleEdit,
+    },
+    {
+      key: "delete",
+      icon: <Trash size={18} />,
+      label: "Thu hồi tin nhắn",
+      danger: true,
+      onClick: handleDelete,
+    },
+  ];
 
   return (
     <>
@@ -98,33 +99,28 @@ const MessageItem = ({
 
         {/* Ellipsis + Menu */}
         {isMine && !msg.isDeleted && (
-          <div className="self-center">
+          <Popover
+            trigger="click"
+            placement="bottom"
+            open={open}
+            onOpenChange={setOpen}
+            content={<MenuActions actions={messageActions} minWidth={160} />}
+            className="self-center"
+          >
             {/* Ellipsis */}
             <button
-              ref={refs.setReference}
-              {...getReferenceProps()}
               type="button"
               className={`p-1 rounded-full bg-[var(--color-surface)] text-[var(--color-text-secondary)]
                 hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)]
                 transition-opacity ${
-                  open ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                  open
+                    ? "opacity-100 focus:bg-[var(--color-icon-hover-bg)] focus:text-[var(--color-icon-hover-text)]"
+                    : "opacity-0 group-hover:opacity-100"
                 }`}
             >
               <EllipsisVertical className="w-5 h-5" />
             </button>
-
-            {/* Menu */}
-            <FloatingMenu
-              open={open}
-              refs={refs}
-              floatingStyles={floatingStyles}
-              getFloatingProps={getFloatingProps}
-              arrowRef={arrowRef}
-              arrowStyle={arrowStyle}
-              actions={actions}
-              width={150}
-            />
-          </div>
+          </Popover>
         )}
 
         {/* --- Content Column (Sender name + Bubble) --- */}
@@ -132,7 +128,7 @@ const MessageItem = ({
           {/* --- Sender name --- */}
           {!isMine && showName && conversation?.type === "group" && (
             <span className="text-sm font-medium text-[var(--color-text-primary)]">
-              {msg.sender?.username || "Người dùng ẩn danh"}
+              {msg.sender?.username || "Người dùng"}
             </span>
           )}
 
