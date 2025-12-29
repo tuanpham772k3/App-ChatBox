@@ -65,7 +65,7 @@ const MessageItem = ({
 
   return (
     <>
-      {/* Display time */}
+      {/* --- Display date --- */}
       {showDate && (
         <div className="flex justify-center mt-4">
           <span className="px-4 py-1 bg-[var(--color-surface)] rounded-lg text-xs text-[var(--color-text-primary)]">
