@@ -9,7 +9,7 @@ import FriendItem from "@/shared/components/ui/user/FriendItem";
 import { useNotification } from "@/shared/hooks/useNotification";
 
 // Component chính
-const ModalCreateGroup = ({ isModalOpen, handleCancel }) => {
+const ModalCreateGroup = ({ isModalOpen, onCancel }) => {
   const dispatch = useDispatch();
   const { searchResults = [] } = useSelector((state) => state.user);
 
@@ -76,7 +76,7 @@ const ModalCreateGroup = ({ isModalOpen, handleCancel }) => {
       setSelectedFriends([]);
       setGroupName("");
       setSearchText("");
-      handleCancel();
+      onCancel("default");
     } catch (error) {
       console.log("Error handle create conversation", error);
     }
@@ -85,7 +85,7 @@ const ModalCreateGroup = ({ isModalOpen, handleCancel }) => {
   return (
     <BaseModal
       open={isModalOpen}
-      onCancel={handleCancel}
+      onCancel={onCancel}
       footer={null}
       width={500}
       title="Group chat"
@@ -116,7 +116,7 @@ const ModalCreateGroup = ({ isModalOpen, handleCancel }) => {
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
               className="w-full bg-[var(--color-chat)] hover:bg-[var(--color-hover-soft)] focus:bg-[var(--color-hover-soft)] 
-              px-10 py-2 rounded-3xl  placeholder-[var(--color-text-secondary)] border border-[var(--color-border)] focus-within:border-blue-500"
+              px-10 py-2 rounded-3xl  placeholder-[var(--color-text-secondary)] border border-[var(--color-border)] focus-within:border-[var(--color-primary)]"
             />
           </div>
         </div>
@@ -148,7 +148,7 @@ const ModalCreateGroup = ({ isModalOpen, handleCancel }) => {
 
       {/* Footer */}
       <div className="px-6 py-4 flex justify-end gap-3 border-t border-[var(--color-border)]">
-        <Button onClick={handleCancel}>Hủy</Button>
+        <Button onClick={onCancel}>Hủy</Button>
         <Button onClick={handleCreateGroup} type="primary">
           Tạo nhóm
         </Button>

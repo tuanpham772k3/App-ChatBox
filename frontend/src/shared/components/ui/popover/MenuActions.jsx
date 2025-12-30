@@ -2,7 +2,7 @@ import React from "react";
 
 const MenuActions = ({ actions, minWidth = 160 }) => {
   return (
-    <div className="flex flex-col" style={{ minWidth }}>
+    <div className="flex flex-col gap-1" style={{ minWidth }}>
       {actions.map((action) => (
         <button
           key={action.key}
