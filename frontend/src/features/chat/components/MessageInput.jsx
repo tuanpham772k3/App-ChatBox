@@ -1,22 +1,28 @@
 import React, { useState } from "react";
-import { Gift, Image, MapPin, Mic, Navigation, Smile, Sticker, ThumbsUp } from "lucide-react";
+import {
+  Gift,
+  Image,
+  MapPin,
+  Mic,
+  Navigation,
+  Smile,
+  Sticker,
+  ThumbsUp,
+} from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { createNewMessage, editMessageById } from "../messagesSlice";
 import { emitEvent } from "@/shared/lib/socket";
 import useDebounce from "@/shared/hooks/useDebounce";
 
-const MessageInput = ({
-  editMessageId,
-  editContent,
-  setEditMessageId,
-  setEditContent,
-  editOriginalContent,
-}) => {
+const MessageInput = ({ editingMessage, setEditingMessage }) => {
   const { user } = useSelector((state) => state.auth);
   const { currentConversation } = useSelector((state) => state.conversations);
 
   const [text, setText] = useState("");
   const dispatch = useDispatch();
+
+  // Destructuring
+  const { id, content, originalContent } = editingMessage;
 
   // Xử lý gửi tin nhắn
   const handleSend = async () => {
@@ -40,17 +46,17 @@ const MessageInput = ({
 
   // Xử lý edit message
   const handleEdit = async () => {
-    if (!editMessageId) return;
-    if (!editContent.trim()) return;
-    if (editContent.trim() === editOriginalContent.trim()) return;
+    if (!id) return;
+    if (!content.trim()) return;
+    if (content.trim() === originalContent.trim()) return;
 
     try {
-      await dispatch(
-        editMessageById({ messageId: editMessageId, newContent: editContent })
-      ).unwrap();
+      await dispatch(editMessageById({ messageId: id, newContent: content })).unwrap();
 
-      setEditMessageId(null);
-      setEditContent("");
+      setEditingMessage({
+        id: null,
+        content: "",
+      });
     } catch (error) {
       console.error("Edit message error:", error);
     }
@@ -70,8 +76,11 @@ const MessageInput = ({
   const handleOnchange = (e) => {
     const value = e.target.value;
 
-    if (editMessageId) {
-      setEditContent(value);
+    if (id) {
+      setEditingMessage((prev) => ({
+        ...prev,
+        content: value,
+      }));
     } else {
       setText(value);
     }
@@ -101,11 +110,11 @@ const MessageInput = ({
 
         {/* Input */}
         <input
-          value={editMessageId ? editContent : text}
+          value={id ? content : text}
           onChange={handleOnchange}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
-              editMessageId ? handleEdit() : handleSend();
+              id ? handleEdit() : handleSend();
             }
           }}
           type="text"

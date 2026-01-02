@@ -1,10 +1,15 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { showAvatarDivider, showDateDivider, showSenderName, showTimeDivider } from "@/shared/lib/utils";
+import {
+  showAvatarDivider,
+  showDateDivider,
+  showSenderName,
+  showTimeDivider,
+} from "@/shared/lib/utils";
 import { deleteMessageById } from "../messagesSlice";
 import MessageItem from "./MessageItem";
 
-const Messages = ({ setEditContent, setEditMessageId, setEditOriginalContent }) => {
+const Messages = ({ setEditingMessage }) => {
   const { currentConversation } = useSelector((state) => state.conversations);
   const { messages = [], loading } = useSelector((state) => state.messages);
   const { user } = useSelector((state) => state.auth);
@@ -22,9 +27,11 @@ const Messages = ({ setEditContent, setEditMessageId, setEditOriginalContent }) 
 
   // Xử lý lấy thông tin mes khi click chỉnh sửa
   const handleEditClick = (msg) => {
-    setEditMessageId(msg._id);
-    setEditContent(msg.content);
-    setEditOriginalContent(msg.content);
+    setEditingMessage({
+      id: msg._id,
+      content: msg.content,
+      originalContent: msg.content,
+    });
   };
 
   return (

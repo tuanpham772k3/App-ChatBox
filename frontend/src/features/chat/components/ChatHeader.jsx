@@ -2,7 +2,13 @@ import React from "react";
 import { ArrowLeft, PanelRight, Phone, UserRound, Users, Video } from "lucide-react";
 import GroupAvatar from "@/shared/components/ui/avatar/GroupAvatar";
 
-const ChatHeader = ({ onBackToList, displayInfo, partnerStatus, showModal }) => {
+const ChatHeader = ({
+  onBackToList,
+  displayInfo,
+  partnerStatus,
+  showModal,
+  showDrawer,
+}) => {
   return (
     <div className="flex items-center justify-between px-4 h-24 border-b border-[var(--color-border)]">
       <div className="flex items-center gap-3">
@@ -11,7 +17,7 @@ const ChatHeader = ({ onBackToList, displayInfo, partnerStatus, showModal }) => 
           onClick={onBackToList}
           className="md:hidden mr-2 text-[var(--color-text-primary)]"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft size={20} />
         </button>
 
         {/* --- Avatar --- */}
@@ -45,9 +51,13 @@ const ChatHeader = ({ onBackToList, displayInfo, partnerStatus, showModal }) => 
           {/* -- User status or number of group members -- */}
           {displayInfo.isGroup ? (
             // Hiển thị số thành viên nếu là nhóm
-            <button type="button" className="flex items-center gap-1">
-              <UserRound className="w-4 h-4 text-[var(--color-text-secondary)]" />
-              <span className="text-sm text-[var(--color-text-secondary)]">{`${displayInfo.participants.length} thành viên`}</span>
+            <button
+              onClick={() => showDrawer("membersInfo")}
+              type="button"
+              className="flex items-center gap-1 text-[var(--color-text-secondary)]"
+            >
+              <UserRound size={18} />
+              <span className="text-sm">{`${displayInfo.participants.length} thành viên`}</span>
             </button>
           ) : (
             // Hiển thị trạng thái nếu là cuộc trò chuyện cá nhân
@@ -63,23 +73,23 @@ const ChatHeader = ({ onBackToList, displayInfo, partnerStatus, showModal }) => 
         {/* --- Add members (only for group) --- */}
         {displayInfo.isGroup && (
           <button className="p-2 rounded-full hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)]">
-            <Users onClick={showModal} className=" w-5 h-5" />
+            <Users onClick={showModal} size={20} />
           </button>
         )}
 
         {/* --- Voice call --- */}
         <button className="p-2 rounded-full hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)]">
-          <Phone className=" w-5 h-5" />
+          <Phone size={20} />
         </button>
 
         {/* --- Video call --- */}
         <button className="p-2 rounded-full hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)]">
-          <Video className="w-5 h-5" />
+          <Video size={20} />
         </button>
 
         {/* --- Info panel --- */}
         <button className="p-2 rounded-full hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)]">
-          <PanelRight className="w-5 h-5" />
+          <PanelRight onClick={() => showDrawer("ConversationInfo")} size={20} />
         </button>
       </div>
     </div>
