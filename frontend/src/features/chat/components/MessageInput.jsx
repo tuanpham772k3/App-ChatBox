@@ -1,27 +1,17 @@
-import React, { useState } from "react";
-import {
-  Gift,
-  Image,
-  MapPin,
-  Mic,
-  Navigation,
-  Smile,
-  Sticker,
-  ThumbsUp,
-} from "lucide-react";
+import React, { useRef, useState } from "react";
+import { Image, MapPin, Mic, Navigation, Smile } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { createNewMessage, editMessageById } from "../messagesSlice";
 import { emitEvent } from "@/shared/lib/socket";
-import useDebounce from "@/shared/hooks/useDebounce";
 
 const MessageInput = ({ editingMessage, setEditingMessage }) => {
-  const { user } = useSelector((state) => state.auth);
-  const { currentConversation } = useSelector((state) => state.conversations);
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.auth.user) || {};
+  const currentConversation =
+    useSelector((state) => state.conversations.currentConversation) || {};
 
   const [text, setText] = useState("");
-  const dispatch = useDispatch();
-
-  // Destructuring
+  const typingTimeoutRef = useRef(null);
   const { id, content, originalContent } = editingMessage;
 
   // Xử lý gửi tin nhắn
@@ -62,17 +52,6 @@ const MessageInput = ({ editingMessage, setEditingMessage }) => {
     }
   };
 
-  // Debounce emit typing_stop - 1s sau user ngừng gõ
-  const emitTypingStop = useDebounce(
-    () => {
-      if (currentConversation?._id) {
-        emitEvent("typing_stop", { conversationId: currentConversation._id });
-      }
-    },
-    1000,
-    [currentConversation?._id]
-  );
-
   const handleOnchange = (e) => {
     const value = e.target.value;
 
@@ -92,8 +71,17 @@ const MessageInput = ({ editingMessage, setEditingMessage }) => {
       conversationId: currentConversation._id,
     });
 
-    // Debounce typing_stop
-    emitTypingStop();
+    // Clear timeout cũ (nếu có)
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    // Set timeout mới cho typing_stop
+    typingTimeoutRef.current = setTimeout(() => {
+      emitEvent("typing_stop", {
+        conversationId: currentConversation._id,
+      });
+    }, 1000);
   };
 
   return (
