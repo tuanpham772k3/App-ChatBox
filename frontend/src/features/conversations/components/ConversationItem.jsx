@@ -69,7 +69,7 @@ const ConversationItem = ({
           <img
             src={display.displayAvatar}
             alt={display.displayName}
-            className="w-12 h-12 rounded-full object-cover"
+            className="w-13 h-13 rounded-full object-cover border-2 border-[var(--color-border)]"
           />
         )}
 

@@ -31,7 +31,7 @@ const ChatHeader = ({
               <img
                 src={displayInfo.displayAvatar}
                 alt={displayInfo.displayName}
-                className="w-12 h-12 rounded-full object-cover"
+                className="w-13 h-13 rounded-full border-2 border-[var(--color-border)]"
               />
               {/* Trạng thái người dùng */}
               {partnerStatus?.status === "online" && (

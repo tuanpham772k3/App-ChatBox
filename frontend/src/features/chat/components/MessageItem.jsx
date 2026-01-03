@@ -91,7 +91,7 @@ const MessageItem = ({
             <img
               src={avatar}
               alt={msg.sender?.username}
-              className="w-8 h-8 rounded-full object-cover cursor-pointer"
+              className="w-11 h-11 rounded-full object-cover cursor-pointer border border-[var(--color-border)]"
             />
           ) : (
             <div className="w-8 h-8" />
