@@ -8,7 +8,7 @@ import { searchUsers } from "@/features/user/userSlice";
 import { useNotification } from "@/shared/hooks/useNotification";
 import { addMemberToGroup } from "@/features/conversations/conversationsSlice";
 
-const AddMembersModal = ({ isModalOpen, handleCancel, conversationId }) => {
+const AddMembersModal = ({ isOpenModal, handleCancel, conversationId }) => {
   const dispatch = useDispatch();
   const { searchResults = [] } = useSelector((state) => state.user);
 
@@ -72,7 +72,7 @@ const AddMembersModal = ({ isModalOpen, handleCancel, conversationId }) => {
 
   return (
     <BaseModal
-      open={isModalOpen}
+      open={isOpenModal}
       onCancel={handleCancel}
       footer={null}
       width={400}

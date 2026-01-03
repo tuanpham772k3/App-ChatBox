@@ -1,13 +1,15 @@
 import React from "react";
+import { useSelector } from "react-redux";
 import { ArrowLeft, PanelRight, Phone, UserRound, Users, Video } from "lucide-react";
 import GroupAvatar from "@/shared/components/ui/avatar/GroupAvatar";
+import { getDisplayInfo } from "@/features/conversations/utils/conversationHelper";
 
 const ChatHeader = ({
   onBackToList,
+  openDrawerInfo,
+  openModal,
   displayInfo,
   partnerStatus,
-  showModal,
-  showDrawer,
 }) => {
   return (
     <div className="flex items-center justify-between px-4 h-24 border-b border-[var(--color-border)]">
@@ -52,7 +54,7 @@ const ChatHeader = ({
           {displayInfo.isGroup ? (
             // Hiển thị số thành viên nếu là nhóm
             <button
-              onClick={() => showDrawer("membersInfo")}
+              onClick={() => openDrawerInfo("membersInfo")}
               type="button"
               className="flex items-center gap-1 text-[var(--color-text-secondary)]"
             >
@@ -73,7 +75,7 @@ const ChatHeader = ({
         {/* --- Add members (only for group) --- */}
         {displayInfo.isGroup && (
           <button className="p-2 rounded-full hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)]">
-            <Users onClick={showModal} size={20} />
+            <Users onClick={openModal} size={20} />
           </button>
         )}
 
@@ -89,7 +91,7 @@ const ChatHeader = ({
 
         {/* --- Info panel --- */}
         <button className="p-2 rounded-full hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)]">
-          <PanelRight onClick={() => showDrawer("ConversationInfo")} size={20} />
+          <PanelRight onClick={() => openDrawerInfo("conversationInfo")} size={20} />
         </button>
       </div>
     </div>

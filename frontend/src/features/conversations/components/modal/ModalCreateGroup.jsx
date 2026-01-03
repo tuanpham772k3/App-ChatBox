@@ -9,7 +9,7 @@ import FriendItem from "@/shared/components/ui/user/FriendItem";
 import { useNotification } from "@/shared/hooks/useNotification";
 
 // Component chính
-const ModalCreateGroup = ({ isModalOpen, onCancel }) => {
+const ModalCreateGroup = ({ isOpenModal, onCancel }) => {
   const dispatch = useDispatch();
   const { searchResults = [] } = useSelector((state) => state.user);
 
@@ -84,7 +84,7 @@ const ModalCreateGroup = ({ isModalOpen, onCancel }) => {
 
   return (
     <BaseModal
-      open={isModalOpen}
+      open={isOpenModal}
       onCancel={onCancel}
       footer={null}
       width={500}

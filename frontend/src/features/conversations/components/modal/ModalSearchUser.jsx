@@ -8,7 +8,7 @@ import { searchUsers } from "@/features/user/userSlice";
 import { createConversation } from "../../conversationsSlice";
 import { useNotification } from "@/shared/hooks/useNotification";
 
-const ModalCreatePrivate = ({ isModalOpen, onCancel }) => {
+const ModalCreatePrivate = ({ isOpenModal, onCancel }) => {
   const dispatch = useDispatch();
   const { searchResults = [] } = useSelector((state) => state.user);
 
@@ -56,7 +56,7 @@ const ModalCreatePrivate = ({ isModalOpen, onCancel }) => {
       // Reset state
       setSelectedFriend("");
       setSearchText("");
-      onCancel("default");
+      onCancel(null);
     } catch (error) {
       console.log("Error handle create conversation", error);
     }
@@ -64,7 +64,7 @@ const ModalCreatePrivate = ({ isModalOpen, onCancel }) => {
 
   return (
     <BaseModal
-      open={isModalOpen}
+      open={isOpenModal}
       onCancel={onCancel}
       footer={null}
       width={400}

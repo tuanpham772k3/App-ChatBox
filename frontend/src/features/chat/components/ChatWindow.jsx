@@ -14,40 +14,35 @@ import ConversationInfo from "./ConversationInfo";
 import MembersInfo from "./MembersInfo";
 
 const ChatWindow = ({ activeChat, onBackToList }) => {
-  const {
-    currentConversation,
-    statusUsers = {},
-    typingUsers = {},
-  } = useSelector((state) => state.conversations);
-  const { user } = useSelector((state) => state.auth);
+  const { currentConversation = {}, statusUsers = {} } = useSelector(
+    (state) => state.conversations
+  );
+  const user = useSelector((state) => state.auth.user) || {};
 
-  // Edit message state
   const [editingMessage, setEditingMessage] = useState({
     id: null,
     content: "",
     originalContent: "",
   });
-  // Show modal, drawer state
-  const [showAddMembersModal, setShowAddMembersModal] = useState(false); // "addMembers"
-  const [activeDrawer, setActiveDrawer] = useState(null); // "conversationInfo" | "membersInfo" | null
-
-  // Lấy trạng thái của đối tác và thông tin hiển thị
-  const displayInfo = getDisplayInfo(currentConversation, user.id) || {};
-  const partnerStatus = displayInfo.partnerId ? statusUsers[displayInfo.partnerId] : null;
+  const [openModal, setOpenModal] = useState(false); // "addMembers"
+  const [openDrawer, setOpenDrawer] = useState(null); // "conversationInfo" | "membersInfo" | null
 
   // typingUsers: { [conversationId]: { [userId]: username } }
   // const currentTypingMap = typingUsers[currentConversation?._id] || {};
   // const typingNames = getTypingNames(currentTypingMap, user.id);
 
-  useMessages(activeChat); // Custom hook để quản lý tin nhắn realtime
+  // Message realtime
+  useMessages(activeChat);
 
-  // Modal AddMembers
-  const openAddMembersModal = () => setShowAddMembersModal(true);
-  const closeAddMembersModal = () => setShowAddMembersModal(false);
+  const displayInfo = getDisplayInfo(currentConversation, user.id) || {};
+  const partnerStatus = displayInfo.partnerId ? statusUsers[displayInfo.partnerId] : null;
 
-  // Drawer handlers
-  const openDrawer = (type) => setActiveDrawer(type);
-  const closeDrawer = () => setActiveDrawer(null);
+  // Open Modal AddMembers
+  const openAddMembersModal = () => setOpenModal(true);
+  const closeAddMembersModal = () => setOpenModal(false);
+  // Open Drawer
+  const openDrawerInfo = (type) => setOpenDrawer(type);
+  const closeDrawerInfo = () => setOpenDrawer(null);
 
   return (
     <main
@@ -57,10 +52,10 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
       {/* --- Header --- */}
       <ChatHeader
         onBackToList={onBackToList}
+        openDrawerInfo={openDrawerInfo}
+        openModal={openAddMembersModal}
         displayInfo={displayInfo}
         partnerStatus={partnerStatus}
-        showModal={openAddMembersModal}
-        showDrawer={openDrawer}
       />
 
       {/* Messages */}
@@ -74,23 +69,24 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
 
       {/* Modal */}
       <AddMembersModal
-        isModalOpen={showAddMembersModal}
-        handleCancel={closeAddMembersModal}
+        isOpenModal={openModal}
+        onCancel={closeAddMembersModal}
         conversationId={currentConversation?._id}
       />
 
-      {/* Drawer */}
+      {/* Drawer conversation info */}
       <BaseDrawer
-        open={activeDrawer === "ConversationInfo"}
-        onClose={closeDrawer}
+        open={openDrawer === "conversationInfo"}
+        onClose={closeDrawerInfo}
         title="Thông tin hội thoại"
       >
         <ConversationInfo conversation={currentConversation} currentUser={user} />
       </BaseDrawer>
 
+      {/* Drawer members info */}
       <BaseDrawer
-        open={activeDrawer === "membersInfo"}
-        onClose={closeDrawer}
+        open={openDrawer === "membersInfo"}
+        onClose={closeDrawerInfo}
         title="Thành viên"
       >
         <MembersInfo conversation={currentConversation} />
