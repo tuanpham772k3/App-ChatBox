@@ -1,7 +1,7 @@
 import { Search } from "lucide-react";
 import React from "react";
 
-const SearchBar = ({ onCancel }) => {
+const SearchBar = ({ value, onChange, onCancel }) => {
   return (
     <div className="flex-1 flex items-center gap-2">
       <div className="flex-1 flex items-center gap-1 p-2 bg-[var(--color-chat)] rounded-md border-2 border-[var(--color-border)] focus-within:border-[var(--color-primary)]">
@@ -9,6 +9,8 @@ const SearchBar = ({ onCancel }) => {
         <input
           autoFocus
           type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
           placeholder="Tìm kiếm..."
           className="flex-1 pe-4 placeholder:text-sm text-sm"
         />

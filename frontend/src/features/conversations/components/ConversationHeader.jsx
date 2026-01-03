@@ -4,32 +4,38 @@ import ModalCreateGroup from "./modal/ModalCreateGroup";
 import ModalCreatePrivate from "./modal/ModalSearchUser";
 import SearchBar from "@/shared/components/ui/search/SearchBar";
 
-const ConversationHeader = () => {
-  const [modalCreate, setModalCreate] = useState("default"); // "default" | "group" | "private"
-  const [searchBar, setSearchBar] = useState("default"); // "default" | "search"
+const ConversationHeader = ({ searchValue, onSearchChange }) => {
+  const [openModal, setOpenModal] = useState(null); // "group" | "private" | null
+  const [openSearch, setOpenSearch] = useState(false);
 
-  // Modal group
-  const showGroupModal = () => {
-    setModalCreate("group");
-  };
-
-  // Modal private
-  const showPrivateModal = () => {
-    setModalCreate("private");
-  };
+  // Open Modal group
+  const openModalGroup = () => setOpenModal("group");
+  const closeModalGroup = () => setOpenModal(null);
+  // Open Modal private
+  const openModalPrivate = () => setOpenModal("private");
+  const closeModalPrivate = () => setOpenModal(null);
+  // Open search
+  const openSearchBar = () => setOpenSearch(true);
+  const closeSearchBar = () => setOpenSearch(false);
 
   return (
     <>
       {/* Header */}
       <div className="flex items-center justify-between px-6 h-24 border-b border-[var(--color-border)]">
-        {/* Tiêu đề & Actions */}
-        {searchBar === "default" && (
+        {openSearch ? (
+          <SearchBar
+            value={searchValue}
+            onChange={onSearchChange}
+            onCancel={closeSearchBar}
+          />
+        ) : (
           <>
+            {/* Title & Actions */}
             <h2 className="font-bold text-2xl text-[var(--color-primary)]">Messages</h2>
             <div className="flex gap-3">
               {/* Private */}
               <button
-                onClick={showPrivateModal}
+                onClick={openModalGroup}
                 className="flex items-center p-2 rounded-full bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)] transition-colors"
               >
                 <User className="w-5 h-5" />
@@ -37,7 +43,7 @@ const ConversationHeader = () => {
 
               {/* Group */}
               <button
-                onClick={showGroupModal}
+                onClick={openModalPrivate}
                 className="flex items-center p-2 rounded-full bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)] transition-colors"
               >
                 <Users className="w-5 h-5" />
@@ -45,7 +51,7 @@ const ConversationHeader = () => {
 
               {/* Search */}
               <button
-                onClick={() => setSearchBar("search")}
+                onClick={openSearchBar}
                 className="flex items-center p-2 rounded-full bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)] transition-colors"
               >
                 <Search className="w-5 h-5" />
@@ -53,21 +59,13 @@ const ConversationHeader = () => {
             </div>
           </>
         )}
-
-        {/* Thanh Tìm kiếm */}
-        {searchBar === "search" && (
-          <SearchBar onCancel={() => setSearchBar("default")} />
-        )}
       </div>
 
       {/* Modal */}
-      <ModalCreateGroup
-        isModalOpen={modalCreate === "group"}
-        onCancel={() => setModalCreate("default")}
-      />
+      <ModalCreateGroup isOpenModal={openModal === "group"} onCancel={closeModalGroup} />
       <ModalCreatePrivate
-        isModalOpen={modalCreate === "private"}
-        onCancel={() => setModalCreate("default")}
+        isOpenModal={openModal === "private"}
+        onCancel={closeModalPrivate}
       />
     </>
   );
