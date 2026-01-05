@@ -35,7 +35,7 @@ const ConversationHeader = ({ searchValue, onSearchChange }) => {
             <div className="flex gap-3">
               {/* Private */}
               <button
-                onClick={openModalGroup}
+                onClick={openModalPrivate}
                 className="flex items-center p-2 rounded-full bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)] transition-colors"
               >
                 <User className="w-5 h-5" />
@@ -43,7 +43,7 @@ const ConversationHeader = ({ searchValue, onSearchChange }) => {
 
               {/* Group */}
               <button
-                onClick={openModalPrivate}
+                onClick={openModalGroup}
                 className="flex items-center p-2 rounded-full bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)] transition-colors"
               >
                 <Users className="w-5 h-5" />

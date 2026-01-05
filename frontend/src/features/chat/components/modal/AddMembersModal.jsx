@@ -8,7 +8,7 @@ import { searchUsers } from "@/features/user/userSlice";
 import { useNotification } from "@/shared/hooks/useNotification";
 import { addMemberToGroup } from "@/features/conversations/conversationsSlice";
 
-const AddMembersModal = ({ isOpenModal, handleCancel, conversationId }) => {
+const AddMembersModal = ({ isOpenModal, onCancel, conversationId }) => {
   const dispatch = useDispatch();
   const { searchResults = [] } = useSelector((state) => state.user);
 
@@ -73,7 +73,7 @@ const AddMembersModal = ({ isOpenModal, handleCancel, conversationId }) => {
   return (
     <BaseModal
       open={isOpenModal}
-      onCancel={handleCancel}
+      onCancel={onCancel}
       footer={null}
       width={400}
       title="Thêm thành viên"
@@ -114,7 +114,7 @@ const AddMembersModal = ({ isOpenModal, handleCancel, conversationId }) => {
 
       {/* Footer */}
       <div className="px-6 py-4 flex justify-end gap-3 border-t border-[var(--color-border)]">
-        <Button onClick={handleCancel}>Hủy</Button>
+        <Button onClick={onCancel}>Hủy</Button>
         <Button onClick={handleCreateGroup} type="primary">
           Thêm
         </Button>

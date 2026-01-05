@@ -1,16 +1,13 @@
 import { Key, Search, Users } from "lucide-react";
 import React from "react";
 
-const MembersInfo = ({ conversation }) => {
-  const members = [
-    { id: 1, username: "Phạm Anh Tuấn", src: "/avatarB.jpg", role: "admin" },
-    { id: 2, username: "Lưu Diệc Phi", src: "/avatarC.jpg" },
-  ];
+const MembersInfo = ({ conversation, openModal, members }) => {
   return (
     <>
       {/* Nút thêm thành viên */}
       <div className="p-4">
         <button
+          onClick={openModal}
           className="w-full flex items-center justify-center gap-2 py-2 font-medium text-base text-[var(--color-text-primary)] 
         bg-[var(--color-chat)] hover:bg-[var(--color-hover-soft)] rounded"
         >
@@ -25,7 +22,7 @@ const MembersInfo = ({ conversation }) => {
         <h3 className="px-4 font-medium text-sm text-[var(--color-text-primary)]">{`Danh sách thành viên (${conversation?.participants?.length})`}</h3>
 
         {/* Search */}
-        <div className="px-4 py-2">
+        <div className="px-4 py-3">
           <div
             className="flex items-center gap-2 p-1 bg-[var(--color-chat)] 
         hover:bg-[var(--color-hover-soft)] border border-[var(--color-border)] focus-within:border-[var(--color-primary)] rounded-full"
@@ -50,9 +47,9 @@ const MembersInfo = ({ conversation }) => {
                 {/* Avatar */}
                 <div className="relative">
                   <img
-                    src={member.src}
-                    alt={member.username}
-                    className="w-12 h-12 rounded-full"
+                    src={member.avatarUrl}
+                    alt={member.name}
+                    className="w-11 h-11 rounded-full object-cover border-2 border-[var(--color-border)]"
                   />
 
                   {member.role === "admin" && (
@@ -64,7 +61,7 @@ const MembersInfo = ({ conversation }) => {
                 {/* Name & role */}
                 <div className="flex flex-col justify-center">
                   <p className="text-sm font-medium text-[var(--color-text-primary)]">
-                    {member.username}
+                    {member.name}
                   </p>
 
                   {member.role === "admin" && (
@@ -74,7 +71,7 @@ const MembersInfo = ({ conversation }) => {
               </div>
 
               <div>
-                <button className="px-4 py-2 font-medium bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white rounded">
+                <button className="px-4 py-1.5 font-medium bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white rounded">
                   Kết bạn
                 </button>
               </div>

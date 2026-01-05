@@ -80,7 +80,11 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
         onClose={closeDrawerInfo}
         title="Thông tin hội thoại"
       >
-        <ConversationInfo conversation={currentConversation} currentUser={user} />
+        <ConversationInfo
+          conversation={currentConversation}
+          currentUser={user}
+          openDrawerMembersInfo={openDrawerInfo}
+        />
       </BaseDrawer>
 
       {/* Drawer members info */}
@@ -89,7 +93,11 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
         onClose={closeDrawerInfo}
         title="Thành viên"
       >
-        <MembersInfo conversation={currentConversation} />
+        <MembersInfo
+          conversation={currentConversation}
+          openModal={openAddMembersModal}
+          members={displayInfo.participants}
+        />
       </BaseDrawer>
     </main>
   );

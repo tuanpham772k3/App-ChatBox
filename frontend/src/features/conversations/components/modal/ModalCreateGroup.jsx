@@ -76,7 +76,7 @@ const ModalCreateGroup = ({ isOpenModal, onCancel }) => {
       setSelectedFriends([]);
       setGroupName("");
       setSearchText("");
-      onCancel("default");
+      onCancel(null);
     } catch (error) {
       console.log("Error handle create conversation", error);
     }
@@ -90,66 +90,82 @@ const ModalCreateGroup = ({ isOpenModal, onCancel }) => {
       width={500}
       title="Group chat"
     >
-      {/* Input */}
-      <div className="px-4 py-4 border-b border-[var(--color-border)]">
-        {/* Input tên nhóm */}
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-lg flex items-center justify-center">
-            <Camera className="text-[var(--color-text-secondary)] text-xl" />
+      <div className="flex flex-col px-4">
+        {/* Header */}
+        <div className="py-4 border-b border-[var(--color-border)]">
+          {/* Input tên nhóm */}
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-14 h-14 flex items-center justify-center border border-[var(--color-border)] rounded-full cursor-pointer">
+              <Camera className="text-[var(--color-text-secondary)] text-xl" />
+            </div>
+            <div className="flex-1 pe-20 py-2 text-[var(--color-text-primary)] border-b-2 border-[var(--color-border)] focus-within:border-blue-500">
+              <input
+                placeholder="Nhập tên nhóm..."
+                value={groupName}
+                onChange={(e) => setGroupName(e.target.value)}
+                className="w-full placeholder-[var(--color-text-secondary)]"
+              />
+            </div>
           </div>
-          <div className="flex-1 pb-2 border-b border-[var(--color-border)] text-[var(--color-text-primary)] focus-within:border-blue-500">
-            <input
-              placeholder="Nhập tên nhóm..."
-              value={groupName}
-              onChange={(e) => setGroupName(e.target.value)}
-              className="w-full placeholder-[var(--color-text-secondary)]"
-            />
+
+          {/* Ô tìm kiếm */}
+          <div className="relative flex items-center ">
+            <Search className="absolute w-4 h-4 left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)] z-10" />
+            <div className="flex-1 text-[var(--color-text-primary)]">
+              <input
+                placeholder="Nhập tên hoặc số điện thoại"
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                className="w-full bg-[var(--color-chat)] hover:bg-[var(--color-hover-soft)]
+              px-10 py-2 rounded-3xl  placeholder-[var(--color-text-secondary)] border-2 border-[var(--color-border)] focus-within:border-blue-500"
+              />
+            </div>
           </div>
         </div>
 
-        {/* Ô tìm kiếm */}
-        <div className="relative flex items-center">
-          <Search className="absolute w-4 h-4 left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)] z-10" />
-          <div className="flex-1 text-[var(--color-text-primary)]">
-            <input
-              placeholder="Nhập tên"
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              className="w-full bg-[var(--color-chat)] hover:bg-[var(--color-hover-soft)] focus:bg-[var(--color-hover-soft)] 
-              px-10 py-2 rounded-3xl  placeholder-[var(--color-text-secondary)] border border-[var(--color-border)] focus-within:border-[var(--color-primary)]"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Danh sách bạn bè */}
-      <div className="h-[400px] overflow-y-auto custom-scrollbar">
-        <div className="px-4 py-1">
-          <h2 className="text-[var(--color-text-secondary)] font-medium">
-            {" "}
-            Danh sách bạn bè
+        {/* Danh sách bạn bè */}
+        <div className="h-[400px] overflow-y-auto custom-scrollbar">
+          <h2 className="my-2 font-medium text-[var(--color-text-primary)]">
+            Trò chuyện gần đây
           </h2>
+          {searchResults.length === 0 ? (
+            <div className="text-center py-8 text-[var(--color-text-secondary)]">
+              Không tìm thấy kết quả
+            </div>
+          ) : (
+            searchResults.map((friend) => (
+              <FriendItem
+                key={friend._id}
+                friend={friend}
+                isSelected={selectedFriends.includes(friend._id)}
+                onToggle={() => toggleFriend(friend._id)}
+              />
+            ))
+          )}
         </div>
-        {searchResults.length === 0 ? (
-          <div className="text-center py-8 text-[var(--color-text-secondary)]">
-            Không tìm thấy kết quả
-          </div>
-        ) : (
-          searchResults.map((friend) => (
-            <FriendItem
-              key={friend._id}
-              friend={friend}
-              isSelected={selectedFriends.includes(friend._id)}
-              onToggle={() => toggleFriend(friend._id)}
-            />
-          ))
-        )}
       </div>
 
       {/* Footer */}
-      <div className="px-6 py-4 flex justify-end gap-3 border-t border-[var(--color-border)]">
-        <Button onClick={onCancel}>Hủy</Button>
-        <Button onClick={handleCreateGroup} type="primary">
+      <div className="p-4 flex justify-end gap-3 border-t border-[var(--color-border)]">
+        <Button
+          onClick={onCancel}
+          style={{
+            fontSize: "16px",
+            fontWeight: "600",
+            padding: 20,
+          }}
+        >
+          Hủy
+        </Button>
+        <Button
+          onClick={handleCreateGroup}
+          type="primary"
+          style={{
+            fontSize: "16px",
+            fontWeight: "600",
+            padding: 20,
+          }}
+        >
           Tạo nhóm
         </Button>
       </div>

@@ -3,7 +3,7 @@ import { Bell, LogOut, Pin, Settings, Trash, TriangleAlert, Users } from "lucide
 import GroupAvatar from "@/shared/components/ui/avatar/GroupAvatar";
 import { getDisplayInfo } from "@/features/conversations/utils/conversationHelper";
 
-const ConversationInfo = ({ conversation, currentUser }) => {
+const ConversationInfo = ({ conversation, currentUser, openDrawerMembersInfo }) => {
   const headerActions = [
     { icon: <Bell size={20} />, label: "Tắt thông báo" },
     { icon: <Pin size={20} />, label: "Ghim hội thoại" },
@@ -36,7 +36,7 @@ const ConversationInfo = ({ conversation, currentUser }) => {
       <div className="flex flex-col items-center gap-2 p-4 border-b-4 border-[var(--color-border)]">
         {/* Group Avatar */}
         {displayInfo.isGroup ? (
-          <GroupAvatar users={displayInfo?.participants}  size={60}/>
+          <GroupAvatar users={displayInfo?.participants} size={60} />
         ) : (
           <img
             src={displayInfo.displayAvatar}
@@ -72,7 +72,10 @@ const ConversationInfo = ({ conversation, currentUser }) => {
         <h3 className="px-4 pt-3 pb-2 text-base font-semibold text-[var(--color-text-primary)]">
           Thành viên nhóm
         </h3>
-        <button className="w-full flex items-center gap-2 px-4 py-3 text-sm text-[var(--color-text-primary)] hover:bg-[var(--color-hover-soft)] rounded">
+        <button
+          onClick={() => openDrawerMembersInfo("membersInfo")}
+          className="w-full flex items-center gap-2 px-4 py-3 text-sm text-[var(--color-text-primary)] hover:bg-[var(--color-hover-soft)] rounded"
+        >
           <Users size={18} />
           <span>5 thành viên</span>
         </button>

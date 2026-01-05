@@ -81,7 +81,7 @@ const MessageItem = ({
 
       {/* --- Item Message --- */}
       <div
-        className={`flex items-start gap-4 mt-1 ${
+        className={`flex items-start gap-2 mt-1 ${
           isMine ? "justify-end" : "items-end gap-2"
         } group`}
       >
@@ -94,7 +94,7 @@ const MessageItem = ({
               className="w-11 h-11 rounded-full object-cover cursor-pointer border border-[var(--color-border)]"
             />
           ) : (
-            <div className="w-8 h-8" />
+            <div className="w-11 h-11" />
           ))}
 
         {/* Ellipsis + Menu */}

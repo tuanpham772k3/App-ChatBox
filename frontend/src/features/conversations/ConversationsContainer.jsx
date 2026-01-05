@@ -84,12 +84,6 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
       {/* --- HEADER --- */}
       <ConversationHeader searchValue={searchInput} onSearchChange={setSearchInput} />
 
-      {error && (
-        <div className="flex-1 flex justify-center items-center">
-          <p className="">Mất kết nối hoặc ứng dụng đang được bảo trì</p>
-        </div>
-      )}
-
       {/* LIST CONVERSATIONS */}
       {loading ? (
         <div className="flex-1 flex justify-center items-center">

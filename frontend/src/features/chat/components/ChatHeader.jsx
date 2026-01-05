@@ -1,8 +1,6 @@
 import React from "react";
-import { useSelector } from "react-redux";
 import { ArrowLeft, PanelRight, Phone, UserRound, Users, Video } from "lucide-react";
 import GroupAvatar from "@/shared/components/ui/avatar/GroupAvatar";
-import { getDisplayInfo } from "@/features/conversations/utils/conversationHelper";
 
 const ChatHeader = ({
   onBackToList,

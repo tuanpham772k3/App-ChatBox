@@ -8,6 +8,7 @@ import {
 } from "@/shared/lib/utils";
 import { deleteMessageById } from "../messagesSlice";
 import MessageItem from "./MessageItem";
+import { Spin } from "antd";
 
 const Messages = ({ setEditingMessage }) => {
   const { currentConversation } = useSelector((state) => state.conversations);
@@ -37,9 +38,9 @@ const Messages = ({ setEditingMessage }) => {
   return (
     <div className="flex-1 overflow-y-auto px-4 py-4 space-y-0.5 bg-[var(--color-chat)] custom-scrollbar">
       {loading && (
-        <p className="text-center text-sm text-[var(--color-text-secondary)]">
-          Đang tải tin nhắn...
-        </p>
+        <div className="flex justify-center">
+          <Spin />
+        </div>
       )}
 
       {messages.length === 0 && !loading && (
@@ -47,6 +48,7 @@ const Messages = ({ setEditingMessage }) => {
           Chưa có tin nhắn nào
         </p>
       )}
+
       {/* ===== List Messages ===== */}
       {messages.map((msg, index) => {
         const isMine = msg.sender?._id === user.id; // Tin của tôi
