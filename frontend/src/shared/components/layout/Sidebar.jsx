@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Archive,
   BarChart2,
@@ -6,27 +7,21 @@ import {
   Menu,
   MessageCircle,
   MessageCircleMore,
+  Pencil,
   Phone,
+  Trash,
   Users,
 } from "lucide-react";
 import { logoutUser } from "@/features/auth/authSlice";
-import { useDispatch, useSelector } from "react-redux";
 import { clearMessages } from "@/features/chat/messagesSlice";
 import { disconnectSocket, emitEvent } from "@/shared/lib/socket";
-
-const appIcons = [
-  "../../assets/img/app1.jpg",
-  "/img/app2.png",
-  "/img/app3.png",
-  "/img/app4.png",
-  "/img/app5.png",
-  "/img/app6.png",
-];
+import MenuActions from "../ui/popover/MenuActions";
+import { Popover } from "antd";
 
 const Sidebar = () => {
   const dispatch = useDispatch();
-  const { conversations } = useSelector((state) => state.conversations);
-  const { user } = useSelector((state) => state.auth);
+  const conversations = useSelector((state) => state.conversations.conversations) || [];
+  const user = useSelector((state) => state.auth.user) || {};
 
   const handleLogout = async () => {
     try {
@@ -43,6 +38,23 @@ const Sidebar = () => {
       console.error("Logout error:", error);
     }
   };
+
+  const [open, setOpen] = useState(false);
+
+  const userAction = [
+    {
+      label: "Năng cấp tài khoản",
+      onClick: {},
+    },
+    {
+      label: "Hồ sơ",
+      onClick: {},
+    },
+    {
+      label: "Cài đặt",
+      onClick: {},
+    },
+  ];
 
   return (
     <aside
@@ -115,11 +127,35 @@ const Sidebar = () => {
       {/* BOTTOM: User summary + logout */}
       <div className="flex items-center justify-between gap-3 py-4">
         <div className="flex items-center gap-3">
-          <img
-            src={user?.avatar || "/avatarA.jpg"}
-            alt="user"
-            className="w-10 h-10 rounded-full object-cover"
-          />
+          <Popover
+            trigger="click"
+            placement="rightTop"
+            open={open}
+            onOpenChange={setOpen}
+            content={
+              <>
+                <header className="border-b border-[var(--color-border)]">
+                  <h2 className="px-3 pb-2 text-lg font-medium text-[var(--color-text-primary)]">
+                    Phạm Anh Tuấn
+                  </h2>
+                </header>
+                <MenuActions actions={userAction} minWidth={160} />
+                <footer className="pt-1 border-t border-[var(--color-border)]">
+                  <button className="w-full px-3 py-2 text-left text-sm text-red-500 hover:bg-[var(--color-hover-surface)] rounded">
+                    Đăng xuất
+                  </button>
+                </footer>
+              </>
+            }
+          >
+            {/* Avatar */}
+            <img
+              src={user?.avatar || "/avatarA.jpg"}
+              alt="user"
+              className="w-11 h-11 border-2 border-[var(--color-border)] rounded-full object-cover cursor-pointer"
+            />
+          </Popover>
+
           <div className="flex flex-col items-start">
             <span className="text-xs font-semibold text-[var(--color-text-primary)]">
               {user?.username || "User"}
