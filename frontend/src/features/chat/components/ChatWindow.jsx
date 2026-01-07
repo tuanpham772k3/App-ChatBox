@@ -7,11 +7,10 @@ import {
   getDisplayInfo,
   getTypingNames,
 } from "@/features/conversations/utils/conversationHelper";
-import AddMembersModal from "./modal/AddMembersModal";
 import ChatHeader from "./ChatHeader";
-import BaseDrawer from "@/shared/components/ui/drawer/BaseDrawer";
-import ConversationInfo from "./ConversationInfo";
-import MembersInfo from "./MembersInfo";
+import ModalAddMembers from "./modal/ModalAddMembers";
+import DrawerConversationInfo from "./drawer/DrawerConversationInfo";
+import DrawerMembersInfo from "./drawer/DrawerMembersInfo";
 
 const ChatWindow = ({ activeChat, onBackToList }) => {
   const { currentConversation = {}, statusUsers = {} } = useSelector(
@@ -38,14 +37,14 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
   const partnerStatus = displayInfo.partnerId ? statusUsers[displayInfo.partnerId] : null;
 
   // Open Modal AddMembers
-  const openAddMembersModal = () => setOpenModal(true);
-  const closeAddMembersModal = () => setOpenModal(false);
+  const openModalAddMembers = () => setOpenModal(true);
+  const closeModalAddMembers = () => setOpenModal(false);
   // Open Drawer
   const openDrawerInfo = (type) => setOpenDrawer(type);
   const closeDrawerInfo = () => setOpenDrawer(null);
 
   return (
-    <main
+    <div
       className={`flex-2 bg-[var(--color-app)] flex flex-col overflow-hidden
       ${activeChat ? "flex" : "hidden"} md:flex`}
     >
@@ -53,7 +52,7 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
       <ChatHeader
         onBackToList={onBackToList}
         openDrawerInfo={openDrawerInfo}
-        openModal={openAddMembersModal}
+        openModal={openModalAddMembers}
         displayInfo={displayInfo}
         partnerStatus={partnerStatus}
       />
@@ -68,38 +67,28 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
       />
 
       {/* Modal */}
-      <AddMembersModal
-        isOpenModal={openModal}
-        onCancel={closeAddMembersModal}
+      <ModalAddMembers
+        isOpen={openModal}
+        onCancel={closeModalAddMembers}
         conversationId={currentConversation?._id}
       />
 
       {/* Drawer conversation info */}
-      <BaseDrawer
+      <DrawerConversationInfo
         open={openDrawer === "conversationInfo"}
         onClose={closeDrawerInfo}
-        title="Thông tin hội thoại"
-      >
-        <ConversationInfo
-          conversation={currentConversation}
-          currentUser={user}
-          openDrawerMembersInfo={openDrawerInfo}
-        />
-      </BaseDrawer>
+        displayInfo={displayInfo}
+        openDrawerMembersInfo={openDrawerInfo}
+      />
 
       {/* Drawer members info */}
-      <BaseDrawer
+      <DrawerMembersInfo
         open={openDrawer === "membersInfo"}
         onClose={closeDrawerInfo}
-        title="Thành viên"
-      >
-        <MembersInfo
-          conversation={currentConversation}
-          openModal={openAddMembersModal}
-          members={displayInfo.participants}
-        />
-      </BaseDrawer>
-    </main>
+        openModal={openModalAddMembers}
+        members={displayInfo.participants}
+      />
+    </div>
   );
 };
 

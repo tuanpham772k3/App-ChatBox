@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { Button } from "antd";
+import { Button, Modal, Spin } from "antd";
 import { Search } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import BaseModal from "@/shared/components/ui/modal/BaseModal";
+import { CloseOutlined } from "@ant-design/icons";
 import FriendItem from "@/shared/components/ui/user/FriendItem";
 import { searchUsers } from "@/features/user/userSlice";
 import { createConversation } from "../../conversationsSlice";
 import { useNotification } from "@/shared/hooks/useNotification";
 
-const ModalCreatePrivate = ({ isOpenModal, onCancel }) => {
+const ModalCreatePrivate = ({ isOpen, onCancel }) => {
   const dispatch = useDispatch();
-  const { searchResults = [] } = useSelector((state) => state.user);
+  const { searchResults = [], loading } = useSelector((state) => state.user);
 
   const [selectedFriend, setSelectedFriend] = useState("");
   const [searchText, setSearchText] = useState("");
@@ -63,13 +63,27 @@ const ModalCreatePrivate = ({ isOpenModal, onCancel }) => {
   };
 
   return (
-    <BaseModal
-      open={isOpenModal}
+    <Modal
+      open={isOpen}
       onCancel={onCancel}
       footer={null}
       width={400}
-      title="Private chat"
+      centered
+      closeIcon={<CloseOutlined style={{ color: "var(--color-text-secondary)" }} />}
+      styles={{
+        content: {
+          backgroundColor: "var(--color-app)",
+          padding: 0,
+        },
+      }}
     >
+      {/* Header */}
+      <div className="p-4 border-b border-[var(--color-border)]">
+        <h2 className="text-[var(--color-text-primary)] text-lg font-semibold">
+          Private chat
+        </h2>
+      </div>
+      {/* Body */}
       <div className="flex flex-col px-4">
         {/* Ô tìm kiếm */}
         <div className="py-4 border-b border-[var(--color-border)]">
@@ -89,8 +103,13 @@ const ModalCreatePrivate = ({ isOpenModal, onCancel }) => {
 
         {/* Danh sách bạn bè */}
         <div className="h-[400px] overflow-y-auto custom-scrollbar">
-          {searchResults.length === 0 ? (
-            <div className="text-center py-8 text-[var(--color-text-secondary)]">
+          {loading && (
+            <div className="w-full text-center mt-8">
+              <Spin />
+            </div>
+          )}
+          {searchResults.length === 0 && !loading ? (
+            <div className="text-center mt-8 text-[var(--color-text-secondary)]">
               Không tìm thấy kết quả
             </div>
           ) : (
@@ -105,32 +124,14 @@ const ModalCreatePrivate = ({ isOpenModal, onCancel }) => {
           )}
         </div>
       </div>
-
       {/* Footer */}
-      <div className="px-6 py-4 flex justify-end gap-3 border-t border-[var(--color-border)]">
-        <Button
-          onClick={onCancel}
-          style={{
-            fontSize: "16px",
-            fontWeight: "600",
-            padding: 20,
-          }}
-        >
-          Hủy
-        </Button>
-        <Button
-          onClick={handleCreateGroup}
-          type="primary"
-          style={{
-            fontSize: "16px",
-            fontWeight: "600",
-            padding: 20,
-          }}
-        >
+      <div className="p-4 flex justify-end gap-3 border-t border-[var(--color-border)]">
+        <Button onClick={onCancel}>Hủy</Button>
+        <Button onClick={handleCreateGroup} type="primary">
           Nhắn tin
         </Button>
       </div>
-    </BaseModal>
+    </Modal>
   );
 };
 

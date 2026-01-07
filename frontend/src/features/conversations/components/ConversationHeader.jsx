@@ -62,9 +62,9 @@ const ConversationHeader = ({ searchValue, onSearchChange }) => {
       </div>
 
       {/* Modal */}
-      <ModalCreateGroup isOpenModal={openModal === "group"} onCancel={closeModalGroup} />
+      <ModalCreateGroup isOpen={openModal === "group"} onCancel={closeModalGroup} />
       <ModalCreatePrivate
-        isOpenModal={openModal === "private"}
+        isOpen={openModal === "private"}
         onCancel={closeModalPrivate}
       />
     </>
