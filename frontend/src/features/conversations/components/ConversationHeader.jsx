@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Search, User, Users } from "lucide-react";
 import ModalCreateGroup from "./modal/ModalCreateGroup";
-import ModalCreatePrivate from "./modal/ModalSearchUser";
+import ModalCreatePrivate from "./modal/ModalCreatePrivate";
 import SearchBar from "@/shared/components/ui/search/SearchBar";
 
 const ConversationHeader = ({ searchValue, onSearchChange }) => {
