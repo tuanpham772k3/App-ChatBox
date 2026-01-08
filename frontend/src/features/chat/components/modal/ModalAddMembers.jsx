@@ -17,10 +17,21 @@ const ModalAddMembers = ({ isOpen, onCancel, conversationId }) => {
 
   const notification = useNotification();
 
-  // Lấy danh sách gợi ý ban đầu
+  // Lấy danh sách người dùng
   useEffect(() => {
-    dispatch(searchUsers(""));
-  }, []);
+    const fetchUsers = async () => {
+      try {
+        await dispatch(searchUsers("")).unwrap();
+      } catch (error) {
+        notification.error({
+          message: "Không thể tải danh sách người dùng",
+          description: error.message || "Vui lòng thử lại sau",
+        });
+      }
+    };
+
+    fetchUsers();
+  }, [dispatch]);
 
   // Tìm kiếm bạn bè khi searchText thay đổi
   useEffect(() => {
@@ -46,7 +57,7 @@ const ModalAddMembers = ({ isOpen, onCancel, conversationId }) => {
   };
 
   // Xử lý khi nhấn nút "Tạo nhóm"
-  const handleCreateGroup = async () => {
+  const handleAddMembersToGroup = async () => {
     try {
       if (selectedFriends.length === 0) {
         notification.warning({
@@ -66,7 +77,10 @@ const ModalAddMembers = ({ isOpen, onCancel, conversationId }) => {
       setSearchText("");
       handleCancel();
     } catch (error) {
-      console.log("Error handle create conversation", error);
+      notification.error({
+        message: "Thêm thành viên thất bại",
+        description: error.message || "Có lỗi xảy ra, vui lòng thử lại",
+      });
     }
   };
 
@@ -135,7 +149,7 @@ const ModalAddMembers = ({ isOpen, onCancel, conversationId }) => {
       {/* Footer */}
       <div className="p-4 flex justify-end gap-3 border-t border-[var(--color-border)]">
         <Button onClick={onCancel}>Hủy</Button>
-        <Button onClick={handleCreateGroup} type="primary">
+        <Button onClick={handleAddMembersToGroup} type="primary">
           Thêm
         </Button>
       </div>

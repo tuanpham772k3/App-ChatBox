@@ -19,14 +19,26 @@ const ModalCreateGroup = ({ isOpen, onCancel }) => {
 
   const notification = useNotification();
 
-  // Lấy danh sách gợi ý ban đầu
+  // Lấy danh sách user
   useEffect(() => {
-    dispatch(searchUsers(""));
-  }, []);
+    const fetchUsers = async () => {
+      try {
+        await dispatch(searchUsers("")).unwrap();
+      } catch (error) {
+        notification.error({
+          message: "Không thể tải danh sách người dùng",
+          description: error.message || "Vui lòng thử lại sau",
+        });
+      }
+    };
+
+    fetchUsers();
+  }, [dispatch]);
 
   // Tìm kiếm bạn bè khi searchText thay đổi
   useEffect(() => {
     const query = searchText.trim();
+    if (!query) return;
 
     const handler = setTimeout(() => {
       dispatch(searchUsers(query));
@@ -78,7 +90,10 @@ const ModalCreateGroup = ({ isOpen, onCancel }) => {
       setSearchText("");
       onCancel(null);
     } catch (error) {
-      console.log("Error handle create conversation", error);
+      notification.error({
+        message: "Tạo nhóm thất bại",
+        description: error.message || "Có lỗi xảy ra, vui lòng thử lại",
+      });
     }
   };
 

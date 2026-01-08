@@ -19,7 +19,18 @@ const ModalCreatePrivate = ({ isOpen, onCancel }) => {
 
   // Lấy danh sách gợi ý ban đầu
   useEffect(() => {
-    dispatch(searchUsers(""));
+    const fetchUsers = async () => {
+      try {
+        await dispatch(searchUsers("")).unwrap();
+      } catch (error) {
+        notification.error({
+          message: "Không thể tải danh sách người dùng",
+          description: error.message || "Vui lòng thử lại sau",
+        });
+      }
+    };
+
+    fetchUsers();
   }, []);
 
   // Tìm kiếm bạn bè khi searchText thay đổi
@@ -39,8 +50,8 @@ const ModalCreatePrivate = ({ isOpen, onCancel }) => {
     setSelectedFriend((prev) => (prev === friendId ? "" : friendId));
   };
 
-  // Xử lý khi nhấn nút "Tạo nhóm"
-  const handleCreateGroup = async () => {
+  // Xử lý tạo nhóm chat 1-1
+  const handleCreatePrivate = async () => {
     try {
       if (selectedFriend.length === 0) {
         notification.warning({
@@ -58,7 +69,10 @@ const ModalCreatePrivate = ({ isOpen, onCancel }) => {
       setSearchText("");
       onCancel(null);
     } catch (error) {
-      console.log("Error handle create conversation", error);
+      notification.error({
+        message: "Tạo cuộc hội thoại thất bại",
+        description: error.message || "Có lỗi xảy ra, vui lòng thử lại",
+      });
     }
   };
 
@@ -127,7 +141,7 @@ const ModalCreatePrivate = ({ isOpen, onCancel }) => {
       {/* Footer */}
       <div className="p-4 flex justify-end gap-3 border-t border-[var(--color-border)]">
         <Button onClick={onCancel}>Hủy</Button>
-        <Button onClick={handleCreateGroup} type="primary">
+        <Button onClick={handleCreatePrivate} type="primary">
           Nhắn tin
         </Button>
       </div>

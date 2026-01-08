@@ -3,6 +3,7 @@ import { Image, MapPin, Mic, Navigation, Smile } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { createNewMessage, editMessageById } from "../messagesSlice";
 import { emitEvent } from "@/shared/lib/socket";
+import { useNotification } from "@/shared/hooks/useNotification";
 
 const MessageInput = ({ editingMessage, setEditingMessage }) => {
   const dispatch = useDispatch();
@@ -14,11 +15,13 @@ const MessageInput = ({ editingMessage, setEditingMessage }) => {
   const typingTimeoutRef = useRef(null);
   const { id, content, originalContent } = editingMessage;
 
+  const notification = useNotification();
+
   // Xử lý gửi tin nhắn
   const handleSend = async () => {
-    if (!text.trim()) return;
-
     try {
+      if (!text.trim()) return;
+
       await dispatch(
         createNewMessage({
           conversationId: currentConversation._id,
@@ -30,17 +33,20 @@ const MessageInput = ({ editingMessage, setEditingMessage }) => {
 
       setText("");
     } catch (error) {
-      console.log("Lỗi gửi tin nhắn:", error);
+      notification.error({
+        message: "Gửi tin nhắn thất bại",
+        description: error.message || "Có lỗi xảy ra, vui lòng thử lại",
+      });
     }
   };
 
-  // Xử lý edit message
+  // Xử lý chỉnh sửa tin nhắn
   const handleEdit = async () => {
-    if (!id) return;
-    if (!content.trim()) return;
-    if (content.trim() === originalContent.trim()) return;
-
     try {
+      if (!id) return;
+      if (!content.trim()) return;
+      if (content.trim() === originalContent.trim()) return;
+
       await dispatch(editMessageById({ messageId: id, newContent: content })).unwrap();
 
       setEditingMessage({
@@ -48,7 +54,10 @@ const MessageInput = ({ editingMessage, setEditingMessage }) => {
         content: "",
       });
     } catch (error) {
-      console.error("Edit message error:", error);
+      notification.error({
+        message: "Chỉnh sửa tin nhắn thất bại",
+        description: error.message || "Có lỗi xảy ra, vui lòng thử lại",
+      });
     }
   };
 

@@ -9,20 +9,25 @@ import {
 import { deleteMessageById } from "../messagesSlice";
 import MessageItem from "./MessageItem";
 import { Spin } from "antd";
+import { useNotification } from "@/shared/hooks/useNotification";
 
 const Messages = ({ setEditingMessage }) => {
+  const dispatch = useDispatch();
   const { currentConversation } = useSelector((state) => state.conversations);
   const { messages = [], loading } = useSelector((state) => state.messages);
   const { user } = useSelector((state) => state.auth);
 
-  const dispatch = useDispatch();
+  const notification = useNotification();
 
-  // Xử lý thu hồi message
+  // Xử lý thu hồi tin nhắn
   const handleDeleteMessage = async (messageId) => {
     try {
       await dispatch(deleteMessageById(messageId)).unwrap();
     } catch (error) {
-      console.log("Delete message error: ", error);
+      notification.error({
+        message: "Gỡ tin nhắn thất bại",
+        description: error.message || "Có lỗi xảy ra",
+      });
     }
   };
 
