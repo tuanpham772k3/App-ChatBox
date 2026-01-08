@@ -43,7 +43,7 @@ export const createNewMessage = async (req, res) => {
     }
 
     //Gọi service tạo tin nhắn mới
-    const message = await createMessage(
+    const newMessage = await createMessage(
       conversationId,
       userId,
       content,
@@ -57,7 +57,7 @@ export const createNewMessage = async (req, res) => {
       success: true,
       message: "Message created successfully",
       idCode: 0,
-      data: message,
+      data: newMessage,
     });
   } catch (error) {
     console.log("Error in createNewMessage:", error);
@@ -149,14 +149,19 @@ export const getConversationMessages = async (req, res) => {
     }
 
     // Gọi service lấy danh sách tin nhắn
-    const result = await getMessages(conversationId, userId, page, limit);
+    const { messages, pagination } = await getMessages(
+      conversationId,
+      userId,
+      page,
+      limit
+    );
 
     // Trả về response thành công
     return res.status(200).json({
       success: true,
       message: "Messages retrieved successfully",
       idCode: 0,
-      data: result,
+      data: { messages, pagination },
     });
   } catch (error) {
     console.error("Error in getConversationMessages controller:", error);
@@ -207,28 +212,28 @@ export const deleteMessageById = async (req, res) => {
     }
 
     //Gọi service để xóa tin nhắn
-    const result = await deleteMessage(messageId, userId);
+    const message = await deleteMessage(messageId, userId);
 
     // Emit message mới tới client
     try {
       let io = getSocket();
-      io.to(`conversation_${result.conversationId}`).emit(
+      io.to(`conversation_${message.conversation}`).emit(
         "message:delete",
-        result.messageId
+        messageId
       );
       console.log(
-        `User ${userId} deleted message ${messageId} to conversation ${result.conversationId}`
+        `User ${userId} deleted message ${messageId} to conversation ${message.conversation}`
       );
     } catch (err) {
-      console.error("Socket emit failed for conversation:", result.conversationId, err);
+      console.error("Socket emit failed for conversation:", message.conversation, err);
     }
 
     // Trả về phản hồi thành công
     return res.status(200).json({
       success: true,
-      message: result.message,
+      message: "Message deleted successfully",
       idCode: 0,
-      data: result,
+      data: message,
     });
   } catch (error) {
     console.log("Error in deleteMessageById controller:", error);

@@ -1,21 +1,17 @@
 import instance from "@/shared/lib/axios";
 
 const authApi = {
-  register: async (payload) => {
-    const res = await instance.post("/auth/register", payload);
-    return res.data;
+  register: (payload) => {
+    return instance.post("/auth/register", payload);
   },
-  login: async (payload) => {
-    const res = await instance.post("/auth/login", payload);
-    return res.data;
+  login: (payload) => {
+    return instance.post("/auth/login", payload);
   },
-  refreshToken: async () => {
-    const res = await instance.post("/auth/refresh");
-    return res.data;
+  refreshToken: () => {
+    return instance.post("/auth/refresh");
   },
-  logout: async () => {
-    const res = await instance.post("/auth/logout");
-    return res.data;
+  logout: () => {
+    return instance.post("/auth/logout");
   },
 };
 

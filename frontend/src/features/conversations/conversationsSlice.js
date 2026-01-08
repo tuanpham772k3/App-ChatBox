@@ -11,14 +11,9 @@ export const createConversation = createAsyncThunk(
   async (participantId, { rejectWithValue }) => {
     try {
       const res = await conversationApi.createConversationApi(participantId);
-      return res.data; // backend trả về { conversation, isNew }
+      return res; // backend trả về: { conversation, isNew }
     } catch (err) {
-      const data = err.response?.data;
-      return rejectWithValue({
-        message: data?.message || "Lỗi không xác định",
-        idCode: data?.idCode || -1,
-        status: err.response?.status,
-      });
+      return rejectWithValue(err);
     }
   }
 );
@@ -32,33 +27,22 @@ export const createGroupConversation = createAsyncThunk(
   async (payload, { rejectWithValue }) => {
     try {
       const res = await conversationApi.createGroupConversationApi(payload);
-      // Giả sử backend trả về { conversation }
-      return res.data;
+      return res; // backend trả về: { conversation, isNew }
     } catch (err) {
-      const data = err.response?.data;
-      return rejectWithValue({
-        message: data?.message || "Không thể tạo nhóm chat",
-        idCode: data?.idCode || -1,
-        status: err.response?.status,
-      });
+      return rejectWithValue(err);
     }
   }
 );
 
-// Lấy danh sách hội thoại của user hiện tại
+// Lấy danh sách hội thoại
 export const getConversations = createAsyncThunk(
   "conversations/getAll",
   async (_, { rejectWithValue }) => {
     try {
       const res = await conversationApi.getConversationsApi();
-      return res.data; // backend trả về danh sách conversations
+      return res; // { conversations, pagination }
     } catch (err) {
-      const data = err.response?.data;
-      return rejectWithValue({
-        message: data?.message || "Lỗi không xác định",
-        idCode: data?.idCode || -1,
-        status: err.response?.status,
-      });
+      return rejectWithValue(err);
     }
   }
 );
@@ -71,13 +55,9 @@ export const getConversationById = createAsyncThunk(
   async (conversationId, { rejectWithValue }) => {
     try {
       const res = await conversationApi.getConversationByIdApi(conversationId);
-      return res.data;
+      return res; // conversation
     } catch (err) {
-      const data = err.response?.data;
-      return rejectWithValue({
-        message: data?.message || "Lỗi không xác định",
-        idCode: data?.idCode || -1,
-      });
+      return rejectWithValue(err);
     }
   }
 );
@@ -89,14 +69,10 @@ export const deleteConversation = createAsyncThunk(
   "conversations/delete",
   async (conversationId, { rejectWithValue }) => {
     try {
-      const res = await conversationApi.deleteConversationApi(conversationId);
+      await conversationApi.deleteConversationApi(conversationId);
       return { conversationId };
     } catch (err) {
-      const data = err.response?.data;
-      return rejectWithValue({
-        message: data?.message || "Không thể xoá hội thoại",
-        idCode: data?.idCode || -1,
-      });
+      return rejectWithValue(err);
     }
   }
 );
@@ -115,14 +91,9 @@ export const addMemberToGroup = createAsyncThunk(
         conversationId,
         memberIds,
       });
-      return { conversationId, ...res.data };
+      return res; // { conversation, conversationId };
     } catch (err) {
-      const data = err.response?.data;
-      return rejectWithValue({
-        message: data?.message || "Không thể thêm thành viên vào nhóm",
-        idCode: data?.idCode || -1,
-        status: err.response?.status,
-      });
+      return rejectWithValue(err);
     }
   }
 );
@@ -135,20 +106,15 @@ export const removeMemberFromGroup = createAsyncThunk(
   /**
    * payload: { conversationId, userId }
    */
-  async ({ conversationId, userId }, { rejectWithValue }) => {
+  async ({ conversationId, memberId }, { rejectWithValue }) => {
     try {
       const res = await conversationApi.removeMemberFromGroupApi({
         conversationId,
-        userId,
+        memberId,
       });
-      return { conversationId, userId, ...res.data };
+      return res; // { conversationId, conversation };
     } catch (err) {
-      const data = err.response?.data;
-      return rejectWithValue({
-        message: data?.message || "Không thể xoá thành viên khỏi nhóm",
-        idCode: data?.idCode || -1,
-        status: err.response?.status,
-      });
+      return rejectWithValue(err);
     }
   }
 );
@@ -158,15 +124,10 @@ export const markConversationAsRead = createAsyncThunk(
   "conversation/markAsRead",
   async ({ conversationId, userId }, { rejectWithValue }) => {
     try {
-      const res = await conversationApi.markAsReadApi(conversationId);
-      return { conversationId, ...res.data };
+      await conversationApi.markAsReadApi(conversationId);
+      return { conversationId, userId };
     } catch (err) {
-      const data = err.response?.data;
-      return rejectWithValue({
-        message: data?.message || "Lỗi không xác định",
-        idCode: data?.idCode || -1,
-        status: err.response?.status,
-      });
+      return rejectWithValue(err);
     }
   }
 );
@@ -289,7 +250,7 @@ const conversationsSlice = createSlice({
       })
       .addCase(createConversation.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message;
+        state.error = action.payload;
       })
 
       /** -----CREATE GROUP CONVERSATION----- */
@@ -310,7 +271,7 @@ const conversationsSlice = createSlice({
       })
       .addCase(createGroupConversation.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message;
+        state.error = action.payload;
       })
 
       /** -----GET ALL CONVERSATIONS----- */
@@ -321,12 +282,11 @@ const conversationsSlice = createSlice({
       .addCase(getConversations.fulfilled, (state, action) => {
         state.loading = false;
         state.conversations = action.payload?.conversations || [];
-        // nếu muốn lưu thông tin phân trang
         // state.pagination = action.payload?.pagination || null;
       })
       .addCase(getConversations.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message;
+        state.error = action.payload;
       })
 
       /** -----GET CONVERSATION BY ID----- */
@@ -339,7 +299,7 @@ const conversationsSlice = createSlice({
       })
       .addCase(getConversationById.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message;
+        state.error = action.payload;
       })
 
       /** -----DELETE CONVERSATION----- */
@@ -354,8 +314,8 @@ const conversationsSlice = createSlice({
 
       /** -----ADD MEMBER TO GROUP----- */
       .addCase(addMemberToGroup.fulfilled, (state, action) => {
-        const { conversationId } = action.payload;
-        const updatedConv = action.payload.conversation;
+        const { conversationId, conversation } = action.payload;
+        const updatedConv = conversation;
         const idx = state.conversations.findIndex((c) => c._id === conversationId);
         if (idx === -1 || !updatedConv) return;
 
@@ -367,8 +327,8 @@ const conversationsSlice = createSlice({
 
       /** -----REMOVE MEMBER FROM GROUP----- */
       .addCase(removeMemberFromGroup.fulfilled, (state, action) => {
-        const { conversationId } = action.payload;
-        const updatedConv = action.payload.conversation;
+        const { conversationId, conversation } = action.payload;
+        const updatedConv = conversation;
         const idx = state.conversations.findIndex((c) => c._id === conversationId);
         if (idx === -1 || !updatedConv) return;
 
@@ -382,13 +342,10 @@ const conversationsSlice = createSlice({
       // MARK CONVERSATION AS READ
       // -------------------------------
       .addCase(markConversationAsRead.fulfilled, (state, action) => {
-        const { conversationId } = action.payload || {};
-        const { userId } = action.meta.arg || {}; // LẤY TỪ META
-
+        const { conversationId, userId } = action.payload;
         // Update trong danh sách conversations
         const conv = state.conversations.find((c) => c._id === conversationId);
         if (!conv) return;
-
         conv.participants = conv.participants.map((p) =>
           p.user._id === userId
             ? {
@@ -399,7 +356,6 @@ const conversationsSlice = createSlice({
               }
             : p
         );
-
         // Update currentConversation nếu đang mở
         if (state.currentConversation?._id === conversationId) {
           state.currentConversation.participants =

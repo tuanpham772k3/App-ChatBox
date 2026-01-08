@@ -11,14 +11,9 @@ export const fetchProfile = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const res = await userApi.getProfile();
-      return res.user;
+      return res; // user
     } catch (err) {
-      const data = err.response?.data;
-      return rejectWithValue({
-        message: data?.message || "Lỗi không xác định",
-        idCode: data?.idCode || -1,
-        status: err.response?.status,
-      });
+      return rejectWithValue(err);
     }
   }
 );
@@ -29,14 +24,9 @@ export const editProfile = createAsyncThunk(
   async (payload, { rejectWithValue }) => {
     try {
       const res = await userApi.updateProfile(payload);
-      return res.user;
+      return res; // user
     } catch (err) {
-      const data = err.response?.data;
-      return rejectWithValue({
-        message: data?.message || "Lỗi không xác định",
-        idCode: data?.idCode || -1,
-        status: err.response?.status,
-      });
+      return rejectWithValue(err);
     }
   }
 );
@@ -47,14 +37,9 @@ export const searchUsers = createAsyncThunk(
   async (keyword = "", { rejectWithValue }) => {
     try {
       const res = await userApi.searchUsersApi(keyword);
-      return res.data;
+      return res; // users
     } catch (err) {
-      const data = err.response?.data;
-      return rejectWithValue({
-        message: data?.message || "Lỗi không xác định",
-        idCode: data?.idCode || -1,
-        status: err.response?.status,
-      });
+      return rejectWithValue(err);
     }
   }
 );
@@ -65,7 +50,6 @@ export const searchUsers = createAsyncThunk(
 
 const userSlice = createSlice({
   name: "user",
-  // state manage
   initialState: {
     profile: null,
     searchResults: [],
@@ -95,7 +79,7 @@ const userSlice = createSlice({
       })
       .addCase(fetchProfile.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message;
+        state.error = action.payload;
       })
 
       /* ----- editProfile ----- */
@@ -108,7 +92,7 @@ const userSlice = createSlice({
       })
       .addCase(editProfile.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message;
+        state.error = action.payload;
       })
 
       /* ----- searchUsers ----- */
@@ -121,7 +105,7 @@ const userSlice = createSlice({
       })
       .addCase(searchUsers.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message;
+        state.error = action.payload;
       });
   },
 });

@@ -11,14 +11,9 @@ export const createNewMessage = createAsyncThunk(
   async (payload, { rejectWithValue }) => {
     try {
       const res = await messagesApi.createNewMessageApi(payload);
-      return res.data;
+      return res; // newMessage
     } catch (error) {
-      const data = err.response?.data;
-      return rejectWithValue({
-        message: data?.message || "Lỗi không xác định",
-        idCode: data?.idCode || -1,
-        status: err.response?.status,
-      });
+      return rejectWithValue(err);
     }
   }
 );
@@ -29,14 +24,9 @@ export const fetchConversationMessages = createAsyncThunk(
   async ({ conversationId }, { rejectWithValue }) => {
     try {
       const res = await messagesApi.getConversationMessagesApi(conversationId);
-      return res.data; // { messages, pagination }
+      return res; // { messages, pagination }
     } catch (err) {
-      const data = err.response?.data;
-      return rejectWithValue({
-        message: data?.message || "Lỗi không xác định",
-        idCode: data?.idCode || -1,
-        status: err.response?.status,
-      });
+      return rejectWithValue(err);
     }
   }
 );
@@ -47,14 +37,9 @@ export const deleteMessageById = createAsyncThunk(
   async (messageId, { rejectWithValue }) => {
     try {
       const res = await messagesApi.deleteMessageByIdApi(messageId);
-      return { messageId, ...res.data };
+      return res; // message
     } catch (err) {
-      const data = err.response?.data;
-      return rejectWithValue({
-        message: data?.message || "Lỗi không xác định",
-        idCode: data?.idCode || -1,
-        status: err.response?.status,
-      });
+      return rejectWithValue(err);
     }
   }
 );
@@ -65,14 +50,9 @@ export const editMessageById = createAsyncThunk(
   async ({ messageId, newContent }, { rejectWithValue }) => {
     try {
       const res = await messagesApi.editMessageByIdApi(messageId, newContent);
-      return res.data;
+      return res; // message
     } catch (err) {
-      const data = err.response?.data;
-      return rejectWithValue({
-        message: data?.message || "Lỗi không xác định",
-        idCode: data?.idCode || -1,
-        status: err.response?.status,
-      });
+      return rejectWithValue(err);
     }
   }
 );

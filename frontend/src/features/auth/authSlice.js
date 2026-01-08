@@ -7,14 +7,9 @@ export const registerUser = createAsyncThunk(
   async (payload, { rejectWithValue }) => {
     try {
       const res = await authApi.register(payload);
-      return res;
+      return res; // { user }
     } catch (err) {
-      const data = err.response?.data;
-      return rejectWithValue({
-        message: data?.message || "Lỗi không xác định",
-        idCode: data?.idCode || -1,
-        status: err.response?.status,
-      });
+      return rejectWithValue(err);
     }
   }
 );
@@ -25,14 +20,9 @@ export const loginUser = createAsyncThunk(
   async (payload, { rejectWithValue }) => {
     try {
       const res = await authApi.login(payload);
-      return res;
+      return res; // { accessToken, user }
     } catch (err) {
-      const data = err.response?.data;
-      return rejectWithValue({
-        message: data?.message || "Lỗi không xác định",
-        idCode: data?.idCode || -1,
-        status: err.response?.status,
-      });
+      return rejectWithValue(err);
     }
   }
 );
@@ -45,12 +35,7 @@ export const logoutUser = createAsyncThunk(
       const res = await authApi.logout();
       return res;
     } catch (err) {
-      const data = err.response?.data;
-      return rejectWithValue({
-        message: data?.message || "Lỗi không xác định",
-        idCode: data?.idCode || -1,
-        status: err.response?.status,
-      });
+      return rejectWithValue(err);
     }
   }
 );

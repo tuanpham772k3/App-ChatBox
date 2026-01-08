@@ -13,7 +13,7 @@ import DrawerConversationInfo from "./drawer/DrawerConversationInfo";
 import DrawerMembersInfo from "./drawer/DrawerMembersInfo";
 
 const ChatWindow = ({ activeChat, onBackToList }) => {
-  const { currentConversation = {}, statusUsers = {} } = useSelector(
+  const { currentConversation, statusUsers = {} } = useSelector(
     (state) => state.conversations
   );
   const user = useSelector((state) => state.auth.user) || {};

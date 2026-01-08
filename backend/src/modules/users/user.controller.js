@@ -19,9 +19,10 @@ export const getProfile = async (req, res) => {
 
     // result
     return res.status(200).json({
+      success: true,
       message: "Get user profile successfully!",
       idCode: 0,
-      user,
+      data: user,
     });
   } catch (error) {
     console.log("getProfile error:", error);
@@ -86,9 +87,10 @@ export const updateProfile = async (req, res) => {
 
     //trả kết quả
     return res.status(200).json({
+      success: true,
       message: "Update profile successfully",
       idCode: 0,
-      user,
+      data: user,
     });
   } catch (error) {
     console.log("updateProfile error:", error);

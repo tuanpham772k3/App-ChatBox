@@ -5,7 +5,12 @@
  * @returns {Object|null} thông tin hiển thị của conversation
  */
 export const getDisplayInfo = (conversation, currentUserId) => {
-  if (!conversation) return null;
+  if (!conversation ) return null;
+
+  // Kiểm tra participants có tồn tại và là mảng
+  if (!conversation.participants || !Array.isArray(conversation.participants)) {
+    return null;
+  }
 
   // Lấy người đối diện
   const partner = conversation.participants.find((p) => p.user._id !== currentUserId);

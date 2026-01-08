@@ -22,48 +22,22 @@ const Register = () => {
       });
       return;
     }
+
     try {
       const res = await dispatch(registerUser(info)).unwrap();
-
       console.log("API Response:", res); // debug
-      // Điều kiên đăng ký thành công
-      if (res && res.idCode === 0) {
-        // Thông báo
-        notification.success({
-          message: "Successful!",
-          description: res.message || "Register successful!",
-        });
 
-        form.resetFields();
-      }
+      notification.success({
+        message: "Đăng ký thành công!",
+        description: "Hãy đăng nhập để vào hệ thống",
+      });
+
+      form.resetFields();
     } catch (err) {
-      console.log("err:", err); // debug
-      //Xử lý lỗi dựa trên idCode
-      switch (err.idCode) {
-        case 1:
-          notification.warning({
-            message: "Lack of information",
-            description: err.message || "Username, Email, password are required!",
-          });
-          break;
-        case 2:
-          notification.warning({
-            message: "Failed",
-            description: err.message || "Email already exists!",
-          });
-          break;
-        case 3:
-          notification.warning({
-            message: "System error!",
-            description: err.message || "Internal server error!",
-          });
-          break;
-        default:
-          notification.error({
-            message: "Đăng ký thất bại",
-            description: err.message || "Lỗi không xác định!",
-          });
-      }
+      notification.error({
+        message: "Đăng ký thất bại",
+        description: err.message || "Có lỗi xảy ra",
+      });
     }
   };
 

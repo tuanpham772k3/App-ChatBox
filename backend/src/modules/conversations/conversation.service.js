@@ -394,10 +394,7 @@ export const deleteConversation = async (conversationId, userId) => {
       isActive: false,
     });
 
-    return {
-      success: true,
-      message: "Conversation deleted successfully",
-    };
+    return true;
   } catch (error) {
     console.error("Error in deleteConversation service:", error);
     throw error;
@@ -446,10 +443,7 @@ export const markConversationAsReadService = async (conversationId, userId) => {
       );
     }
 
-    return {
-      success: true,
-      message: "Conversation marked as read",
-    };
+    return true;
   } catch (error) {
     console.error("Error in markConversationAsReadService:", error);
     throw error;

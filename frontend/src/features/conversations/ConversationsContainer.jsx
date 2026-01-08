@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { MessageSquareText } from "lucide-react";
+import { Spin } from "antd";
 import {
   deleteConversation,
   getConversationById,
@@ -11,7 +12,7 @@ import { clearMessages, fetchConversationMessages } from "@/features/chat/messag
 import ConversationHeader from "./components/ConversationHeader";
 import ConversationItem from "./components/ConversationItem";
 import { getDisplayInfo } from "./utils/conversationHelper";
-import { Spin } from "antd";
+import { useNotification } from "@/shared/hooks/useNotification";
 
 const ConversationContainer = ({ activeChat, onActiveChatId }) => {
   const dispatch = useDispatch();
@@ -27,27 +28,53 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchInput, setSearchInput] = useState("");
 
+  const notification = useNotification();
+
   // Lấy danh sách hội thoại
   useEffect(() => {
-    dispatch(getConversations());
+    const fetchConversations = async () => {
+      try {
+        await dispatch(getConversations()).unwrap();
+      } catch (err) {
+        notification.error({
+          message: "Lấy danh sách hội thoại thất bại",
+          description: err.message || "Có lỗi xảy ra",
+        });
+      }
+    };
+
+    fetchConversations();
   }, [dispatch]);
 
   // Click chọn hội thoại -> hiển thị ChatWindow
-  const handleSelectConversation = (conversationId) => {
-    dispatch(getConversationById(conversationId));
+  const handleSelectConversation = async (conversationId) => {
+    try {
+      await dispatch(getConversationById(conversationId)).unwrap();
 
-    dispatch(clearMessages());
+      await dispatch(clearMessages()).unwrap();
 
-    dispatch(fetchConversationMessages({ conversationId }));
+      await dispatch(fetchConversationMessages({ conversationId })).unwrap();
 
-    dispatch(markConversationAsRead({ conversationId, userId: user.id }));
+      await dispatch(
+        markConversationAsRead({ conversationId, userId: user.id })
+      ).unwrap();
 
-    onActiveChatId(conversationId); // giữ logic hiển thị ChatWindow
+      onActiveChatId(conversationId); // giữ logic hiển thị ChatWindow
+    } catch (err) {
+      console.log("Lỗi handleSelectConversation:", err);
+    }
   };
 
   // Xóa hội thoại
-  const removeConversation = (conversationId) => {
-    dispatch(deleteConversation(conversationId));
+  const removeConversation = async (conversationId) => {
+    try {
+      await dispatch(deleteConversation(conversationId)).unwrap();
+    } catch (err) {
+      notification.error({
+        message: "Xóa hội thoại thất bại",
+        description: err.message || "Có lỗi xảy ra",
+      });
+    }
   };
 
   useEffect(() => {

@@ -11,9 +11,8 @@ const messagesApi = {
    * @param {object} fileInfo - Thông tin file (nếu có)
    * @param {string} replyTo - ID của tin nhắn được trả lời (nếu có)
    */
-  createNewMessageApi: async (payload) => {
-    const res = await instance.post("/messages", payload);
-    return res.data;
+  createNewMessageApi: (payload) => {
+    return instance.post("/messages", payload);
   },
 
   /**
@@ -23,9 +22,8 @@ const messagesApi = {
    * @param {number} page - Trang hiện tại (mặc định 1)
    * @param {number} limit - Số tin nhắn trên mỗi trang (mặc định 20)
    */
-  getConversationMessagesApi: async (conversationId) => {
-    const res = await instance.get(`/messages/${conversationId}`);
-    return res.data;
+  getConversationMessagesApi: (conversationId) => {
+    return instance.get(`/messages/${conversationId}`);
   },
 
   /**
@@ -33,9 +31,8 @@ const messagesApi = {
    * DELETE /messages/:messageId
    * @param {string} messageId - ID của tin nhắn
    */
-  deleteMessageByIdApi: async (messageId) => {
-    const res = await instance.delete(`/messages/${messageId}`);
-    return res.data;
+  deleteMessageByIdApi: (messageId) => {
+    return instance.delete(`/messages/${messageId}`);
   },
 
   /**
@@ -44,11 +41,10 @@ const messagesApi = {
    * @param {string} messageId - ID của tin nhắn
    * @param {string} content - Nội dung mới của tin nhắn
    */
-  editMessageByIdApi: async (messageId, newContent) => {
-    const res = await instance.put(`/messages/${messageId}`, {
+  editMessageByIdApi: (messageId, newContent) => {
+    return instance.put(`/messages/${messageId}`, {
       content: newContent,
     });
-    return res.data;
   },
 };
 

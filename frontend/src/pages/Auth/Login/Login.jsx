@@ -19,44 +19,17 @@ const Login = () => {
       const res = await dispatch(loginUser({ email, password })).unwrap();
       console.log("API Response:", res); // debug
 
-      // Điều kiên đăng nhập thành công
-      if (res && res.idCode === 0) {
-        // Thông báo
-        notification.success({
-          message: "Successful!",
-          description: res.message || "Login successful!",
-        });
+      notification.success({
+        message: "Đăng nhập thành công",
+        description: "Chào mừng bạn quay lại hệ thống",
+      });
 
-        navigate("/"); // chuyển hướng
-      }
+      navigate("/");
     } catch (err) {
-      console.log("Login error:", err); // debug
-      //Xử lý lỗi dựa trên idCode
-      switch (err.idCode) {
-        case 1:
-          notification.warning({
-            message: "Lack of information",
-            description: err.message || "Email, password are required!",
-          });
-          break;
-        case 2:
-          notification.warning({
-            message: "Failed",
-            description: err.message || "Invalid email or password!",
-          });
-          break;
-        case 3:
-          notification.warning({
-            message: "System error!",
-            description: err.message || "Internal server error!",
-          });
-          break;
-        default:
-          notification.error({
-            message: "Đăng nhập thất bại",
-            description: err.message || "Lỗi không xác định!",
-          });
-      }
+      notification.error({
+        message: "Đăng nhập thất bại",
+        description: err.message || "Có lỗi xảy ra",
+      });
     }
   };
 

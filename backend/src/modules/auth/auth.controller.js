@@ -65,12 +65,15 @@ export const register = async (req, res) => {
 
     // return success response
     return res.status(201).json({
+      success: true,
       message: "User created successfully",
       idCode: 0,
-      user: {
-        id: newUser._id,
-        username: newUser.username,
-        email: newUser.email,
+      data: {
+        user: {
+          id: newUser._id,
+          username: newUser.username,
+          email: newUser.email,
+        },
       },
     });
   } catch (error) {
@@ -168,14 +171,17 @@ export const login = async (req, res) => {
 
     // return success response
     return res.status(200).json({
+      success: true,
       message: "Login successful",
       idCode: 0,
-      accessToken,
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        avatar: user.avatarUrl.url,
+      data: {
+        accessToken,
+        user: {
+          id: user._id,
+          username: user.username,
+          email: user.email,
+          avatar: user.avatarUrl.url,
+        },
       },
     });
   } catch (error) {
@@ -235,6 +241,7 @@ export const refreshToken = async (req, res) => {
 
     // trả access token mới
     return res.status(200).json({
+      success: true,
       message: "Token refreshed",
       idCode: 0,
       accessToken: newAccessToken,
@@ -281,7 +288,12 @@ export const logoutCurrent = async (req, res) => {
 
     // Clear cookie on client
     clearRefreshCookie(res);
-    return res.status(200).json({ message: "Logged out", idCode: 0 });
+    return res.status(200).json({
+      success: true,
+      message: "Logged out",
+      idCode: 0,
+      data: null,
+    });
   } catch (error) {
     console.log("Error logout current :", error);
     return res.status(500).json({ message: "Internal server error", idCode: 3 });

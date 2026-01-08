@@ -15,8 +15,8 @@ import { useConversations } from "@/features/conversations/hooks/useConversation
 export const NotificationContext = createContext(null);
 
 const PrivateRoute = ({ element }) => {
-  const { accessToken, user } = useSelector((state) => state.auth);
-  return accessToken && user ? element : <Navigate to="/login" />;
+  const { accessToken } = useSelector((state) => state.auth);
+  return accessToken ? element : <Navigate to="/login" />;
 };
 
 function App() {

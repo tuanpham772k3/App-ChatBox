@@ -2,26 +2,59 @@ import axios from "axios";
 
 // Tạo instance của axios với cấu hình(config) mặc định (baseURL, timeout, headers, ...)
 const instance = axios.create({
-    baseURL: import.meta.env.VITE_API_BACKEND_URL || "http://localhost:8383/api", //url gốc của backend
-    timeout: 5000, // Thời gian tối đa (ms) chờ phản hồi, quá thì hủy request, trả về lỗi
+  baseURL: import.meta.env.VITE_API_BACKEND_URL || "http://localhost:8383/api", //url gốc của backend
+  timeout: 5000, // Thời gian tối đa (ms) chờ phản hồi, quá thì hủy request, trả về lỗi
 });
 
 // Add accessToken vào header trước khi request được gửi đi
 instance.interceptors.request.use(
-    (config) => {
-        // Lấy accessToken từ localStorage
-        const accessToken = localStorage.getItem("accessToken");
+  (config) => {
+    // Lấy accessToken từ localStorage
+    const accessToken = localStorage.getItem("accessToken");
 
-        // Nếu có accessToken thì thêm vào header Authorization
-        if (accessToken) {
-            config.headers.Authorization = `Bearer ${accessToken}`;
-        }
+    // Nếu có accessToken thì thêm vào header Authorization
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
+    }
 
-        // Trả về config đã chỉnh sửa để request tiếp tục
-        return config;
-    },
-    // Nếu lỗi khi tạo config thì reject để axios báo lỗi
-    (error) => Promise.reject(error)
+    // Trả về config đã chỉnh sửa để request tiếp tục
+    return config;
+  },
+  // Nếu lỗi khi tạo config thì reject để axios báo lỗi
+  (error) => Promise.reject(error)
+);
+
+instance.interceptors.response.use(
+  (response) => response.data.data,
+  (error) => {
+    // Có response từ server
+    if (error.response) {
+      const { status, data } = error.response;
+
+      return Promise.reject({
+        status,
+        message: data?.message || "Có lỗi xảy ra từ server",
+        idCode: data?.idCode ?? -1,
+        errors: data?.errors ?? null,
+      });
+    }
+
+    // Không có response (network / timeout)
+    if (error.request) {
+      return Promise.reject({
+        status: 0,
+        message: "Không thể kết nối tới server",
+        idCode: -2,
+      });
+    }
+
+    // Lỗi config / code
+    return Promise.reject({
+      status: -1,
+      message: error.message || "Lỗi không xác định",
+      idCode: -3,
+    });
+  }
 );
 
 export default instance;

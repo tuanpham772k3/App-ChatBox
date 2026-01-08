@@ -6,27 +6,24 @@ const conversationApi = {
    * POST /conversations/private
    * @param {string} participantId - id của người muốn chat cùng
    */
-  createConversationApi: async (participantId) => {
-    const res = await instance.post("/conversations/private", { participantId });
-    return res.data;
+  createConversationApi: (participantId) => {
+    return instance.post("/conversations/private", { participantId });
   },
 
   /**
    * Lấy danh sách hội thoại của user hiện tại
    * GET /conversations
    */
-  getConversationsApi: async () => {
-    const res = await instance.get("/conversations");
-    return res.data;
+  getConversationsApi: () => {
+    return instance.get("/conversations");
   },
 
   /**
    * Lấy chi tiết 1 hội thoại
    * GET /conversations/:conversationId
    */
-  getConversationByIdApi: async (conversationId) => {
-    const res = await instance.get(`/conversations/${conversationId}`);
-    return res.data;
+  getConversationByIdApi: (conversationId) => {
+    return instance.get(`/conversations/${conversationId}`);
   },
 
   /**
@@ -35,10 +32,9 @@ const conversationApi = {
    * body: { name, memberIds }
    * (Đường dẫn có thể khác tuỳ backend của bạn, chỉnh lại cho khớp)
    */
-  createGroupConversationApi: async (payload) => {
+  createGroupConversationApi: (payload) => {
     // payload: { name: string, memberIds: string[] }
-    const res = await instance.post("/conversations/group", payload);
-    return res.data;
+    return instance.post("/conversations/group", payload);
   },
 
   /**
@@ -46,40 +42,34 @@ const conversationApi = {
    * POST /conversations/:id/members
    * body: { memberIds: [] } //mảng
    */
-  addMemberToGroupApi: async ({ conversationId, memberIds }) => {
-    const res = await instance.put(`/conversations/${conversationId}/members`, {
+  addMemberToGroupApi: ({ conversationId, memberIds }) => {
+    return instance.put(`/conversations/${conversationId}/members`, {
       memberIds,
     });
-    return res.data;
   },
 
   /**
    * Xoá 1 thành viên khỏi nhóm
    * DELETE /conversations/:id/members/:userId
    */
-  removeMemberFromGroupApi: async ({ conversationId, userId }) => {
-    const res = await instance.delete(
-      `/conversations/${conversationId}/members/${userId}`
-    );
-    return res.data;
+  removeMemberFromGroupApi: ({ conversationId, memberId }) => {
+    return instance.delete(`/conversations/${conversationId}/members/${memberId}`);
   },
 
   /**
    * Xoá hội thoại (soft delete)
    * DELETE /conversations/:conversationId
    */
-  deleteConversationApi: async (conversationId) => {
-    const res = await instance.delete(`/conversations/${conversationId}`);
-    return res.data;
+  deleteConversationApi: (conversationId) => {
+    return instance.delete(`/conversations/${conversationId}`);
   },
 
   /**
    * Đánh dấu đã đọc
    * PUT /conversations/:conversationId/read
    */
-  markAsReadApi: async (conversationId) => {
-    const res = await instance.put(`/conversations/${conversationId}/read`);
-    return res.data;
+  markAsReadApi: (conversationId) => {
+    return instance.put(`/conversations/${conversationId}/read`);
   },
 };
 

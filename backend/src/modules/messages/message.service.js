@@ -160,7 +160,7 @@ export const createMessage = async (
     }
 
     // Result
-    return { populatedMessage };
+    return populatedMessage;
   } catch (error) {
     console.log("Error in createMessage service:", error);
     throw error;
@@ -316,12 +316,7 @@ export const deleteMessage = async (messageId, userId) => {
     }
 
     //Trả về kết quả
-    return {
-      success: true,
-      message: "Message deleted successfully",
-      messageId,
-      conversationId: message.conversation,
-    };
+    return message;
   } catch (error) {
     console.log("Error in deleteMessage service:", error);
     throw error;
