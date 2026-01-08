@@ -51,7 +51,7 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
     try {
       await dispatch(getConversationById(conversationId)).unwrap();
 
-      await dispatch(clearMessages()).unwrap();
+      dispatch(clearMessages());
 
       await dispatch(fetchConversationMessages({ conversationId })).unwrap();
 
