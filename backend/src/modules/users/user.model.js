@@ -19,7 +19,8 @@ const userSchema = new mongoose.Schema(
     avatarUrl: {
       url: {
         type: String,
-        default: "https://aic.com.vn/wp-content/uploads/2024/10/avatar-fb-mac-dinh-1.jpg",
+        default:
+          "https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg",
       }, // URL hiển thị
       public_id: { type: String }, // ID để xóa/replace ảnh trên Cloudinary
     },
