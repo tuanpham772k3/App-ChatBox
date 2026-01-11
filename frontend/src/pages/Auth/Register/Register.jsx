@@ -15,7 +15,6 @@ const Register = () => {
     const { confirmPassword, ...info } = values;
 
     if (confirmPassword !== info.password) {
-      // Thông báo
       notification.error({
         message: "Mật khẩu không trùng khớp!",
         description: "Vui lòng kiểm tra lại mật khẩu và mật khẩu xác nhận của bạn.",
@@ -24,8 +23,7 @@ const Register = () => {
     }
 
     try {
-      const res = await dispatch(registerUser(info)).unwrap();
-      console.log("API Response:", res); // debug
+      await dispatch(registerUser(info)).unwrap();
 
       notification.success({
         message: "Đăng ký thành công!",

@@ -48,6 +48,8 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
 
   // Click chọn hội thoại -> hiển thị ChatWindow
   const handleSelectConversation = async (conversationId) => {
+    onActiveChatId(conversationId); // giữ logic hiển thị ChatWindow
+
     try {
       await dispatch(getConversationById(conversationId)).unwrap();
 
@@ -58,8 +60,6 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
       await dispatch(
         markConversationAsRead({ conversationId, userId: user.id })
       ).unwrap();
-
-      onActiveChatId(conversationId); // giữ logic hiển thị ChatWindow
     } catch (err) {
       console.log("Lỗi handleSelectConversation:", err);
     }

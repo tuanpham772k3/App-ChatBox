@@ -14,10 +14,8 @@ const Login = () => {
   const onFinish = async (values) => {
     const { email, password } = values;
 
-    // gọi api đăng nhập
     try {
-      const res = await dispatch(loginUser({ email, password })).unwrap();
-      console.log("API Response:", res); // debug
+      await dispatch(loginUser({ email, password })).unwrap();
 
       notification.success({
         message: "Đăng nhập thành công",

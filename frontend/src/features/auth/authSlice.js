@@ -20,6 +20,7 @@ export const loginUser = createAsyncThunk(
   async (payload, { rejectWithValue }) => {
     try {
       const res = await authApi.login(payload);
+      localStorage.setItem("accessToken", res.accessToken);
       return res; // { accessToken, user }
     } catch (err) {
       return rejectWithValue(err);
@@ -75,7 +76,6 @@ const authSlice = createSlice({
         state.loading = false;
         state.user = action.payload.user;
         state.accessToken = action.payload.accessToken;
-        localStorage.setItem("accessToken", action.payload.accessToken);
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
