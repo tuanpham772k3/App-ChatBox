@@ -3,51 +3,17 @@ import { Ellipsis } from "lucide-react";
 import { getTypingNames } from "../utils/conversationHelper";
 import { emitEvent } from "@/shared/lib/socket";
 import GroupAvatar from "@/shared/components/ui/avatar/GroupAvatar";
-import MenuActions from "@/shared/components/ui/popover/MenuActions";
-import { Popover } from "antd";
+import PopoverConversationAction from "./popover/PopoverConversationAction";
 
 const ConversationItem = ({
   isActive,
   display,
-  onClick,
+  onSelect,
   onDeleteConversation,
   typingUsers,
   currentUserId,
   partnerStatus,
-  conversationId,
 }) => {
-  // State menu actions
-  const [open, setOpen] = useState(false);
-
-  // emit join conversation chỉ khi Active
-  useEffect(() => {
-    if (!isActive || !conversationId) return;
-    emitEvent("join_conversation", { conversationId });
-
-    return () => {
-      emitEvent("leave_conversation", { conversationId });
-    };
-  }, [conversationId, isActive]);
-
-  //Xử lý khi click vào cả item
-  const handleRowClick = () => {
-    onClick?.();
-  };
-
-  // Conversation menu actions
-  const conversationActions = [
-    { key: "archive_chat", label: "Ghim hội thoại", onClick: () => {} },
-    { key: "mask_unread", label: "Đánh dấu chưa đọc", onClick: () => {} },
-    { key: "categorize", label: "Phân loại", onClick: () => {} },
-    {
-      key: "delete",
-      label: "Xóa hội thoại",
-      danger: true,
-      onClick: onDeleteConversation,
-    },
-  ];
-
-  // Lấy tên những người đang gõ trong cuộc trò chuyện này
   const typingNames = getTypingNames(typingUsers, currentUserId);
 
   return (
@@ -59,7 +25,7 @@ const ConversationItem = ({
             : "hover:bg-[var(--color-hover-surface)]"
         }
       `}
-      onClick={handleRowClick}
+      onClick={onSelect}
     >
       {/* Avatar */}
       <div className="relative">
@@ -111,28 +77,22 @@ const ConversationItem = ({
 
         {/* Ellipsis + Unread badge*/}
         <div className="flex items-center gap-1 ml-2 mr-2 shrink-0">
-          <Popover
-            trigger="click"
-            placement="bottom"
-            open={open}
-            onOpenChange={setOpen}
-            content={<MenuActions actions={conversationActions} minWidth={160} />}
-            className="self-center"
-          >
-            {/* Ellipsis */}
-            <button
-              type="button"
-              onClick={(e) => e.stopPropagation()}
-              className={`p-1 rounded-full bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)] transition 
+          <PopoverConversationAction onDelete={onDeleteConversation}>
+            {({ open }) => (
+              <button
+                type="button"
+                onClick={(e) => e.stopPropagation()}
+                className={`p-1 rounded-full bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)] transition 
               ${
                 open
                   ? "opacity-100 focus:bg-[var(--color-icon-hover-bg)] focus:text-[var(--color-icon-hover-text)]"
                   : "opacity-0 group-hover:opacity-100"
               } `}
-            >
-              <Ellipsis size={20} />
-            </button>
-          </Popover>
+              >
+                <Ellipsis size={20} />
+              </button>
+            )}
+          </PopoverConversationAction>
 
           {display.unreadCount > 0 && (
             <span className="min-w-[20px] h-5 px-1 inline-flex items-center justify-center rounded-full bg-red-600 text-[10px] font-semibold text-white">

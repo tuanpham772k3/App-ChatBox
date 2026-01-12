@@ -12,7 +12,7 @@ export const createNewMessage = createAsyncThunk(
     try {
       const res = await messagesApi.createNewMessageApi(payload);
       return res; // newMessage
-    } catch (error) {
+    } catch (err) {
       return rejectWithValue(err);
     }
   }
@@ -75,7 +75,9 @@ const messagesSlice = createSlice({
     addIncomingMessage: (state, action) => {
       const newMsg = action.payload;
       const exists = state.messages.some((m) => m._id === newMsg._id);
-      if (!exists) state.messages.push(newMsg);
+      if (!exists) {
+        state.messages.push(newMsg);
+      }
     },
 
     // Cập nhật tin nhắn đến từ socket
@@ -114,6 +116,12 @@ const messagesSlice = createSlice({
       })
       .addCase(createNewMessage.fulfilled, (state, action) => {
         state.sending = false;
+        const newMsg = action.payload;
+        const exists = state.messages.some((m) => m._id === newMsg._id);
+
+        if (!exists) {
+          state.messages.push(newMsg);
+        }
       })
       .addCase(createNewMessage.rejected, (state, action) => {
         state.sending = false;

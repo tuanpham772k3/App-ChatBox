@@ -1,7 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { Checkbox, Descriptions, Form, Input, message, Modal, Radio, Select } from "antd";
+import {
+  Checkbox,
+  Descriptions,
+  Form,
+  Input,
+  message,
+  Modal,
+  Radio,
+  Select,
+  Upload,
+} from "antd";
+import ImgCrop from "antd-img-crop";
 import { CloseOutlined } from "@ant-design/icons";
-import { ArrowLeft, PencilLine } from "lucide-react";
+import { ArrowLeft, Camera, PencilLine } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProfile } from "../../userSlice";
 import { useNotification } from "@/shared/hooks/useNotification";
@@ -12,7 +23,9 @@ const ModalUserInfo = ({ isOpen, onCancel }) => {
   const profile = useSelector((state) => state.user.profile);
   const notification = useNotification();
 
-  const [mode, setMode] = useState("view"); // view || edit
+  const [mode, setMode] = useState("view"); // view || editInfo || editAvatar
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [fileList, setFileList] = useState([]);
 
   const modalTransition = (type) => setMode(type);
 
@@ -65,15 +78,23 @@ const ModalUserInfo = ({ isOpen, onCancel }) => {
               />
               <div className="h-20">
                 <div className="absolute bottom-5 flex items-center gap-4 px-4">
-                  <img
-                    src={profile?.avatarUrl.url}
-                    alt={profile?.username}
-                    className="w-20 h-20 rounded-full border-2 border-[var(--color-border)] object-cover"
-                  />
+                  <div className="relative">
+                    <img
+                      src={profile?.avatarUrl.url}
+                      alt={profile?.username}
+                      className="w-20 h-20 rounded-full border-2 border-[var(--color-border)] object-cover"
+                    />
+                    <button
+                      onClick={() => modalTransition("editAvatar")}
+                      className="absolute bottom-0 right-0 p-1 text-[var(--color-text-secondary)] bg-[var(--color-app)] hover:bg-[var(--color-hover-soft)] rounded-full border border-[var(--color-border)]"
+                    >
+                      <Camera size={22} />
+                    </button>
+                  </div>
                   <div className="flex items-center gap-2">
                     <h2 className="text-xl font-medium">{profile?.username}</h2>
                     <button
-                      onClick={() => modalTransition("edit")}
+                      onClick={() => modalTransition("editInfo")}
                       className="p-1 rounded-full hover:bg-[var(--color-hover-soft)]"
                     >
                       <PencilLine size={16} />
@@ -114,17 +135,17 @@ const ModalUserInfo = ({ isOpen, onCancel }) => {
           {/* Footer */}
           <div className="p-3 border-t border-[var(--color-border)]">
             <button
-              onClick={() => modalTransition("edit")}
+              onClick={() => modalTransition("editInfo")}
               className="w-full flex justify-center items-center gap-2 py-1 bg-[var(--color-chat)] hover:bg-[var(--color-hover-soft)] rounded"
             >
               <PencilLine size={20} />
-              <span className="text-lg font-semibold">Cập nhật</span>
+              <span className="text-lg font-medium">Cập nhật</span>
             </button>
           </div>
         </>
       )}
 
-      {mode === "edit" && (
+      {mode === "editInfo" && (
         <>
           {/* Header */}
           <div className="flex items-center gap-4 p-4 border-b border-[var(--color-border)]">
@@ -143,6 +164,73 @@ const ModalUserInfo = ({ isOpen, onCancel }) => {
               modalTransition("view");
             }}
           />
+        </>
+      )}
+      {mode === "editAvatar" && (
+        <>
+          {/* Header */}
+          <div className="flex items-center gap-4 p-4 border-b border-[var(--color-border)]">
+            <button className="p-2 hover:bg-[var(--color-chat)] rounded-full">
+              <ArrowLeft onClick={() => modalTransition("view")} />
+            </button>
+            <h2 className="text-[var(--color-text-primary)] text-lg font-semibold">
+              Cập nhật ảnh đại diện
+            </h2>
+          </div>
+          {/* Đang làm */}
+          <div className="flex flex-col items-center justify-center py-6">
+            <ImgCrop rotationSlider>
+              <Upload
+                listType="picture-card"
+                fileList={fileList}
+                maxCount={1}
+                beforeUpload={(file) => {
+                  setAvatarFile(file);
+                  setFileList([
+                    {
+                      uid: file.uid,
+                      name: file.name,
+                      status: "done",
+                      url: URL.createObjectURL(file),
+                    },
+                  ]);
+                  return false; // ❗ chặn auto upload
+                }}
+                onRemove={() => {
+                  setAvatarFile(null);
+                  setFileList([]);
+                }}
+              >
+                {fileList.length === 0 && "+ Tải ảnh"}
+              </Upload>
+            </ImgCrop>
+          </div>
+
+          {/* Footer */}
+          <div className="flex justify-end gap-2 px-4 py-3 border-t border-[var(--color-border)]">
+            <button
+              onClick={() => modalTransition("view")}
+              className="px-4 py-2 bg-[var(--color-chat)] hover:bg-[var(--color-hover-soft)] rounded"
+            >
+              Hủy
+            </button>
+
+            <button
+              disabled={!avatarFile}
+              onClick={() => {
+                const formData = new FormData();
+                formData.append("avatar", avatarFile);
+
+                // TODO: call API upload avatar
+                console.log("UPLOAD FILE:", avatarFile);
+
+                modalTransition("view");
+              }}
+              className="px-4 py-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white rounded disabled:opacity-50"
+            >
+              Cập nhật
+            </button>
+          </div>
         </>
       )}
     </Modal>

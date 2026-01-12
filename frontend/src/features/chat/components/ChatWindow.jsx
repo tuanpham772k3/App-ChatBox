@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useSelector } from "react-redux";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import MessageInput from "./MessageInput";
 import Messages from "./Messages";
 import { useMessages } from "../hooks/useMessages";
@@ -11,8 +11,12 @@ import ChatHeader from "./ChatHeader";
 import ModalAddMembers from "./modal/ModalAddMembers";
 import DrawerConversationInfo from "./drawer/DrawerConversationInfo";
 import DrawerMembersInfo from "./drawer/DrawerMembersInfo";
+import { clearMessages } from "../messagesSlice";
+import { emitEvent } from "@/shared/lib/socket";
+import ChatEmptyState from "./ChatEmptyState";
 
 const ChatWindow = ({ activeChat, onBackToList }) => {
+  const dispatch = useDispatch();
   const { currentConversation, statusUsers = {} } = useSelector(
     (state) => state.conversations
   );
@@ -43,11 +47,33 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
   const openDrawerInfo = (type) => setOpenDrawer(type);
   const closeDrawerInfo = () => setOpenDrawer(null);
 
+  // Clear messages khi activeChat thay đổi
+  useEffect(() => {
+    dispatch(clearMessages());
+  }, [activeChat]);
+
+  useEffect(() => {
+    if (!currentConversation?._id) return;
+
+    emitEvent("join_conversation", {
+      conversationId: currentConversation._id,
+    });
+
+    return () => {
+      emitEvent("leave_conversation", {
+        conversationId: currentConversation._id,
+      });
+    };
+  }, [currentConversation?._id]);
+
+  if (!activeChat) return <ChatEmptyState />;
+
   return (
     <div
       className={`flex-2 bg-[var(--color-app)] flex flex-col overflow-hidden
       ${activeChat ? "flex" : "hidden"} md:flex`}
     >
+      {/* {activeChat} */}
       {/* --- Header --- */}
       <ChatHeader
         onBackToList={onBackToList}

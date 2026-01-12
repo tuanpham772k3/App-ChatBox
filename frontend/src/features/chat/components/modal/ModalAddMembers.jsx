@@ -75,7 +75,7 @@ const ModalAddMembers = ({ isOpen, onCancel, conversationId }) => {
       // Reset state
       setSelectedFriends([]);
       setSearchText("");
-      handleCancel();
+      onCancel();
     } catch (error) {
       notification.error({
         message: "Thêm thành viên thất bại",

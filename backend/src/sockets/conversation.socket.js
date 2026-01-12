@@ -46,5 +46,10 @@ export const conversationSocket = (io, socket) => {
   socket.on("leave_conversation", ({ conversationId }) => {
     if (!conversationId) return;
     socket.leave(`conversation_${conversationId}`);
+
+    // 🔥 Log leave
+    console.log(
+      `[SOCKET] User ${socket.userId} leave room conversation_${conversationId}`
+    );
   });
 };

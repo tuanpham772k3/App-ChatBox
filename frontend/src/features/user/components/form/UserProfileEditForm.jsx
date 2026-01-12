@@ -95,14 +95,15 @@ const UserProfileEditForm = ({ profile, onCancel, onSubmit }) => {
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 bg-[var(--color-chat)] hover:bg-[var(--color-hover-soft)] rounded font-medium"
+          className="px-4 py-2 bg-[var(--color-chat)] hover:bg-[var(--color-hover-soft)] rounded"
         >
           Hủy
         </button>
 
         <button
           type="submit"
-          className="px-4 py-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white rounded font-medium"
+          disabled={!form.isFieldsTouched(true)}
+          className="px-4 py-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white rounded disabled:opacity-50"
         >
           Cập nhật
         </button>

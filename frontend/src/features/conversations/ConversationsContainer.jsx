@@ -48,12 +48,13 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
 
   // Click chọn hội thoại -> hiển thị ChatWindow
   const handleSelectConversation = async (conversationId) => {
-    onActiveChatId(conversationId); // giữ logic hiển thị ChatWindow
+    const exists = conversations.some((c) => c._id === conversationId);
+    if (!exists) return;
 
     try {
       await dispatch(getConversationById(conversationId)).unwrap();
 
-      dispatch(clearMessages());
+      onActiveChatId(conversationId); // giữ logic hiển thị ChatWindow
 
       await dispatch(fetchConversationMessages({ conversationId })).unwrap();
 
@@ -146,12 +147,11 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
                       key={conversation._id}
                       isActive={activeChat === conversation._id}
                       display={displayInfo}
-                      onClick={() => handleSelectConversation(conversation._id)}
+                      onSelect={() => handleSelectConversation(conversation._id)}
                       onDeleteConversation={() => removeConversation(conversation._id)}
                       typingUsers={typingInThisConversation}
                       currentUserId={user.id}
                       partnerStatus={partnerStatus}
-                      conversationId={conversation._id}
                     />
                   );
                 })}

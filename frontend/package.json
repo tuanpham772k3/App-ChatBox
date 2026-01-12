@@ -13,6 +13,7 @@
     "@radix-ui/react-dropdown-menu": "^2.1.16",
     "@reduxjs/toolkit": "^2.9.0",
     "antd": "^5.27.4",
+    "antd-img-crop": "^4.27.0",
     "axios": "^1.12.2",
     "class-variance-authority": "^0.7.1",
     "lodash": "^4.17.21",

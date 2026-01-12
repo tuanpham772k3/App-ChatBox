@@ -32,10 +32,10 @@ const MessageInput = ({ editingMessage, setEditingMessage }) => {
       ).unwrap();
 
       setText("");
-    } catch (error) {
+    } catch (err) {
       notification.error({
         message: "Gửi tin nhắn thất bại",
-        description: error.message || "Có lỗi xảy ra, vui lòng thử lại",
+        description: err.message || "Có lỗi xảy ra, vui lòng thử lại",
       });
     }
   };

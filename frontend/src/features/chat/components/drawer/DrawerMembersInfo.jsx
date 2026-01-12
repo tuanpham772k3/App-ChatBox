@@ -47,7 +47,7 @@ const DrawerMembersInfo = ({ open, onClose, openModal, members }) => {
 
           {/* Members List */}
           <ul className="flex flex-col overflow-y-auto">
-            {members.map((member) => (
+            {members?.map((member) => (
               <li
                 key={member.id}
                 className="flex items-center px-4 py-3 hover:bg-[var(--color-hover-soft)] rounded"
