@@ -2,6 +2,7 @@ import User from "../users/user.model.js";
 import Message from "./message.model.js";
 import Conversation from "../conversations/conversation.model.js";
 import { getSocket } from "../../socket.js";
+import { validateMessagePayload } from "./message.validation.js";
 
 /**Tạo tin nhắn mới
  * @param {string} conversationId - ID của conversation
@@ -17,8 +18,8 @@ export const createMessage = async (
   senderId,
   content,
   type,
-  fileInfo = null,
-  replyTo = null
+  fileInfo,
+  replyTo
 ) => {
   try {
     //1. Kiểm tra conversation tồn tại và user có quyền truy cập không
@@ -26,54 +27,57 @@ export const createMessage = async (
       _id: conversationId,
       "participants.user": senderId,
       isActive: true,
-    });
+    }).lean();
 
     if (!conversation) {
       throw new Error("Conversation not found or access denied");
     }
 
-    // 2. Kiểm tra replyTo message (nếu có)
+    // 2. Validate payload theo type
+    validateMessagePayload({ type, content, fileInfo });
+
+    // 3. Kiểm tra replyTo message (nếu có)
     if (replyTo) {
       const replyMessage = await Message.findOne({
         _id: replyTo,
         conversation: conversationId,
         isDeleted: false,
-      });
+      }).lean();
 
       if (!replyMessage) {
         throw new Error("Replied message not found");
       }
     }
 
-    // 3. Tạo message object & thêm file nếu có
+    // 4. Tạo message object & thêm file nếu có
     const messageData = {
       conversation: conversationId,
       sender: senderId,
-      content: content.trim(),
+      content: type === "text" ? content.trim() : null,
       type,
-      replyTo: replyTo || null,
-      status: "sent",
+      replyTo,
     };
 
-    if (fileInfo && (type === "image" || type === "file")) {
+    if (fileInfo) {
       messageData.file = {
-        url: fileInfo.url || null,
-        public_id: fileInfo.public_id || null,
-        filename: fileInfo.filename || null,
-        size: fileInfo.size || null,
+        url: fileInfo.url,
+        public_id: fileInfo.public_id,
+        filename: fileInfo.filename,
+        mimeType: fileInfo.mimeType,
+        size: fileInfo.size,
       };
     }
 
-    const savedMessage = await new Message(messageData).save();
+    const savedMessage = await Message.create(messageData);
 
-    // 4. Populate thông tin đầy đủ của message
+    // 5. Populate thông tin đầy đủ của message
     const populatedMessage = await Message.findById(savedMessage._id)
       .populate("sender", "username email avatarUrl")
       .populate("replyTo", "content sender createdAt")
       .populate("replyTo.sender", "username avatarUrl")
       .lean();
 
-    // 5. Cập nhật conversation.lastMessage và tăng unreadCount cho participants khác
+    // 6. Cập nhật conversation.lastMessage và tăng unreadCount cho participants khác
     const lastMessagePreview = {
       _id: savedMessage._id,
       sender: senderId,
@@ -81,16 +85,16 @@ export const createMessage = async (
       content: type === "text" ? content.trim() : fileInfo?.filename || type,
       file: fileInfo
         ? {
-            url: fileInfo.url || null,
-            filename: fileInfo.filename || null,
-            size: fileInfo.size || null,
+            url: fileInfo.url,
+            filename: fileInfo.filename,
+            size: fileInfo.size,
           }
         : null,
       isDeleted: false,
       createdAt: savedMessage.createdAt,
     };
 
-    await Conversation.updateOne(
+    const updatedConv = await Conversation.findOneAndUpdate(
       { _id: conversationId },
       {
         $set: {
@@ -103,12 +107,13 @@ export const createMessage = async (
       },
       {
         arrayFilters: [{ "p.user": { $ne: senderId } }],
+        new: true,
+        lean: true,
       }
     );
 
-    // 6. Emit socket
+    // 7. Emit tin nhắn mới đến conversation socket
     let io = getSocket();
-    // Emit tin nhắn mới đến conversation socket
     try {
       io.to(`conversation_${conversationId}`).emit("message:new", populatedMessage);
     } catch (err) {
@@ -120,30 +125,26 @@ export const createMessage = async (
     }
 
     try {
-      const lastMessageRealtime = {
-        _id: populatedMessage._id,
-        sender: {
-          _id: populatedMessage.sender._id,
-          username: populatedMessage.sender.username,
-          avatarUrl: populatedMessage.sender.avatarUrl,
-        },
-        type: populatedMessage.type,
-        content:
-          populatedMessage.type === "text"
-            ? populatedMessage.content
-            : populatedMessage.file?.filename || populatedMessage.type,
-        file: populatedMessage.file || null,
-        createdAt: populatedMessage.createdAt,
-      };
-
-      const updatedConv = await Conversation.findById(conversationId).lean();
-
-      // Emit unreadCount realtime cho từng user (TRỪ người gửi)
+      //8. Emit unreadCount realtime cho từng user (TRỪ người gửi)
       updatedConv.participants.forEach((p) => {
         if (p.user?.toString() !== senderId) {
           io.to(`user_${p.user}`).emit("conversation:update", {
             conversationId,
-            lastMessage: lastMessageRealtime,
+            lastMessage: {
+              _id: populatedMessage._id,
+              sender: {
+                _id: populatedMessage.sender._id,
+                username: populatedMessage.sender.username,
+                avatarUrl: populatedMessage.sender.avatarUrl,
+              },
+              type: populatedMessage.type,
+              content:
+                populatedMessage.type === "text"
+                  ? populatedMessage.content
+                  : populatedMessage.file?.filename || populatedMessage.type,
+              file: populatedMessage.file || null,
+              createdAt: populatedMessage.createdAt,
+            },
             unreadCount: p.unreadCount,
             userId: p.user?.toString(),
           });

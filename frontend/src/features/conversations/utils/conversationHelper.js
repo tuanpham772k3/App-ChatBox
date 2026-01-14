@@ -22,7 +22,7 @@ export const getDisplayInfo = (conversation, currentUserId) => {
   const participants = conversation.participants.map((p) => ({
     id: p.user._id,
     name: p.user.username,
-    avatarUrl: p.user.avatarUrl.url || "/avatarA.jpg",
+    avatarUrl: p.user.avatarUrl?.url || "/avatarA.jpg",
   }));
 
   // Lấy hội thoại nhóm

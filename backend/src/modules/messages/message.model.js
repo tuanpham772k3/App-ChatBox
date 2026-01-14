@@ -16,34 +16,24 @@ const messageSchema = new mongoose.Schema(
 
     content: {
       type: String,
-      required: true,
-      maxlength: 2000, // Giới hạn độ dài tin nhắn
+      trim: true,
+      maxlength: 2000,
+      default: null,
     }, // Nội dung tin nhắn
 
     type: {
       type: String,
       enum: ["text", "image", "file", "emoji"],
-      default: "text",
-    }, // Loại tin nhắn: text, image, file, emoji
+      required: true,
+    }, // Loại tin nhắn
 
     // Thông tin file (nếu là tin nhắn file/image)
     file: {
-      url: {
-        type: String,
-        default: null,
-      }, // URL file trên Cloudinary
-      public_id: {
-        type: String,
-        default: null,
-      }, // ID để xóa/replace file trên Cloudinary
-      filename: {
-        type: String,
-        default: null,
-      }, // Tên file gốc
-      size: {
-        type: Number,
-        default: null,
-      }, // Kích thước file (bytes)
+      url: { type: String }, // URL file trên Cloudinary
+      public_id: { type: String }, // ID để xóa/replace file trên Cloudinary
+      filename: { type: String }, // Tên file gốc
+      mimeType: { type: String },
+      size: { type: Number }, // Kích thước file (bytes)
     },
 
     // Thông tin reply (trả lời tin nhắn khác)

@@ -22,23 +22,14 @@ export const createNewMessage = async (req, res) => {
     const { userId } = req.user;
 
     //Lấy dữ liệu từ request body
-    const { conversationId, content, type = "text", replyTo = null } = req.body;
+    const { conversationId, content, type, replyTo } = req.body;
+    const fileInfo = req.file || null;
 
     // Validation cơ bản
-    if (!conversationId || !content || content.trim() === "") {
+    if (!conversationId || !type) {
       return res.status(400).json({
         success: false,
-        message: "Conversation ID and content are required",
-        idCode: 1,
-      });
-    }
-
-    // Kiểm tra conversationId có đúng format ObjectId không
-    if (!conversationId.match(/^[0-9a-fA-F]{24}$/)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid conversation ID format",
-        idCode: 2,
+        message: "conversationId and type are required",
       });
     }
 
@@ -48,7 +39,7 @@ export const createNewMessage = async (req, res) => {
       userId,
       content,
       type,
-      null, // fileInfo
+      fileInfo,
       replyTo
     );
 
@@ -217,10 +208,7 @@ export const deleteMessageById = async (req, res) => {
     // Emit message mới tới client
     try {
       let io = getSocket();
-      io.to(`conversation_${message.conversation}`).emit(
-        "message:delete",
-        messageId
-      );
+      io.to(`conversation_${message.conversation}`).emit("message:delete", messageId);
       console.log(
         `User ${userId} deleted message ${messageId} to conversation ${message.conversation}`
       );
