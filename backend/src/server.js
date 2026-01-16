@@ -8,6 +8,7 @@ import authRoutes from "./modules/auth/auth.route.js";
 import userRoutes from "./modules/users/user.route.js";
 import conversationRoutes from "./modules/conversations/conversation.route.js";
 import messageRoutes from "./modules/messages/message.route.js";
+import uploadRoutes from "./modules/upload/upload.route.js";
 import { initSocket } from "./socket.js";
 import { registerSocket } from "./sockets/registerSocket.js";
 
@@ -28,6 +29,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/conversations", conversationRoutes);
 app.use("/api/messages", messageRoutes);
+app.use("/api/upload", uploadRoutes);
 
 // sockets
 registerSocket(io);
