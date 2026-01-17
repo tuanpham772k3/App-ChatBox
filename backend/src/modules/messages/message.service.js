@@ -235,74 +235,47 @@ export const deleteMessage = async (messageId, userId) => {
       throw new Error("Message not found");
     }
 
-    //2. Kiểm tra user có quyền xóa tin nhắn không (chỉ người gửi mới được xóa)
+    //2. Check quyền
     if (message.sender.toString() !== userId) {
       throw new Error("You can only delete your own messages");
     }
 
-    //3. Kiểm tra tin nhắn đã bị xóa chưa
+    // 3. Nếu đã xóa thì thôi
     if (message.isDeleted) {
-      return {
-        success: true,
-        message: "Message already deleted",
-      };
+      return message;
     }
 
-    //4. Soft delete tin nhắn (đánh dấu isDeleted = true)
-    await Message.findByIdAndUpdate(messageId, {
-      isDeleted: true,
-      content: "This message has been deleted.",
-      file: {
-        url: null,
-        public_id: null,
-        filename: null,
-        size: null,
-      },
-    });
+    //4. Soft delete
+    message.isDeleted = true;
+    message.content = "This message has been deleted.";
+    message.file = null;
+    await message.save();
 
-    // 5. Nếu message này là lastMessage của conversation -> cập nhật lại lastMessage
+    // 5. Nếu là lastMessage thì update lại
     const conversation = await Conversation.findById(message.conversation);
-    if (!conversation) {
-      // tạm thời trả về (shouldn't happen)
-      return {
-        success: true,
-        message: "Message deleted successfully",
-        messageId,
-        conversationId: message.conversation,
-      };
-    }
 
-    const lastMsgId = conversation.lastMessage?._id?.toString?.();
-    if (lastMsgId && lastMsgId === messageId.toString()) {
-      // tìm message mới nhất (không bị xóa)
-      const prev = await Message.findOne({
+    const isLastMessage = conversation?.lastMessage?._id.toString() === messageId;
+
+    if (isLastMessage) {
+      const prevMessage = await Message.findOne({
         conversation: message.conversation,
         isDeleted: false,
       })
         .sort({ createdAt: -1 })
         .lean();
 
-      if (prev) {
+      if (prevMessage) {
         conversation.lastMessage = {
-          _id: prev._id,
-          sender: prev.sender,
-          type: prev.type,
-          content: prev.type === "text" ? prev.content : prev.file?.filename || prev.type,
-          file: prev.file || null,
+          _id: prevMessage._id,
+          sender: prevMessage.sender,
+          type: prevMessage.type,
+          content: prevMessage.type === "text" ? prevMessage.content : "File",
+          file: prevMessage.file || null,
           isDeleted: false,
-          createdAt: prev.createdAt,
+          createdAt: prevMessage.createdAt,
         };
       } else {
-        // không còn message nào -> reset lastMessage
-        conversation.lastMessage = {
-          _id: null,
-          sender: null,
-          type: null,
-          content: null,
-          file: null,
-          isDeleted: false,
-          createdAt: null,
-        };
+        conversation.lastMessage = null;
       }
       await conversation.save();
     }
@@ -325,17 +298,21 @@ export const deleteMessage = async (messageId, userId) => {
 export const editMessage = async (messageId, userId, newContent) => {
   try {
     // 1. Tìm tin nhắn
-    const message = await Message.findById(messageId);
+    const message = await Message.findById(messageId)
+      .populate("sender", "username email avatarUrl")
+      .populate("replyTo", "content sender createdAt")
+      .populate("replyTo.sender", "username avatarUrl");
+
     if (!message) {
       throw new Error("Message not found");
     }
 
-    // 2. Kiểm tra user có quyền chỉnh sửa tin nhắn không (chỉ người gửi mới được chỉnh sửa)
-    if (message.sender.toString() !== userId) {
+    // 2. Check quyền
+    if (message.sender._id.toString() !== userId) {
       throw new Error("You can only edit your own messages");
     }
 
-    // 3. Kiểm tra tin nhắn đã bị xóa chưa
+    // 3. Check tin nhắn đã bị xóa
     if (message.isDeleted) {
       throw new Error("Cannot edit a deleted message");
     }
@@ -350,21 +327,19 @@ export const editMessage = async (messageId, userId, newContent) => {
     }
 
     // 5. Cập nhật tin nhắn
-    const updatedMessage = await Message.findByIdAndUpdate(
-      messageId,
-      {
-        content: newContent.trim(),
-        isEdited: true,
-        editedAt: new Date(),
-      },
-      { new: true }
-    )
-      .populate("sender", "username email avatarUrl")
-      .populate("replyTo", "content sender createdAt")
-      .populate("replyTo.sender", "username avatarUrl")
-      .lean();
+    message.content = newContent.trim();
+    message.isEdited = true;
+    message.editedAt = new Date();
+    await message.save();
 
-    return updatedMessage;
+    // 6. Nếu là lastMessage thì cập nhật preview
+    const conversation = await Conversation.findOne(message.conversation);
+    if (conversation.lastMessage._id.toString() === messageId) {
+      conversation.lastMessage.content = message.content;
+      await conversation.save();
+    }
+
+    return message;
   } catch (error) {
     console.log("Error in editMessage service:", error);
     throw error;

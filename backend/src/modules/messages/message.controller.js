@@ -179,13 +179,9 @@ export const getConversationMessages = async (req, res) => {
  */
 export const deleteMessageById = async (req, res) => {
   try {
-    //Lấy messageId từ URL params
     const { messageId } = req.params;
-
-    //Lấy userId từ JWT token
     const { userId } = req.user;
 
-    //Validation messageId
     if (!messageId.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({
         success: false,
@@ -194,7 +190,6 @@ export const deleteMessageById = async (req, res) => {
       });
     }
 
-    //Gọi service để xóa tin nhắn
     const message = await deleteMessage(messageId, userId);
 
     // Emit message mới tới client
@@ -208,7 +203,6 @@ export const deleteMessageById = async (req, res) => {
       console.error("Socket emit failed for conversation:", message.conversation, err);
     }
 
-    // Trả về phản hồi thành công
     return res.status(200).json({
       success: true,
       message: "Message deleted successfully",
@@ -253,16 +247,11 @@ export const deleteMessageById = async (req, res) => {
  */
 export const editMessageById = async (req, res) => {
   try {
-    // Lấy messageId từ URL params
     const { messageId } = req.params;
-
-    // Lấy userId từ JWT token
     const { userId } = req.user;
 
-    //Lấy new content từ request body
     const { content: newContent } = req.body;
 
-    // Validation messageId
     if (!messageId.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({
         success: false,
@@ -271,7 +260,6 @@ export const editMessageById = async (req, res) => {
       });
     }
 
-    // Validation new content
     if (!newContent) {
       return res.status(400).json({
         success: false,
@@ -280,13 +268,15 @@ export const editMessageById = async (req, res) => {
       });
     }
 
-    // Gọi service để chỉnh sửa tin nhắn
     const message = await editMessage(messageId, userId, newContent);
 
     try {
       const io = getSocket();
       io.to(`conversation_${message.conversation}`).emit("message:edit", message);
-    } catch (error) {}
+      console.log("emit edit thành công", message);
+    } catch (error) {
+      console.log("Lỗi emit message:edit trong editMessageById:", error);
+    }
 
     // Trả về response thành công
     return res.status(200).json({
