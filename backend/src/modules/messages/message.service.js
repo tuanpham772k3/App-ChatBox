@@ -2,7 +2,6 @@ import User from "../users/user.model.js";
 import Message from "./message.model.js";
 import Conversation from "../conversations/conversation.model.js";
 import { getSocket } from "../../socket.js";
-import { validateMessagePayload } from "./message.validation.js";
 
 /**Tạo tin nhắn mới
  * @param {string} conversationId - ID của conversation
@@ -13,16 +12,9 @@ import { validateMessagePayload } from "./message.validation.js";
  * @param {string} replyTo - ID của tin nhắn được trả lời (nếu có)
  * @returns {object} - Tin nhắn đã được tạo
  */
-export const createMessage = async (
-  conversationId,
-  senderId,
-  content,
-  type,
-  fileInfo,
-  replyTo
-) => {
+export const createMessage = async (conversationId, senderId, content, fileInfo) => {
   try {
-    //1. Kiểm tra conversation tồn tại và user có quyền truy cập không
+    // Kiểm tra conversation tồn tại và user có quyền truy cập không
     const conversation = await Conversation.findOne({
       _id: conversationId,
       "participants.user": senderId,
@@ -33,72 +25,71 @@ export const createMessage = async (
       throw new Error("Conversation not found or access denied");
     }
 
-    // 2. Validate payload theo type
-    validateMessagePayload({ type, content, fileInfo });
+    // Xác định message type (BACKEND QUYẾT)
+    let type = "text";
 
-    // 3. Kiểm tra replyTo message (nếu có)
-    if (replyTo) {
-      const replyMessage = await Message.findOne({
-        _id: replyTo,
-        conversation: conversationId,
-        isDeleted: false,
-      }).lean();
+    if (fileInfo) {
+      type = fileInfo.mimeType.startsWith("image/") ? "image" : "file";
+    }
 
-      if (!replyMessage) {
-        throw new Error("Replied message not found");
+    // Validate payload theo type
+    if (type === "text") {
+      if (!content || !content.trim()) {
+        throw new Error("Message content cannot be empty");
+      }
+      if (content.length > 2000) {
+        throw new Error("Message content too long (max 2000 characters)");
       }
     }
 
-    // 4. Tạo message object & thêm file nếu có
+    if ((type === "image" || type === "file") && !fileInfo?.url) {
+      throw new Error("File info is required for file/image message");
+    }
+
+    // Tạo message object & thêm file nếu có
     const messageData = {
       conversation: conversationId,
       sender: senderId,
-      content: type === "text" ? content.trim() : null,
       type,
-      replyTo,
-    };
-
-    if (fileInfo) {
-      messageData.file = {
-        url: fileInfo.url,
-        public_id: fileInfo.public_id,
-        filename: fileInfo.filename,
-        mimeType: fileInfo.mimeType,
-        size: fileInfo.size,
-      };
-    }
-
-    const savedMessage = await Message.create(messageData);
-
-    // 5. Populate thông tin đầy đủ của message
-    const populatedMessage = await Message.findById(savedMessage._id)
-      .populate("sender", "username email avatarUrl")
-      .populate("replyTo", "content sender createdAt")
-      .populate("replyTo.sender", "username avatarUrl")
-      .lean();
-
-    // 6. Cập nhật conversation.lastMessage và tăng unreadCount cho participants khác
-    const lastMessagePreview = {
-      _id: savedMessage._id,
-      sender: senderId,
-      type,
-      content: type === "text" ? content.trim() : fileInfo?.filename || type,
+      content: content ? content.trim() : null,
       file: fileInfo
         ? {
             url: fileInfo.url,
+            public_id: fileInfo.public_id,
             filename: fileInfo.filename,
+            mimeType: fileInfo.mimeType,
             size: fileInfo.size,
           }
         : null,
-      isDeleted: false,
-      createdAt: savedMessage.createdAt,
     };
 
+    const savedMessage = await Message.create(messageData);
+
+    // Populate thông tin đầy đủ của message
+    const populatedMessage = await Message.findById(savedMessage._id)
+      .populate("sender", "username email avatarUrl")
+      .lean();
+
+    // Cập nhật conversation.lastMessage và tăng unreadCount cho participants khác
     const updatedConv = await Conversation.findOneAndUpdate(
       { _id: conversationId },
       {
         $set: {
-          lastMessage: lastMessagePreview,
+          lastMessage: {
+            _id: savedMessage._id,
+            sender: senderId,
+            type,
+            content: type === "text" ? content.trim() : fileInfo?.filename || type,
+            file: fileInfo
+              ? {
+                  url: fileInfo.url,
+                  filename: fileInfo.filename,
+                  size: fileInfo.size,
+                }
+              : null,
+            isDeleted: false,
+            createdAt: savedMessage.createdAt,
+          },
           updatedAt: new Date(),
         },
         $inc: {
@@ -112,7 +103,7 @@ export const createMessage = async (
       }
     );
 
-    // 7. Emit tin nhắn mới đến conversation socket
+    // Emit tin nhắn mới đến conversation socket
     let io = getSocket();
     try {
       io.to(`conversation_${conversationId}`).emit("message:new", populatedMessage);
@@ -125,7 +116,7 @@ export const createMessage = async (
     }
 
     try {
-      //8. Emit unreadCount realtime cho từng user (TRỪ người gửi)
+      // Emit unreadCount realtime cho từng user (TRỪ người gửi)
       updatedConv.participants.forEach((p) => {
         if (p.user?.toString() !== senderId) {
           io.to(`user_${p.user}`).emit("conversation:update", {

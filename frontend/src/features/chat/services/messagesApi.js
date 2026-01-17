@@ -5,9 +5,7 @@ const messagesApi = {
    * Tạo tin nhắn mới
    * POST /messages
    * @param {string} conversationId - ID của conversation
-   * @param {string} senderId - ID của người gửi
    * @param {string} content - Nội dung tin nhắn
-   * @param {string} type - Loại tin nhắn (text, image, file, emoji)
    * @param {object} fileInfo - Thông tin file (nếu có)
    * @param {string} replyTo - ID của tin nhắn được trả lời (nếu có)
    */

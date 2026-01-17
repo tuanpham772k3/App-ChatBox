@@ -22,26 +22,18 @@ export const createNewMessage = async (req, res) => {
     const { userId } = req.user;
 
     //Lấy dữ liệu từ request body
-    const { conversationId, content, type, replyTo } = req.body;
-    const fileInfo = req.file || null;
+    const { conversationId, content, file } = req.body;
 
     // Validation cơ bản
-    if (!conversationId || !type) {
+    if (!conversationId) {
       return res.status(400).json({
         success: false,
-        message: "conversationId and type are required",
+        message: "conversationId is required",
       });
     }
 
     //Gọi service tạo tin nhắn mới
-    const newMessage = await createMessage(
-      conversationId,
-      userId,
-      content,
-      type,
-      fileInfo,
-      replyTo
-    );
+    const newMessage = await createMessage(conversationId, userId, content, file);
 
     // Trả về phản hồi thành công
     return res.status(201).json({

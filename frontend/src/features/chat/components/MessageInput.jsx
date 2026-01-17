@@ -1,9 +1,11 @@
 import React, { useRef, useState } from "react";
-import { Image, MapPin, Mic, Navigation, Smile } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
+import { Image, MapPin, Mic, Navigation, Smile } from "lucide-react";
+import { Upload } from "antd";
 import { createNewMessage, editMessageById } from "../messagesSlice";
 import { emitEvent } from "@/shared/lib/socket";
 import { useNotification } from "@/shared/hooks/useNotification";
+import instance from "@/shared/lib/axios";
 
 const MessageInput = ({ editingMessage, setEditingMessage }) => {
   const dispatch = useDispatch();
@@ -25,9 +27,7 @@ const MessageInput = ({ editingMessage, setEditingMessage }) => {
       await dispatch(
         createNewMessage({
           conversationId: currentConversation._id,
-          senderId: user.id,
           content: text,
-          type: "text",
         })
       ).unwrap();
 
@@ -93,6 +93,29 @@ const MessageInput = ({ editingMessage, setEditingMessage }) => {
     }, 1000);
   };
 
+  const handleUploadImage = async ({ file }) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      // 1. Upload file
+      const fileInfo = await instance.post("/upload", formData);
+
+      // 2. Tạo message image
+      await dispatch(
+        createNewMessage({
+          conversationId: currentConversation._id,
+          file: fileInfo,
+        })
+      ).unwrap();
+    } catch (err) {
+      notification.error({
+        message: "Upload ảnh thất bại",
+        description: err.message || "Có lỗi xảy ra",
+      });
+    }
+  };
+
   return (
     <div className="flex items-center px-4 py-4 border-t border-[var(--color-border)]">
       {/* Input Message */}
@@ -121,12 +144,15 @@ const MessageInput = ({ editingMessage, setEditingMessage }) => {
 
         {/* Action buttons */}
         {/* Upload */}
-        <button
-          className="w-9 h-9 flex justify-center items-center rounded-full hover:bg-[var(--color-icon-hover-bg)] 
+        <Upload showUploadList={false} customRequest={handleUploadImage} accept="image/*">
+          <button
+            className="w-9 h-9 flex justify-center items-center rounded-full hover:bg-[var(--color-icon-hover-bg)] 
         text-[var(--color-text-secondary)] hover:text-[var(--color-icon-hover-text)]"
-        >
-          <Image className="w-5 h-5" />
-        </button>
+          >
+            <Image className="w-5 h-5" />
+          </button>
+        </Upload>
+
         {/* Smile */}
         <button
           className="w-9 h-9 flex justify-center items-center rounded-full hover:bg-[var(--color-icon-hover-bg)] 

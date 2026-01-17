@@ -11,13 +11,13 @@ const MessageItem = ({
   showName,
   showAvatar,
   isLastMessage,
+  onPreviewImage,
   conversation,
   currentUserId,
   onDeleteMessage,
   onEditClick,
 }) => {
-  // State menu actions
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false); // State menu actions
 
   // Xóa tin nhắn
   const handleDelete = () => {
@@ -142,6 +142,15 @@ const MessageItem = ({
           >
             {/* Content */}
             <span className={msg.isDeleted ? "opacity-70" : ""}>{msg.content}</span>
+
+            {msg.type === "image" && (
+              <img
+                src={msg.file?.url}
+                alt="image"
+                className="max-w-[240px] rounded-lg cursor-pointer"
+                onClick={() => onPreviewImage(msg)}
+              />
+            )}
 
             {/* Edited */}
             {msg.isEdited && <div className="text-[10px] opacity-70">(đã chỉnh sửa)</div>}
