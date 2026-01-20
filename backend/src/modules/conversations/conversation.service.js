@@ -449,3 +449,46 @@ export const markConversationAsReadService = async (conversationId, userId) => {
     throw error;
   }
 };
+
+/**
+ * Đánh dấu đã đọc
+ * @param {string} conversationId - ID của conversation
+ * @param {string} userId - ID của user đang đăng nhập
+ * @param {number} page - Trang hiện tại
+ * @param {string} limit - giới số lượng hạn số image
+ * @returns {Object} - Kết quả xóa
+ */
+export const getConversationImagesService = async (
+  conversationId,
+  userId,
+  page = 1,
+  limit = 8
+) => {
+  // 1. Check quyền truy cập conversation
+  const conversation = await Conversation.findOne({
+    _id: conversationId,
+    "participants.user": userId,
+    isActive: true,
+  }).select("_id");
+
+  if (!conversation) {
+    throw new Error("Conversation not found or access denied");
+  }
+
+  // 2. Query ảnh
+  const skip = (page - 1) * limit;
+
+  const images = await Message.find({
+    conversation: conversationId,
+    isDeleted: false,
+    $or: [{ type: "image" }, { "file.mimeType": { $regex: /^image\// } }],
+  })
+    .select("file sender createdAt")
+    .populate("sender", "username avatarUrl")
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit)
+    .lean();
+
+  return images;
+};

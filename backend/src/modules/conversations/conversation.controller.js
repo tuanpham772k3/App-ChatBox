@@ -7,6 +7,7 @@ import {
   addMemberToGroupService,
   removeMemberFromGroupService,
   markConversationAsReadService,
+  getConversationImagesService,
 } from "./conversation.service.js";
 
 /**
@@ -541,5 +542,46 @@ export const markConversationAsRead = async (req, res) => {
     return res
       .status(500)
       .json({ success: false, message: "Internal server error", idCode: 3 });
+  }
+};
+
+export const getConversationImages = async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+    const { userId } = req.user;
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 8;
+
+    if (!conversationId.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid conversation ID format",
+      });
+    }
+
+    const images = await getConversationImagesService(
+      conversationId,
+      userId,
+      page,
+      limit
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: images,
+    });
+  } catch (error) {
+    if (error.message === "Conversation not found or access denied") {
+      return res.status(404).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
   }
 };

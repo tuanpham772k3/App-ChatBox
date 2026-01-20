@@ -8,6 +8,7 @@ import {
   addMemberToGroup,
   removeMemberFromGroup,
   markConversationAsRead,
+  getConversationImages,
 } from "./conversation.controller.js";
 import { verifyToken } from "../../middlewares/middleware.controller.js";
 
@@ -36,5 +37,8 @@ router.delete("/:conversationId", verifyToken, deleteConversationById);
 
 // Đánh dấu tin nhắn cuối người dùng đã đọc
 router.put("/:conversationId/read", verifyToken, markConversationAsRead);
+
+// Lấy danh sách ảnh trong hội thoại
+router.get("/:conversationId/images", verifyToken, getConversationImages);
 
 export default router;
