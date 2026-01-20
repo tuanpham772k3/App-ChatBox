@@ -314,17 +314,20 @@ export const removeMemberFromGroupService = async (
     const isAdmin = conversation.admin.some(
       (id) => id.toString() === currentUserId.toString()
     );
+
     if (!isAdmin) {
       throw new Error("Permission denied");
     }
 
-    // Không cho xóa nếu còn dưới 3 thành viên sau khi xóa
-    const remaining = conversation.participants.filter(
-      (id) => id.toString() !== memberId.toString()
-    );
-    if (remaining.length < 3) {
-      throw new Error("Group must have at least 3 members");
+    // Không được xóa chính mình
+    if (currentUserId.toString() === memberId.toString()) {
+      throw new Error("Admin cannot remove themselves");
     }
+
+    // Lọc thành viên cần xóa
+    const remaining = conversation.participants.filter(
+      (p) => p.user._id.toString() !== memberId.toString()
+    );
 
     conversation.participants = remaining;
     await conversation.save();

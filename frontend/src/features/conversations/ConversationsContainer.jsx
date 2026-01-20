@@ -22,7 +22,6 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
     typingUsers = {},
     statusUsers = {},
     loading,
-    error,
   } = useSelector((state) => state.conversations);
 
   const [searchTerm, setSearchTerm] = useState("");

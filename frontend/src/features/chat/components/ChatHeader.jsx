@@ -73,7 +73,7 @@ const ChatHeader = ({
         {/* --- Add members (only for group) --- */}
         {displayInfo.isGroup && (
           <button className="p-2 rounded-full hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)]">
-            <Users onClick={openModal} size={20} />
+            <Users onClick={() => openModal("addMembers")} size={20} />
           </button>
         )}
 

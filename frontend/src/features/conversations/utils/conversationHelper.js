@@ -5,7 +5,7 @@
  * @returns {Object|null} thông tin hiển thị của conversation
  */
 export const getDisplayInfo = (conversation, currentUserId) => {
-  if (!conversation ) return null;
+  if (!conversation) return null;
 
   // Kiểm tra participants có tồn tại và là mảng
   if (!conversation.participants || !Array.isArray(conversation.participants)) {
@@ -18,12 +18,18 @@ export const getDisplayInfo = (conversation, currentUserId) => {
   // Lấy id người đối diện
   const partnerId = partner?.user?._id;
 
-  // Lấy danh sách thành viên && chỉ lấy thông tin cần thiết (id, name, avatarUrl)
-  const participants = conversation.participants.map((p) => ({
-    id: p.user._id,
-    name: p.user.username,
-    avatarUrl: p.user.avatarUrl?.url || "/avatarA.jpg",
-  }));
+  const adminIds = conversation.admin.map(String);
+
+  // Lấy danh sách thành viên && chỉ lấy thông tin cần thiết (id, name, avatarUrl, role)
+  const participants = conversation.participants.map((p) => {
+    const isMe = p.user._id === currentUserId;
+    return {
+      id: p.user._id,
+      name: isMe ? "Bạn" : p.user.username,
+      avatarUrl: p.user.avatarUrl?.url || "/avatarA.jpg",
+      role: adminIds.includes(p.user._id) ? "admin" : "member",
+    };
+  });
 
   // Lấy hội thoại nhóm
   const isGroup = conversation.type === "group";

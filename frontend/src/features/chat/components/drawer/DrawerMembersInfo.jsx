@@ -1,8 +1,14 @@
 import React from "react";
 import { Drawer } from "antd";
-import { ArrowLeft, Key, Search, Users } from "lucide-react";
+import { ArrowLeft, Key, Search, Trash, Users } from "lucide-react";
 
-const DrawerMembersInfo = ({ open, onClose, openModal, members }) => {
+const DrawerMembersInfo = ({ open, onClose, openModal, members, onRemoveMember }) => {
+  const sortedMembers = [...members].sort((a, b) => {
+    if (a.role === "admin" && b.role !== "admin") return -1;
+    if (a.role !== "admin" && b.role === "admin") return 1;
+    return 0;
+  });
+
   return (
     <Drawer
       open={open}
@@ -27,7 +33,7 @@ const DrawerMembersInfo = ({ open, onClose, openModal, members }) => {
         {/* Nút thêm thành viên */}
         <div className="p-4">
           <button
-            onClick={openModal}
+            onClick={() => openModal("addMembers")}
             className="w-full flex items-center justify-center gap-2 py-2 font-medium text-base text-[var(--color-text-primary)] 
         bg-[var(--color-chat)] hover:bg-[var(--color-hover-soft)] rounded"
           >
@@ -58,10 +64,10 @@ const DrawerMembersInfo = ({ open, onClose, openModal, members }) => {
 
           {/* Members List */}
           <ul className="flex flex-col overflow-y-auto">
-            {members?.map((member) => (
+            {sortedMembers.map((member) => (
               <li
                 key={member.id}
-                className="flex items-center px-4 py-3 hover:bg-[var(--color-hover-soft)] rounded"
+                className="flex items-center px-4 py-3 hover:bg-[var(--color-hover-surface)] rounded group"
               >
                 <div className="flex-1 flex items-center gap-2">
                   {/* Avatar */}
@@ -80,21 +86,25 @@ const DrawerMembersInfo = ({ open, onClose, openModal, members }) => {
                   </div>
                   {/* Name & role */}
                   <div className="flex flex-col justify-center">
-                    <p className="text-sm font-medium text-[var(--color-text-primary)]">
+                    <h3 className="text-sm font-medium text-[var(--color-text-primary)]">
                       {member.name}
-                    </p>
+                    </h3>
 
                     {member.role === "admin" && (
-                      <p className="text-[var(--color-text-secondary)]">Trưởng nhóm</p>
+                      <h3 className="text-[var(--color-text-secondary)]">Trưởng nhóm</h3>
                     )}
                   </div>
                 </div>
 
-                <div>
-                  <button className="px-4 py-1.5 font-medium bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white rounded">
-                    Kết bạn
+                {/* Chức năng admin */}
+                {member.role === "member" && (
+                  <button
+                    onClick={() => onRemoveMember(member.id)}
+                    className="p-2 opacity-0 group-hover:opacity-100 transition rounded hover:bg-[var(--color-hover-soft)]"
+                  >
+                    <Trash size={18} color="red" />
                   </button>
-                </div>
+                )}
               </li>
             ))}
           </ul>

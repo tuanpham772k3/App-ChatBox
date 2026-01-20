@@ -437,7 +437,6 @@ export const removeMemberFromGroup = async (req, res) => {
     const { userId } = req.user;
     const { conversationId, memberId } = req.params;
 
-    // Validate base
     if (
       !conversationId.match(/^[0-9a-fA-F]{24}$/) ||
       !memberId?.match(/^[0-9a-fA-F]{24}$/)

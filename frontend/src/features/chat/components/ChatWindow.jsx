@@ -16,6 +16,7 @@ import { emitEvent } from "@/shared/lib/socket";
 import ChatEmptyState from "./ChatEmptyState";
 import { getConversationImages } from "@/features/conversations/conversationsSlice";
 import DrawerMediaGallery from "./drawer/DrawerMediaGallery";
+import ModalRemoveMembers from "./modal/ModalRemoveMembers";
 
 const ChatWindow = ({ activeChat, onBackToList }) => {
   const dispatch = useDispatch();
@@ -30,9 +31,11 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
     content: "",
     originalContent: "",
   });
+  console.log(currentConversation);
 
-  const [openModal, setOpenModal] = useState(false); // "addMembers"
+  const [openModal, setOpenModal] = useState(null); // "addMembers" | "removeMembers"
   const [openDrawer, setOpenDrawer] = useState(null); // "conversationInfo" | "membersInfo" | "media" | null
+  const [selectedMemberId, setSelectedMemberId] = useState(null);
 
   // typingUsers: { [conversationId]: { [userId]: username } }
   // const currentTypingMap = typingUsers[currentConversation?._id] || {};
@@ -45,8 +48,8 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
   const partnerStatus = displayInfo.partnerId ? statusUsers[displayInfo.partnerId] : null;
 
   // Open Modal AddMembers
-  const openModalAddMembers = () => setOpenModal(true);
-  const closeModalAddMembers = () => setOpenModal(false);
+  const openModalMembers = (type) => setOpenModal(type);
+  const closeModalMembers = () => setOpenModal(false);
   // Open Drawer
   const closeDrawerInfo = () => setOpenDrawer(null);
   const openDrawerInfo = async (type) => {
@@ -97,7 +100,7 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
       <ChatHeader
         onBackToList={onBackToList}
         openDrawerInfo={openDrawerInfo}
-        openModal={openModalAddMembers}
+        openModal={openModalMembers}
         displayInfo={displayInfo}
         partnerStatus={partnerStatus}
       />
@@ -113,9 +116,16 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
 
       {/* Modal */}
       <ModalAddMembers
-        isOpen={openModal}
-        onCancel={closeModalAddMembers}
+        isOpen={openModal === "addMembers"}
+        onCancel={closeModalMembers}
         conversationId={currentConversation?._id}
+      />
+
+      <ModalRemoveMembers
+        isOpen={openModal === "removeMembers"}
+        onCancel={closeModalMembers}
+        conversationId={currentConversation?._id}
+        memberId={selectedMemberId}
       />
 
       {/* Drawer conversation info */}
@@ -131,8 +141,11 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
       <DrawerMembersInfo
         open={openDrawer === "membersInfo"}
         onClose={closeDrawerInfo}
-        openModal={openModalAddMembers}
         members={displayInfo.participants}
+        onRemoveMember={(memberId) => {
+          setSelectedMemberId(memberId);
+          openModalMembers("removeMembers");
+        }}
       />
 
       <DrawerMediaGallery
