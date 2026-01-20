@@ -1,13 +1,25 @@
 import React from "react";
 import { Drawer } from "antd";
-import { Bell, LogOut, Pin, Settings, Trash, TriangleAlert, Users } from "lucide-react";
+import {
+  ArrowLeft,
+  Bell,
+  Ellipsis,
+  Forward,
+  LogOut,
+  Pin,
+  Settings,
+  Trash,
+  TriangleAlert,
+  Users,
+} from "lucide-react";
 import GroupAvatar from "@/shared/components/ui/avatar/GroupAvatar";
 
 const DrawerConversationInfo = ({
   open,
   onClose,
   displayInfo,
-  openDrawerMembersInfo,
+  openDrawerInfo,
+  images,
 }) => {
   const headerActions = [
     { icon: <Bell size={20} />, label: "Tắt thông báo" },
@@ -15,34 +27,26 @@ const DrawerConversationInfo = ({
     { icon: <Users size={20} />, label: "Thêm thành viên" },
     { icon: <Settings size={20} />, label: "Quản lý nhóm" },
   ];
-  // Dummy data for images/videos
-  const images = [
-    { src: "/avatarB.jpg", alt: "Image 1" },
-    { src: "/avatarB.jpg", alt: "Image 2" },
-    { src: "/avatarB.jpg", alt: "Image 3" },
-    { src: "/avatarB.jpg", alt: "Image 4" },
-    { src: "/avatarC.jpg", alt: "Image 5" },
-    { src: "/avatarC.jpg", alt: "Image 6" },
-    { src: "/avatarC.jpg", alt: "Image 7" },
-    { src: "/avatarC.jpg", alt: "Image 8" },
-  ];
-
-  const actions = [
-    { icon: <TriangleAlert />, label: "Báo xấu" },
-    { icon: <Trash />, label: "Xóa lịch sử trò chuyện", danger: true },
-    { icon: <LogOut />, label: "Rời nhóm", danger: true },
-  ];
 
   return (
     <Drawer
       open={open}
       onClose={onClose}
+      closable={false}
       width={360}
       placement="right"
       title={
-        <div style={{ fontSize: "1.25rem", fontWeight: 600 }}>Thông tin hội thoại</div>
+        <div className="relative flex items-center justify-center">
+          <button
+            onClick={onClose}
+            className="absolute left-0 p-1.5 rounded-full hover:bg-[var(--color-hover-surface)]"
+          >
+            <ArrowLeft size={22} />
+          </button>
+          <span className="text-xl font-semibold">Thông tin hội thoại</span>
+        </div>
       }
-      styles={{ body: { padding: 0 }, header: { textAlign: "center" } }}
+      styles={{ body: { padding: 0 } }}
     >
       <div className="h-full overflow-y-auto custom-scrollbar">
         {/* Header */}
@@ -86,11 +90,11 @@ const DrawerConversationInfo = ({
             Thành viên nhóm
           </h3>
           <button
-            onClick={() => openDrawerMembersInfo("membersInfo")}
+            onClick={() => openDrawerInfo("membersInfo")}
             className="w-full flex items-center gap-2 px-4 py-3 text-sm text-[var(--color-text-primary)] hover:bg-[var(--color-hover-soft)] rounded"
           >
             <Users size={18} />
-            <span>5 thành viên</span>
+            <span>{`${displayInfo.participants.length} thành viên`}</span>
           </button>
         </div>
 
@@ -101,15 +105,32 @@ const DrawerConversationInfo = ({
           </h3>
           <div className="grid grid-cols-4 gap-2 py-2">
             {images.map((img, index) => (
-              <img
-                key={index}
-                src={img.src}
-                alt={img.alt}
-                className="w-20 h-20 object-cover rounded cursor-pointer transform hover:scale-105 transition-all drop-shadow-lg "
-              />
+              <div key={index} className="relative w-20 h-20 cursor-pointer group">
+                <img
+                  src={img.file.url}
+                  alt={img.file.filename}
+                  className="w-full h-full aspect-square object-cover rounded"
+                />
+                {/* overlay */}
+                <div className="absolute inset-0 rounded hover:bg-black/5" />
+                <div
+                  className="absolute top-1 right-1 flex items-center p-0.5 text-center rounded bg-[var(--color-chat)] 
+                opacity-0 group-hover:opacity-100 transition"
+                >
+                  <button className="p-1 rounded hover:bg-[var(--color-hover-soft)]">
+                    <Forward size={18} color="var(--color-text-primary)" />
+                  </button>
+                  <button className="p-1 rounded hover:bg-[var(--color-hover-soft)]">
+                    <Ellipsis size={18} color="var(--color-text-primary)" />
+                  </button>
+                </div>
+              </div>
             ))}
           </div>
-          <button className="w-full py-1 my-1 text-base font-semibold text-[var(--color-text-primary)] bg-[var(--color-chat)] hover:bg-[var(--color-hover-soft)] rounded">
+          <button
+            onClick={() => openDrawerInfo("media")}
+            className="w-full py-1 my-1 text-base font-semibold text-[var(--color-text-primary)] bg-[var(--color-chat)] hover:bg-[var(--color-hover-soft)] rounded"
+          >
             Xem tất cả
           </button>
         </div>
@@ -126,16 +147,18 @@ const DrawerConversationInfo = ({
 
         {/* Actions */}
         <div className="flex flex-col">
-          {actions.map((action, index) => (
-            <button
-              key={index}
-              className={`w-full flex items-center gap-2 p-4 text-base hover:bg-[var(--color-hover-soft)] rounded 
-              ${action.danger ? "text-red-500" : "text-[var(--color-text-primary)]"}`}
-            >
-              {action.icon}
-              <span>{action.label}</span>
-            </button>
-          ))}
+          <button className="w-full flex items-center gap-2 p-4 text-base hover:bg-[var(--color-hover-soft)] rounded text-[var(--color-text-primary)]">
+            <TriangleAlert />
+            <span>Báo xấu</span>
+          </button>
+          <button className="w-full flex items-center gap-2 p-4 text-base hover:bg-[var(--color-hover-soft)] rounded text-red-500">
+            <Trash />
+            <span>Xóa lịch sử trò chuyện</span>
+          </button>
+          <button className="w-full flex items-center gap-2 p-4 text-base hover:bg-[var(--color-hover-soft)] rounded text-red-500">
+            <LogOut />
+            <span>Rời nhóm</span>
+          </button>
         </div>
       </div>
     </Drawer>

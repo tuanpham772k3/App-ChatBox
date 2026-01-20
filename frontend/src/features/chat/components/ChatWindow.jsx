@@ -14,21 +14,25 @@ import DrawerMembersInfo from "./drawer/DrawerMembersInfo";
 import { clearMessages } from "../messagesSlice";
 import { emitEvent } from "@/shared/lib/socket";
 import ChatEmptyState from "./ChatEmptyState";
+import { getConversationImages } from "@/features/conversations/conversationsSlice";
+import DrawerMediaGallery from "./drawer/DrawerMediaGallery";
 
 const ChatWindow = ({ activeChat, onBackToList }) => {
   const dispatch = useDispatch();
-  const { currentConversation, statusUsers = {} } = useSelector(
-    (state) => state.conversations
-  );
+  const {
+    currentConversation,
+    statusUsers = {},
+    images = [],
+  } = useSelector((state) => state.conversations);
   const user = useSelector((state) => state.auth.user) || {};
-
   const [editingMessage, setEditingMessage] = useState({
     id: null,
     content: "",
     originalContent: "",
   });
+
   const [openModal, setOpenModal] = useState(false); // "addMembers"
-  const [openDrawer, setOpenDrawer] = useState(null); // "conversationInfo" | "membersInfo" | null
+  const [openDrawer, setOpenDrawer] = useState(null); // "conversationInfo" | "membersInfo" | "media" | null
 
   // typingUsers: { [conversationId]: { [userId]: username } }
   // const currentTypingMap = typingUsers[currentConversation?._id] || {};
@@ -44,8 +48,23 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
   const openModalAddMembers = () => setOpenModal(true);
   const closeModalAddMembers = () => setOpenModal(false);
   // Open Drawer
-  const openDrawerInfo = (type) => setOpenDrawer(type);
   const closeDrawerInfo = () => setOpenDrawer(null);
+  const openDrawerInfo = async (type) => {
+    setOpenDrawer(type);
+
+    if (type === "conversationInfo" && currentConversation?._id) {
+      try {
+        await dispatch(
+          getConversationImages({
+            conversationId: currentConversation._id,
+            limit: 8,
+          })
+        ).unwrap();
+      } catch (error) {
+        console.log("Lỗi lấy danh sách ảnh: ", error);
+      }
+    }
+  };
 
   // Clear messages khi activeChat thay đổi
   useEffect(() => {
@@ -104,7 +123,8 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
         open={openDrawer === "conversationInfo"}
         onClose={closeDrawerInfo}
         displayInfo={displayInfo}
-        openDrawerMembersInfo={openDrawerInfo}
+        openDrawerInfo={openDrawerInfo}
+        images={images}
       />
 
       {/* Drawer members info */}
@@ -113,6 +133,14 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
         onClose={closeDrawerInfo}
         openModal={openModalAddMembers}
         members={displayInfo.participants}
+      />
+
+      <DrawerMediaGallery
+        open={openDrawer === "media"}
+        onClose={() => {
+          openDrawerInfo("conversationInfo");
+        }}
+        images={images}
       />
     </div>
   );

@@ -1,16 +1,27 @@
 import React from "react";
 import { Drawer } from "antd";
-import { Key, Search, Users } from "lucide-react";
+import { ArrowLeft, Key, Search, Users } from "lucide-react";
 
 const DrawerMembersInfo = ({ open, onClose, openModal, members }) => {
   return (
     <Drawer
       open={open}
       onClose={onClose}
+      closable={false}
       width={360}
-      title={<div style={{ fontSize: "1.25rem", fontWeight: 600 }}>Thành viên</div>}
       placement="right"
-      styles={{ body: { padding: 0 }, header: { textAlign: "center" } }}
+      title={
+        <div className="relative flex items-center justify-center">
+          <button
+            onClick={onClose}
+            className="absolute left-0 p-1.5 rounded-full hover:bg-[var(--color-hover-surface)]"
+          >
+            <ArrowLeft size={22} />
+          </button>
+          <span className="text-xl font-semibold">Thông tin thành viên</span>
+        </div>
+      }
+      styles={{ body: { padding: 0 } }}
     >
       <div className="h-full overflow-y-auto custom-scrollbar">
         {/* Nút thêm thành viên */}
