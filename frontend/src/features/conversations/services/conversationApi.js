@@ -71,6 +71,16 @@ const conversationApi = {
   markAsReadApi: (conversationId) => {
     return instance.put(`/conversations/${conversationId}/read`);
   },
+
+  /**
+   * Lấy danh sách Ảnh
+   * PUT /conversations/:conversationId/images
+   */
+  getConversationImagesApi: (conversationId, limit = 8) => {
+    return instance.get(`/conversations/${conversationId}/images`, {
+      params: { limit },
+    });
+  },
 };
 
 export default conversationApi;

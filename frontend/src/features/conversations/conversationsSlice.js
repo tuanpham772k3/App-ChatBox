@@ -132,6 +132,25 @@ export const markConversationAsRead = createAsyncThunk(
   }
 );
 
+// Lấy danh sách Ảnh
+export const getConversationImages = createAsyncThunk(
+  "conversations/getImages",
+  async ({ conversationId, limit = 8 }, { rejectWithValue }) => {
+    try {
+      const images = await conversationApi.getConversationImagesApi(
+        conversationId,
+        limit
+      );
+      return {
+        conversationId,
+        images,
+      };
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
 /* =============================
  *  Slice setup
  * ============================= */
@@ -142,6 +161,7 @@ const conversationsSlice = createSlice({
     currentConversation: null,
     typingUsers: {},
     statusUsers: {},
+    images: [],
     loading: false,
     error: null,
   },
@@ -370,6 +390,21 @@ const conversationsSlice = createSlice({
                 : p
             );
         }
+      })
+
+      // -------------------------------
+      // GET CONVERSATION IMAGES
+      // -------------------------------
+      .addCase(getConversationImages.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(getConversationImages.fulfilled, (state, action) => {
+        state.loading = false;
+        state.images = action.payload.images || [];
+      })
+      .addCase(getConversationImages.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });
