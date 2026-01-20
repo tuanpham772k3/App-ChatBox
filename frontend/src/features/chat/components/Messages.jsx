@@ -21,8 +21,6 @@ const Messages = ({ setEditingMessage }) => {
   const dispatch = useDispatch();
   const { currentConversation } = useSelector((state) => state.conversations);
   const { messages = [], loading } = useSelector((state) => state.messages);
-  console.log(messages);
-
   const { user } = useSelector((state) => state.auth);
 
   const notification = useNotification();
