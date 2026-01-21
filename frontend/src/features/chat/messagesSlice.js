@@ -66,7 +66,6 @@ const messagesSlice = createSlice({
     messages: [],
     pagination: null,
     loading: false,
-    sending: false,
     error: null,
   },
 
@@ -97,6 +96,15 @@ const messagesSlice = createSlice({
       }
     },
 
+    // Cập nhật trạng thái tin nhắn đến từ socket
+    updateStatusMessage: (state, action) => {
+      const { messageId, status } = action.payload;
+      const msg = state.messages.find((m) => m._id === messageId);
+      if (msg) {
+        msg.status = status;
+      }
+    },
+
     // Clear khi đổi sang cuộc trò chuyện khác
     clearMessages: (state) => {
       state.messages = [];
@@ -111,11 +119,9 @@ const messagesSlice = createSlice({
       // CREATE MESSAGE
       // -------------------------------
       .addCase(createNewMessage.pending, (state) => {
-        state.sending = true;
         state.error = null;
       })
       .addCase(createNewMessage.fulfilled, (state, action) => {
-        state.sending = false;
         const newMsg = action.payload;
         const exists = state.messages.some((m) => m._id === newMsg._id);
 
@@ -124,7 +130,6 @@ const messagesSlice = createSlice({
         }
       })
       .addCase(createNewMessage.rejected, (state, action) => {
-        state.sending = false;
         state.error = action.payload;
       })
 
@@ -147,6 +152,11 @@ const messagesSlice = createSlice({
   },
 });
 
-export const { addIncomingMessage, updateMessage, removeMessage, clearMessages } =
-  messagesSlice.actions;
+export const {
+  addIncomingMessage,
+  updateMessage,
+  removeMessage,
+  updateStatusMessage,
+  clearMessages,
+} = messagesSlice.actions;
 export default messagesSlice.reducer;

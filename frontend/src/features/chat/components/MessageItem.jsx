@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { EllipsisVertical, Pencil, Trash } from "lucide-react";
+import { Check, CheckCheck, EllipsisVertical, Pencil, Trash } from "lucide-react";
 import { Popover } from "antd";
 import MenuActions from "@/shared/components/ui/popover/MenuActions";
 
@@ -184,7 +184,20 @@ const MessageItem = ({
               ))}
             </div>
           ) : (
-            <span className="text-[11px] text-[var(--color-text-secondary)]">Đã gửi</span>
+            <span className="text-[11px] text-[var(--color-text-secondary)]">
+              {msg.status === "sent" && (
+                <div className="flex items-center gap-1">
+                  <Check size={14} />
+                  <span className="font-medium">"Đã gửi"</span>
+                </div>
+              )}
+              {msg.status === "delivered" && (
+                <div className="flex items-center gap-1">
+                  <CheckCheck size={14} />
+                  <span className="text-xs">Đã nhận</span>
+                </div>
+              )}
+            </span>
           )}
         </div>
       )}

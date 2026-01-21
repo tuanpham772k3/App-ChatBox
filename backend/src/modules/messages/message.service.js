@@ -103,10 +103,20 @@ export const createMessage = async (conversationId, senderId, content, fileInfo)
       }
     );
 
-    // Emit tin nhắn mới đến conversation socket
+    // Emit tin nhắn mới qua socket.io
     let io = getSocket();
     try {
       io.to(`conversation_${conversationId}`).emit("message:new", populatedMessage);
+
+      await Message.findByIdAndUpdate(savedMessage._id, {
+        status: "delivered",
+      });
+
+      // Emit status update
+      io.to(`conversation_${conversationId}`).emit("message:status", {
+        messageId: savedMessage._id,
+        status: "delivered",
+      });
     } catch (err) {
       console.error(
         "Socket emit message:new failed for conversation:",

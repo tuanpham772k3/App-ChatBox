@@ -1,7 +1,12 @@
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { offEvent, onEvent } from "@/shared/lib/socket";
-import { addIncomingMessage, updateMessage, removeMessage } from "../messagesSlice";
+import {
+  addIncomingMessage,
+  updateMessage,
+  removeMessage,
+  updateStatusMessage,
+} from "../messagesSlice";
 
 export const useMessages = (conversationId) => {
   const dispatch = useDispatch();
@@ -28,15 +33,22 @@ export const useMessages = (conversationId) => {
       dispatch(removeMessage(messageId));
     };
 
+    // Xóa tin nhắn
+    const onStatusMessage = ({ messageId, status }) => {
+      dispatch(updateStatusMessage({ messageId, status }));
+    };
+
     // Lắng nghe các sự kiện từ server
     onEvent("message:new", onNewMessage);
     onEvent("message:edit", onEditMessage);
     onEvent("message:delete", onDeleteMessage);
+    onEvent("message:status", onStatusMessage);
 
     return () => {
       offEvent("message:new", onNewMessage);
       offEvent("message:edit", onEditMessage);
       offEvent("message:delete", onDeleteMessage);
+      offEvent("message:status", onStatusMessage);
     };
   }, [conversationId]);
 
