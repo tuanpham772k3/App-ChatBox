@@ -26,13 +26,12 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
     images = [],
   } = useSelector((state) => state.conversations);
   const user = useSelector((state) => state.auth.user) || {};
+
   const [editingMessage, setEditingMessage] = useState({
     id: null,
     content: "",
     originalContent: "",
   });
-  console.log(currentConversation);
-
   const [openModal, setOpenModal] = useState(null); // "addMembers" | "removeMembers"
   const [openDrawer, setOpenDrawer] = useState(null); // "conversationInfo" | "membersInfo" | "media" | null
   const [selectedMemberId, setSelectedMemberId] = useState(null);
@@ -141,6 +140,7 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
       <DrawerMembersInfo
         open={openDrawer === "membersInfo"}
         onClose={closeDrawerInfo}
+        openModal={openModalMembers}
         members={displayInfo.participants}
         onRemoveMember={(memberId) => {
           setSelectedMemberId(memberId);

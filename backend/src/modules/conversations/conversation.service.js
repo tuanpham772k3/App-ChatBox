@@ -264,14 +264,25 @@ export const addMemberToGroupService = async (
       throw new Error("One or more users not found");
     }
 
-    // Lọc ra những người không có trong group
-    const newMembers = memberIds.filter(
-      (id) => !conversation.participants.some((p) => p.user.toString() === id.toString())
+    // Lấy danh sách ID đã tồn tại && check trùng lặp
+    const existingMemberIds = conversation.participants.map((p) => p.user.toString());
+    const duplicateIds = memberIds.filter((memberId) =>
+      existingMemberIds.includes(memberId.toString())
     );
 
-    // Chuẩn hóa theo schema mới
-    const formattedNewMembers = newMembers.map((id) => ({
-      user: id,
+    if (duplicateIds.length > 0) {
+      throw new Error("Some users already exist in group");
+    }
+
+    // Lọc ra những người không có trong group
+    const newMemberIds = memberIds.filter(
+      (memberId) =>
+        !conversation.participants.some((p) => p.user.toString() === memberId.toString())
+    );
+
+    // Chuẩn hóa theo schema
+    const formattedNewMembers = newMemberIds.map((newMemberId) => ({
+      user: newMemberId,
       lastReadMessage: null,
       lastReadAt: null,
       unreadCount: 0,
