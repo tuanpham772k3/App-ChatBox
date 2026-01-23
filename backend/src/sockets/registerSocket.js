@@ -10,9 +10,10 @@ import Conversation from "../modules/conversations/conversation.model.js";
  * Đây là nơi cập nhật Session/socketId và broadcast online/offline.
  */
 export const registerSocket = (io) => {
-  // Đăng ký middleware auth cho toàn bộ io
+  // Auth middleware
   authSocket(io);
 
+  // Xử lý connection
   io.on("connection", async (socket) => {
     try {
       console.log(`User connected: ${socket.user.username} (${socket.id})`);
@@ -27,10 +28,10 @@ export const registerSocket = (io) => {
         console.error("Session update failed:", err);
       }
 
-      // Join vào room cá nhân
+      // Join room user_{userId}
       socket.join(`user_${socket.userId}`);
 
-      // Phát tin trạng thái người online
+      // Online
       try {
         const conversations = await Conversation.find({
           "participants.user": socket.userId,
@@ -50,12 +51,10 @@ export const registerSocket = (io) => {
         console.error("Broadcast online error:", err);
       }
 
-      // Đăng ký các nhóm handler (riêng biệt, không chứa side-effects global)
-      userSocket(io, socket);
+      // Đăng ký các socket handler
+      userSocket(io, socket); // Xử lý disconnect
       messageSocket(io, socket);
       conversationSocket(io, socket);
-
-      // disconnect xử lý trong userSocket (hoặc có thể xử lý ở đây)
     } catch (err) {
       console.error("Error in socket connection handler:", err);
       socket.disconnect(true);
