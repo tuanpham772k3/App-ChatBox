@@ -22,12 +22,12 @@ export const authSocket = (io) => {
       next();
     } catch (error) {
       console.error("Auth error:", {
-        message: err.message,
-        stack: err.stack,
+        message: error.message,
+        stack: error.stack,
       });
 
-      if (err.name === "JsonWebTokenError") return next(new Error("INVALID_TOKEN"));
-      if (err.name === "TokenExpiredError") return next(new Error("TOKEN_EXPIRED"));
+      if (error.name === "JsonWebTokenError") return next(new Error("INVALID_TOKEN"));
+      if (error.name === "TokenExpiredError") return next(new Error("TOKEN_EXPIRED"));
 
       next(new Error("AUTH_INTERNAL_ERROR"));
     }
