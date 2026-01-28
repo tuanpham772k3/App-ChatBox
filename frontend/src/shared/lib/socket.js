@@ -49,11 +49,7 @@ export const disconnectSocket = () => {
 
 // Emit sự kiện qua socket
 export const emitEvent = (event, data) => {
-  if (connected) {
-    socket.emit(event, data);
-  } else {
-    console.warn("Socket not connected, cannot emit:", event);
-  }
+  socket?.emit(event, data);
 };
 
 // Lắng nghe sự kiện từ socket
