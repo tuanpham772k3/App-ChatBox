@@ -185,6 +185,11 @@ const MessageItem = ({
             </div>
           ) : (
             <span className="text-[11px] text-[var(--color-text-secondary)]">
+              {msg.status === "sending" && (
+                <div className="flex items-center gap-1">
+                  <span className="font-medium">"Đang gửi..."</span>
+                </div>
+              )}
               {msg.status === "sent" && (
                 <div className="flex items-center gap-1">
                   <Check size={14} />
@@ -195,6 +200,11 @@ const MessageItem = ({
                 <div className="flex items-center gap-1">
                   <CheckCheck size={14} />
                   <span className="text-xs">Đã nhận</span>
+                </div>
+              )}
+              {msg.status === "failed" && (
+                <div className="flex items-center gap-1">
+                  <span className="text-xs">Lỗi</span>
                 </div>
               )}
             </span>
