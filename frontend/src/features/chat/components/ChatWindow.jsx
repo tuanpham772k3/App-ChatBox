@@ -74,11 +74,11 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
   }, [activeChat]);
 
   useEffect(() => {
-    if (!currentConversation?._id) return;
-
-    emitEvent("join_conversation", {
-      conversationId: currentConversation._id,
-    });
+    if (currentConversation?._id) {
+      emitEvent("join_conversation", {
+        conversationId: currentConversation._id,
+      });
+    }
 
     return () => {
       emitEvent("leave_conversation", {
