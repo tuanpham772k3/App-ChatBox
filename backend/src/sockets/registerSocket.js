@@ -4,6 +4,7 @@ import { userSocket } from "./user.socket.js";
 import { messageSocket } from "./message.socket.js";
 import { conversationSocket } from "./conversation.socket.js";
 import Conversation from "../modules/conversations/conversation.model.js";
+import Message from "../modules/messages/message.model.js";
 
 /**
  * Đăng ký middleware auth, và xử lý connection/disconnect chung ở đây.
@@ -25,18 +26,18 @@ export const registerSocket = (io) => {
           { socketId: socket.id }
         );
       } catch (error) {
-        console.error("Session update failed:", err);
+        console.error("Session update failed:", error);
       }
 
       // Join room user_{userId}
       socket.join(`user_${socket.userId}`);
 
-      // Online
       try {
         const conversations = await Conversation.find({
           "participants.user": socket.userId,
           isActive: true,
-        }).select("_id");
+          "lastMessage.sender": { $ne: socket.userId },
+        }).select("_id lastMessage");
 
         const payload = {
           userId: socket.userId,
@@ -44,9 +45,35 @@ export const registerSocket = (io) => {
           lastSeenAt: new Date(),
         };
 
+        // Broadcast trạng thái online đến các cuộc trò chuyện có tham gia
         conversations.forEach((c) => {
           io.to(`conversation_${c._id}`).emit("user_status_changed", payload);
         });
+
+        // Lặp qua các cuộc trò chuyện để emit delivered cho tin nhắn cuối cùng
+        for (const conversation of conversations) {
+          const lastMsgId = conversation.lastMessage?._id;
+          if (!lastMsgId) continue;
+
+          const message = await Message.findOneAndUpdate(
+            {
+              _id: lastMsgId,
+              status: "sent",
+            },
+            {
+              status: "delivered",
+            },
+            { new: true }
+          );
+
+          if (!message) continue;
+
+          // Emit delivered
+          io.to(`user_${message.sender}`).emit("message_delivered", {
+            messageId: message._id,
+            status: "delivered",
+          });
+        }
       } catch (err) {
         console.error("Broadcast online error:", err);
       }
