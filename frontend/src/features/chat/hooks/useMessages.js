@@ -14,43 +14,42 @@ export const useMessages = (conversationId) => {
   useEffect(() => {
     if (!conversationId) return;
 
-    // Nhận tin nhắn mới
+    // Nhận tin nhắn mới (người nhận)
     const onNewMessage = (msg) => {
-      if (msg.conversation === conversationId) {
+      if (!msg?._id) return;
+      if (msg?.conversation === conversationId) {
         dispatch(addIncomingMessage(msg));
       }
     };
 
-    // Chỉnh sửa tin nhắn
+    // Chỉnh sửa tin nhắn (người gửi)
     const onEditMessage = (msg) => {
-      if (msg.conversation === conversationId) {
+      if (msg?.conversation === conversationId) {
         dispatch(updateMessage(msg));
       }
     };
 
-    // Xóa tin nhắn
+    // Xóa tin nhắn (người gửi)
     const onDeleteMessage = (messageId) => {
       dispatch(removeMessage(messageId));
     };
 
-    // Xóa tin nhắn
-    const onStatusMessage = ({ messageId, status }) => {
+    // Cập nhật trạng thái tin nhắn (người gửi)
+    const onDeliveredMessage = ({ messageId, status }) => {
       dispatch(updateStatusMessage({ messageId, status }));
     };
 
     // Lắng nghe các sự kiện từ server
-    onEvent("message:new", onNewMessage);
+    onEvent("message_new", onNewMessage);
     onEvent("message:edit", onEditMessage);
     onEvent("message:delete", onDeleteMessage);
-    onEvent("message:status", onStatusMessage);
+    onEvent("message_delivered", onDeliveredMessage);
 
     return () => {
-      offEvent("message:new", onNewMessage);
+      offEvent("message_new", onNewMessage);
       offEvent("message:edit", onEditMessage);
       offEvent("message:delete", onDeleteMessage);
-      offEvent("message:status", onStatusMessage);
+      offEvent("message_delivered", onDeliveredMessage);
     };
-  }, [conversationId]);
-
-  return {};
+  }, [conversationId, dispatch]);
 };

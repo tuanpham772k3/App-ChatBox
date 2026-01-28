@@ -1,3 +1,6 @@
+import Message from "../modules/messages/message.model.js";
+import Conversation from "../modules/conversations/conversation.model.js";
+
 export const messageSocket = (io, socket) => {
   socket.on("typing_start", ({ conversationId }) => {
     if (!conversationId) return;
@@ -14,5 +17,28 @@ export const messageSocket = (io, socket) => {
       userId: socket.userId,
       conversationId,
     });
+  });
+
+  socket.on("message_delivered", async ({ messageId, conversationId }) => {
+    if (!messageId) return;
+    if (!conversationId) return;
+
+    try {
+      const message = await Message.findByIdAndUpdate(
+        messageId,
+        { status: "delivered" },
+        { new: true }
+      );
+
+      if (!message) return;
+
+      // Emit status update
+      io.to(`user_${message.sender}`).emit("message_delivered", {
+        messageId: messageId,
+        status: "delivered",
+      });
+    } catch (err) {
+      console.error("Error updating message status to delivered:", err);
+    }
   });
 };

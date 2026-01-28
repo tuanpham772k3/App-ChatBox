@@ -24,10 +24,16 @@ const MessageInput = ({ editingMessage, setEditingMessage }) => {
     try {
       if (!text.trim()) return;
 
+      // 1. Tạo id message tạm thời
+      const tempId = "temp-" + Date.now();
+
+      // 2. Tạo message text
       await dispatch(
         createNewMessage({
           conversationId: currentConversation._id,
           content: text,
+          sender: { _id: user.id }, // Để xử lý redux thunk
+          tempId,
         })
       ).unwrap();
 
@@ -101,11 +107,16 @@ const MessageInput = ({ editingMessage, setEditingMessage }) => {
       // 1. Upload file
       const fileInfo = await instance.post("/upload", formData);
 
-      // 2. Tạo message image
+      // 2. Tạo id message tạm thời
+      const tempId = "temp-" + Date.now();
+
+      // 3. Tạo message image
       await dispatch(
         createNewMessage({
           conversationId: currentConversation._id,
           file: fileInfo,
+          sender: { _id: user.id }, // Để xử lý redux thunk
+          tempId,
         })
       ).unwrap();
     } catch (err) {

@@ -103,23 +103,21 @@ export const createMessage = async (conversationId, senderId, content, fileInfo)
       }
     );
 
-    // Emit tin nhắn mới qua socket.io
     let io = getSocket();
+    // Emit tin nhắn mới đến từng user (để người dùng online vẫn nhận được dù chưa join room conversation)
     try {
-      io.to(`conversation_${conversationId}`).emit("message:new", populatedMessage);
+      const participantIds = (conversation?.participants || [])
+        .map((p) => (p?.user ? String(p.user) : null))
+        .filter(Boolean);
 
-      await Message.findByIdAndUpdate(savedMessage._id, {
-        status: "delivered",
-      });
-
-      // Emit status update
-      io.to(`conversation_${conversationId}`).emit("message:status", {
-        messageId: savedMessage._id,
-        status: "delivered",
+      participantIds.forEach((uid) => {
+        if (uid !== String(senderId)) {
+          io.to(`user_${uid}`).emit("message_new", populatedMessage);
+        }
       });
     } catch (err) {
       console.error(
-        "Socket emit message:new failed for conversation:",
+        "Socket emit message:new failed for user rooms (conversation):",
         conversationId,
         err
       );

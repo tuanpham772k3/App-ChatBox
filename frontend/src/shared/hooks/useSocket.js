@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { emitEvent, offEvent, onEvent } from "@/shared/lib/socket";
 import {
   userStartTyping,
@@ -25,15 +25,28 @@ export const useSocket = () => {
       dispatch(userStopTyping(data));
     };
 
+    // Thay đổi trạng thái tin nhắn
+    const onMessageDelivered = (msg) => {
+      if (!msg?._id) return;
+
+      // Gửi sự kiện xác nhận tin nhắn đã được giao
+      emitEvent("message_delivered", {
+        messageId: msg._id,
+        conversationId: msg.conversation,
+      });
+    };
+
     // Lắng nghe sự kiện từ server
     onEvent("user_status_changed", onStatusChanged);
     onEvent("user_typing", onTypingStart);
     onEvent("user_stop_typing", onTypingStop);
+    onEvent("message_new", onMessageDelivered);
 
     return () => {
       offEvent("user_status_changed", onStatusChanged);
       offEvent("user_typing", onTypingStart);
       offEvent("user_stop_typing", onTypingStop);
+      offEvent("message_new", onMessageDelivered);
     };
   }, []);
 };

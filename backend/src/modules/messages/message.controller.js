@@ -22,7 +22,7 @@ export const createNewMessage = async (req, res) => {
     const { userId } = req.user;
 
     //Lấy dữ liệu từ request body
-    const { conversationId, content, file } = req.body;
+    const { tempId, conversationId, content, file } = req.body;
 
     // Validation cơ bản
     if (!conversationId) {
@@ -40,7 +40,7 @@ export const createNewMessage = async (req, res) => {
       success: true,
       message: "Message created successfully",
       idCode: 0,
-      data: newMessage,
+      data: { newMessage, tempId },
     });
   } catch (error) {
     console.log("Error in createNewMessage:", error);

@@ -11,7 +11,7 @@ export const createNewMessage = createAsyncThunk(
   async (payload, { rejectWithValue }) => {
     try {
       const res = await messagesApi.createNewMessageApi(payload);
-      return res; // newMessage
+      return res; // { newMessage, tempId }
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -118,18 +118,45 @@ const messagesSlice = createSlice({
       // -------------------------------
       // CREATE MESSAGE
       // -------------------------------
-      .addCase(createNewMessage.pending, (state) => {
+      .addCase(createNewMessage.pending, (state, action) => {
+        const { tempId, conversationId, sender, content, file } = action.meta.arg;
+        const tempMessage = {
+          _id: tempId,
+          tempId,
+          conversationId,
+          sender,
+          content: file ? "" : content,
+          file: file || null,
+          status: "sending",
+          createdAt: new Date().toISOString(),
+          isTemp: true,
+        };
+        state.messages.push(tempMessage);
         state.error = null;
       })
       .addCase(createNewMessage.fulfilled, (state, action) => {
-        const newMsg = action.payload;
-        const exists = state.messages.some((m) => m._id === newMsg._id);
+        const { newMessage, tempId } = action.payload;
 
-        if (!exists) {
-          state.messages.push(newMsg);
+        const index = state.messages.findIndex((m) => m.tempId === tempId);
+
+        if (index !== -1) {
+          state.messages[index] = newMessage;
+        } else {
+          const exists = state.messages.some((m) => m._id === newMessage._id);
+          if (!exists) {
+            state.messages.push(newMessage);
+          }
         }
       })
       .addCase(createNewMessage.rejected, (state, action) => {
+        const { tempId } = action.meta.arg;
+
+        const tempMsg = state.messages.find((m) => m.tempId === tempId);
+
+        if (tempMsg) {
+          tempMsg.status = "failed";
+        }
+
         state.error = action.payload;
       })
 
