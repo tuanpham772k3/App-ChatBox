@@ -68,8 +68,8 @@ const MessageItem = ({
     <>
       {/* --- Display date --- */}
       {showDate && (
-        <div className="flex justify-center mt-4">
-          <span className="px-4 py-1 bg-[var(--color-surface)] rounded-lg text-xs text-[var(--color-text-primary)]">
+        <div className="flex justify-center m-2">
+          <span className="p-1 bg-[var(--color-surface)] rounded-lg text-xs text-[var(--color-text-primary)]">
             {msgTime.toLocaleDateString([], {
               weekday: "short",
               day: "2-digit",
@@ -81,7 +81,7 @@ const MessageItem = ({
 
       {/* --- Item Message --- */}
       <div
-        className={`flex items-start gap-2 mt-1 ${
+        className={`flex items-start gap-2 ${
           isMine ? "justify-end" : "items-end gap-2"
         } group`}
       >
@@ -134,20 +134,19 @@ const MessageItem = ({
 
           {/* --- Bubble wrapper --- */}
           <div
-            className={`px-3 py-2 rounded-2xl min-w-[60px] max-w-prose break-words ${
-              isMine
-                ? "bg-[var(--color-primary)] text-white rounded-tr-none"
-                : "bg-[var(--color-surface)] text-[var(--color-text-primary)] rounded-tl-none"
-            }`}
+            className={`relative rounded-xl min-w-[60px] max-w-prose break-words text-white
+              ${msg.type !== "image" && "py-3 px-3"}
+              ${isMine ? "bg-[var(--color-primary)]" : "bg-gray-400 "}`}
           >
             {/* Content */}
             <span className={msg.isDeleted ? "opacity-70" : ""}>{msg.content}</span>
 
+            {/* Image */}
             {msg.type === "image" && (
               <img
                 src={msg.file?.url}
                 alt="image"
-                className="max-w-[240px] rounded-lg cursor-pointer"
+                className="max-h-[350px] rounded-xl cursor-pointer"
                 onClick={() => onPreviewImage(msg)}
               />
             )}
@@ -156,12 +155,8 @@ const MessageItem = ({
             {msg.isEdited && <div className="text-[10px] opacity-70">(đã chỉnh sửa)</div>}
 
             {/* Time */}
-            {showTime && (
-              <div
-                className={`mt-1 text-[11px] ${
-                  isMine ? " text-white" : "text-[var(--color-text-secondary)]"
-                }`}
-              >
+            {showTime && msg.type !== "image" && (
+              <div className={`mt-1 text-xs text-white `}>
                 {msgTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
               </div>
             )}
@@ -169,9 +164,9 @@ const MessageItem = ({
         </div>
       </div>
 
-      {/* Hiển thị những người đã đọc tin nhắn */}
+      {/* Hiển thị những người đã đọc tin nhắn OR Trạng thái */}
       {isMine && isLastMessage && !msg.isDeleted && (
-        <div className="flex justify-end mt-1">
+        <div className="flex justify-end mt-4">
           {readers.length > 0 ? (
             <div className="flex gap-1">
               {readers.map((p) => (
@@ -184,30 +179,44 @@ const MessageItem = ({
               ))}
             </div>
           ) : (
-            <span className="text-[11px] text-[var(--color-text-secondary)]">
-              {msg.status === "sending" && (
-                <div className="flex items-center gap-1">
-                  <span className="font-medium">"Đang gửi..."</span>
+            <div className="flex items-center gap-1">
+              {/* Time ảnh */}
+              {showTime && msg.type === "image" && (
+                <div
+                  className={`p-1 bg-[var(--color-surface)] rounded-lg text-xs text-[var(--color-text-primary)] ${
+                    isMine ? " text-black" : "text-[var(--color-text-secondary)]"
+                  } `}
+                >
+                  {msgTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                 </div>
               )}
-              {msg.status === "sent" && (
-                <div className="flex items-center gap-1">
-                  <Check size={14} />
-                  <span className="font-medium">"Đã gửi"</span>
-                </div>
-              )}
-              {msg.status === "delivered" && (
-                <div className="flex items-center gap-1">
-                  <CheckCheck size={14} />
-                  <span className="text-xs">Đã nhận</span>
-                </div>
-              )}
-              {msg.status === "failed" && (
-                <div className="flex items-center gap-1">
-                  <span className="text-xs">Lỗi</span>
-                </div>
-              )}
-            </span>
+
+              {/* Trạng thái */}
+              <span className="p-1 bg-[var(--color-surface)] rounded-lg text-xs text-[var(--color-text-primary)] ">
+                {msg.status === "sending" && (
+                  <div className="flex items-center gap-1">
+                    <span className="font-medium">"Đang gửi..."</span>
+                  </div>
+                )}
+                {msg.status === "sent" && (
+                  <div className="flex items-center gap-1">
+                    <Check size={14} />
+                    <span className="font-medium">"Đã gửi"</span>
+                  </div>
+                )}
+                {msg.status === "delivered" && (
+                  <div className="flex items-center gap-1">
+                    <CheckCheck size={14} />
+                    <span className="text-xs">Đã nhận</span>
+                  </div>
+                )}
+                {msg.status === "failed" && (
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs">Lỗi</span>
+                  </div>
+                )}
+              </span>
+            </div>
           )}
         </div>
       )}
