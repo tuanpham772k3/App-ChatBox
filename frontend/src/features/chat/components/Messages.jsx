@@ -31,9 +31,9 @@ const Messages = ({ setEditingMessage }) => {
   // Lọc tin nhắn có type = image và chuẩn bị slides cho lightbox
   const imageMessages = messages.filter((msg) => msg.type === "image");
   const lightboxSlides = imageMessages.map((msg) => ({
-    src: msg.file.url,
-    alt: msg.file.name || "Image",
-    download: msg.file.url,
+    src: msg.file?.url,
+    alt: msg.file?.name || "Image",
+    download: msg.file?.url,
   }));
 
   // Xử lý thu hồi tin nhắn

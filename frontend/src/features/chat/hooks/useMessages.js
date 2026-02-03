@@ -41,14 +41,14 @@ export const useMessages = (conversationId) => {
 
     // Lắng nghe các sự kiện từ server
     onEvent("message_new", onNewMessage);
-    onEvent("message:edit", onEditMessage);
-    onEvent("message:delete", onDeleteMessage);
+    onEvent("message_edit", onEditMessage);
+    onEvent("message_delete", onDeleteMessage);
     onEvent("message_delivered", onDeliveredMessage);
 
     return () => {
       offEvent("message_new", onNewMessage);
-      offEvent("message:edit", onEditMessage);
-      offEvent("message:delete", onDeleteMessage);
+      offEvent("message_edit", onEditMessage);
+      offEvent("message_delete", onDeleteMessage);
       offEvent("message_delivered", onDeliveredMessage);
     };
   }, [conversationId, dispatch]);

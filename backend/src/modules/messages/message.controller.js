@@ -192,17 +192,6 @@ export const deleteMessageById = async (req, res) => {
 
     const message = await deleteMessage(messageId, userId);
 
-    // Emit message mới tới client
-    try {
-      let io = getSocket();
-      io.to(`conversation_${message.conversation}`).emit("message:delete", messageId);
-      console.log(
-        `User ${userId} deleted message ${messageId} to conversation ${message.conversation}`
-      );
-    } catch (err) {
-      console.error("Socket emit failed for conversation:", message.conversation, err);
-    }
-
     return res.status(200).json({
       success: true,
       message: "Message deleted successfully",
@@ -269,14 +258,6 @@ export const editMessageById = async (req, res) => {
     }
 
     const message = await editMessage(messageId, userId, newContent);
-
-    try {
-      const io = getSocket();
-      io.to(`conversation_${message.conversation}`).emit("message:edit", message);
-      console.log("emit edit thành công", message);
-    } catch (error) {
-      console.log("Lỗi emit message:edit trong editMessageById:", error);
-    }
 
     // Trả về response thành công
     return res.status(200).json({

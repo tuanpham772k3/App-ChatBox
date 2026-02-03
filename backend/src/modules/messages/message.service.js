@@ -257,9 +257,24 @@ export const deleteMessage = async (messageId, userId) => {
     message.isDeleted = true;
     message.content = "This message has been deleted.";
     message.file = null;
-    await message.save();
+    const updatedMessage = await message.save();
 
-    // 5. Nếu là lastMessage thì update lại
+    // 5. Emit sự kiện xóa tin nhắn
+    try {
+      let io = getSocket();
+      io.to(`conversation_${updatedMessage.conversation}`).emit(
+        "message_delete",
+        messageId
+      );
+    } catch (err) {
+      console.error(
+        "Socket emit failed for conversation:",
+        updatedMessage.conversation,
+        err
+      );
+    }
+
+    // 6. Nếu là lastMessage thì update lại
     const conversation = await Conversation.findById(message.conversation);
 
     const isLastMessage = conversation?.lastMessage?._id.toString() === messageId;
@@ -289,7 +304,7 @@ export const deleteMessage = async (messageId, userId) => {
     }
 
     //Trả về kết quả
-    return message;
+    return updatedMessage;
   } catch (error) {
     console.log("Error in deleteMessage service:", error);
     throw error;
@@ -338,16 +353,27 @@ export const editMessage = async (messageId, userId, newContent) => {
     message.content = newContent.trim();
     message.isEdited = true;
     message.editedAt = new Date();
-    await message.save();
+    const updatedMessage = await message.save();
 
-    // 6. Nếu là lastMessage thì cập nhật preview
-    const conversation = await Conversation.findOne(message.conversation);
+    // 6. Emit sự kiện chỉnh sửa tin nhắn
+    try {
+      const io = getSocket();
+      io.to(`conversation_${updatedMessage.conversation}`).emit(
+        "message_edit",
+        updatedMessage
+      );
+    } catch (error) {
+      console.log("Lỗi emit message:edit trong editMessageById:", error);
+    }
+
+    // 7. Nếu là lastMessage thì cập nhật
+    const conversation = await Conversation.findOne(updatedMessage.conversation);
     if (conversation.lastMessage._id.toString() === messageId) {
-      conversation.lastMessage.content = message.content;
+      conversation.lastMessage.content = updatedMessage.content;
       await conversation.save();
     }
 
-    return message;
+    return updatedMessage;
   } catch (error) {
     console.log("Error in editMessage service:", error);
     throw error;

@@ -81,9 +81,9 @@ const messagesSlice = createSlice({
 
     // Cập nhật tin nhắn đến từ socket
     updateMessage: (state, action) => {
-      const updated = action.payload;
-      const index = state.messages.findIndex((m) => m._id === updated._id);
-      if (index !== -1) state.messages[index] = updated;
+      const updatedMessage = action.payload;
+      const index = state.messages.findIndex((m) => m._id === updatedMessage._id);
+      if (index !== -1) state.messages[index] = updatedMessage;
     },
 
     // Xóa tin nhắn đến từ socket
@@ -93,6 +93,7 @@ const messagesSlice = createSlice({
       if (msg) {
         msg.isDeleted = true;
         msg.content = "This message has been deleted.";
+        msg.file = null;
       }
     },
 
@@ -120,12 +121,15 @@ const messagesSlice = createSlice({
       // -------------------------------
       .addCase(createNewMessage.pending, (state, action) => {
         const { tempId, conversationId, sender, content, file } = action.meta.arg;
+
+        //Tạo message tạm thời
         const tempMessage = {
           _id: tempId,
           tempId,
           conversationId,
           sender,
-          content: file ? "" : content,
+          content: file ? "<file>" : content,
+          type: file ? "image" : "text",
           file: file || null,
           status: "sending",
           createdAt: new Date().toISOString(),

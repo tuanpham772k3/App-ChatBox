@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Check, CheckCheck, EllipsisVertical, Pencil, Trash } from "lucide-react";
+import { Check, CheckCheck, Clock, EllipsisVertical, Pencil, Trash } from "lucide-react";
 import { Popover } from "antd";
 import MenuActions from "@/shared/components/ui/popover/MenuActions";
 
@@ -174,7 +174,7 @@ const MessageItem = ({
                   key={p.user._id}
                   src={p.user.avatarUrl?.url || "/avatarA.jpg"}
                   alt={p.user.username}
-                  className="w-4 h-4 rounded-full object-cover"
+                  className="w-5 h-5 rounded-full object-cover"
                 />
               ))}
             </div>
@@ -195,13 +195,14 @@ const MessageItem = ({
               <span className="p-1 bg-[var(--color-surface)] rounded-lg text-xs text-[var(--color-text-primary)] ">
                 {msg.status === "sending" && (
                   <div className="flex items-center gap-1">
-                    <span className="font-medium">"Đang gửi..."</span>
+                    <Clock size={14} />
+                    <span className="font-medium">Đang gửi</span>
                   </div>
                 )}
                 {msg.status === "sent" && (
                   <div className="flex items-center gap-1">
                     <Check size={14} />
-                    <span className="font-medium">"Đã gửi"</span>
+                    <span className="font-medium">Đã gửi</span>
                   </div>
                 )}
                 {msg.status === "delivered" && (
