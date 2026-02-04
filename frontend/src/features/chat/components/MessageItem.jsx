@@ -174,7 +174,7 @@ const MessageItem = ({
                   key={p.user._id}
                   src={p.user.avatarUrl?.url || "/avatarA.jpg"}
                   alt={p.user.username}
-                  className="w-5 h-5 rounded-full object-cover"
+                  className="w-4 h-4 rounded-full object-cover"
                 />
               ))}
             </div>
