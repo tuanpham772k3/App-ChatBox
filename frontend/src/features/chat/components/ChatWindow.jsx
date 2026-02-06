@@ -76,8 +76,6 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
   useEffect(() => {
     if (!activeChat) return;
 
-    console.log("emit join_conversation:", activeChat);
-
     emitEvent("join_conversation", {
       conversationId: activeChat,
     });

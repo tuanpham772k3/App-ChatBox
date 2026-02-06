@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import messagesApi from "./services/messagesApi";
+import instance from "@/shared/lib/axios";
 
 /* =============================
  *  Thunk actions
@@ -10,7 +11,20 @@ export const createNewMessage = createAsyncThunk(
   "messages/create",
   async (payload, { rejectWithValue }) => {
     try {
-      const res = await messagesApi.createNewMessageApi(payload);
+      let finalPayload = { ...payload };
+
+      // Nếu là file local thì upload trước
+      if (payload.file?.localFile) {
+        const formData = new FormData();
+        formData.append("file", payload.file.localFile);
+
+        const uploadRes = await instance.post("/upload", formData);
+
+        // replace file info bằng file thật từ server
+        finalPayload.file = uploadRes;
+      }
+
+      const res = await messagesApi.createNewMessageApi(finalPayload);
       return res; // { newMessage, tempId }
     } catch (err) {
       return rejectWithValue(err);
@@ -128,9 +142,15 @@ const messagesSlice = createSlice({
           tempId,
           conversationId,
           sender,
-          content: file ? "<file>" : content,
+          content: file ? null : content,
           type: file ? "image" : "text",
-          file: file || null,
+          file: file
+            ? {
+                url: file.url,
+                filename: file.filename,
+                mimeType: file.mimeType,
+              }
+            : null,
           status: "sending",
           createdAt: new Date().toISOString(),
           isTemp: true,

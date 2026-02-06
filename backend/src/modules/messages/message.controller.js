@@ -4,7 +4,6 @@ import {
   editMessage,
   getMessages,
 } from "./message.service.js";
-import { getSocket } from "../../socket.js";
 
 /**Tạo tin nhắn mới
  * POST /api/messages

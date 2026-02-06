@@ -5,7 +5,6 @@ import { Upload } from "antd";
 import { createNewMessage, editMessageById } from "../messagesSlice";
 import { emitEvent } from "@/shared/lib/socket";
 import { useNotification } from "@/shared/hooks/useNotification";
-import instance from "@/shared/lib/axios";
 
 const MessageInput = ({ editingMessage, setEditingMessage }) => {
   const dispatch = useDispatch();
@@ -101,11 +100,8 @@ const MessageInput = ({ editingMessage, setEditingMessage }) => {
 
   const handleUploadImage = async ({ file }) => {
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      // 1. Upload file
-      const fileInfo = await instance.post("/upload", formData);
+      // 1. Tạo preview local ngay
+      const previewUrl = URL.createObjectURL(file);
 
       // 2. Tạo id message tạm thời
       const tempId = "temp-" + Date.now();
@@ -114,9 +110,15 @@ const MessageInput = ({ editingMessage, setEditingMessage }) => {
       await dispatch(
         createNewMessage({
           conversationId: currentConversation._id,
-          file: fileInfo,
           sender: { _id: user.id }, // Để xử lý redux thunk
           tempId,
+          file: {
+            url: previewUrl, // preview để hiển thị ngay
+            filename: file.name,
+            mimeType: file.type,
+            size: file.size,
+            localFile: file, // dùng để upload sau
+          },
         })
       ).unwrap();
     } catch (err) {
