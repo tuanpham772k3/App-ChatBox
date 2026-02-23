@@ -68,7 +68,7 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
     }
   };
 
-  // Clear messages khi activeChat thay đổi
+  // Clear tin nhắn cũ khi chuyển sang cuộc trò chuyện mới
   useEffect(() => {
     dispatch(clearMessages());
   }, [activeChat]);
