@@ -20,8 +20,9 @@ const messagesApi = {
    * @param {number} page - Trang hiện tại (mặc định 1)
    * @param {number} limit - Số tin nhắn trên mỗi trang (mặc định 20)
    */
-  getConversationMessagesApi: (conversationId) => {
-    return instance.get(`/messages/${conversationId}`);
+  getConversationMessagesApi: (conversationId, cursor) => {
+    const params = cursor ? { before: cursor, limit: 20 } : { limit: 20 };
+    return instance.get(`/messages/${conversationId}`, { params });
   },
 
   /**

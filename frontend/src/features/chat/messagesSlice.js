@@ -35,10 +35,10 @@ export const createNewMessage = createAsyncThunk(
 // Lấy danh sách tin nhắn theo conversation
 export const fetchConversationMessages = createAsyncThunk(
   "messages/fetchByConversation",
-  async ({ conversationId }, { rejectWithValue }) => {
+  async ({ conversationId, cursor }, { rejectWithValue }) => {
     try {
-      const res = await messagesApi.getConversationMessagesApi(conversationId);
-      return res; // { messages, pagination }
+      const res = await messagesApi.getConversationMessagesApi(conversationId, cursor);
+      return res; // result = { messages, nextCursor, hasMore }
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -79,6 +79,8 @@ const messagesSlice = createSlice({
   initialState: {
     messages: [],
     pagination: null,
+    cursor: null,
+    hasMore: true,
     loading: false,
     error: null,
   },
@@ -123,8 +125,9 @@ const messagesSlice = createSlice({
     // Clear khi đổi sang cuộc trò chuyện khác
     clearMessages: (state) => {
       state.messages = [];
-      state.pagination = null;
       state.error = null;
+      state.cursor = null;
+      state.hasMore = true;
     },
   },
 
@@ -192,9 +195,21 @@ const messagesSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchConversationMessages.fulfilled, (state, action) => {
+        const { messages, nextCursor, hasMore } = action.payload;
+
+        if (!state.cursor) {
+          // load lần đầu
+          state.messages = messages;
+        } else {
+          // load thêm → prepend, tránh duplicate theo _id
+          const existingIds = new Set(state.messages.map((m) => m._id));
+          const uniqueOldMessages = messages.filter((m) => !existingIds.has(m._id));
+          state.messages = [...uniqueOldMessages, ...state.messages];
+        }
+
+        state.cursor = nextCursor;
+        state.hasMore = hasMore;
         state.loading = false;
-        state.messages = action.payload.messages || [];
-        state.pagination = action.payload.pagination || null; // Dùng khi cần
       })
       .addCase(fetchConversationMessages.rejected, (state, action) => {
         state.loading = false;

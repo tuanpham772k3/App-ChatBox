@@ -29,7 +29,9 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
 
   const notification = useNotification();
 
-  // Lấy danh sách hội thoại
+  /* ==============================
+      LOAD LIST CONVERSATIONS
+     ============================== */
   useEffect(() => {
     const fetchConversations = async () => {
       try {
@@ -45,17 +47,17 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
     fetchConversations();
   }, [dispatch]);
 
-  // Click chọn hội thoại -> hiển thị ChatWindow
+  /* ==============================
+      CLICK CONVERSATION
+     ============================== */
   const handleSelectConversation = async (conversationId) => {
-    const exists = conversations.some((c) => c._id === conversationId);
-    if (!exists) return;
+    // Nếu đang mở rồi → bỏ qua (tránh gọi API lại)
+    if (conversationId === activeChat) return;
 
     try {
       await dispatch(getConversationById(conversationId)).unwrap();
 
       onActiveChatId(conversationId); // giữ logic hiển thị ChatWindow
-
-      await dispatch(fetchConversationMessages({ conversationId })).unwrap();
 
       await dispatch(
         markConversationAsRead({ conversationId, userId: user.id })

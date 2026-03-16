@@ -175,7 +175,7 @@ export const createMessage = async (conversationId, senderId, content, fileInfo)
  * @param {number} limit - Số tin nhắn trên mỗi trang (mặc định 20)
  * @returns {object} - Danh sách tin nhắn với pagination
  */
-export const getMessages = async (conversationId, userId, page = 1, limit = 20) => {
+export const getMessages = async (conversationId, userId, before, limit = 20) => {
   try {
     // 1. Kiểm tra user có quyền truy cập conversation không
     const conversation = await Conversation.findOne({
@@ -188,40 +188,32 @@ export const getMessages = async (conversationId, userId, page = 1, limit = 20) 
       throw new Error("Conversation not found or access denied");
     }
 
-    // 2. Tính toán pagination
-    const skip = (page - 1) * limit;
-
-    // 3. Lấy danh sách tin nhắn (không bao gồm tin nhắn đã xóa)
-    const messages = await Message.find({
+    const query = {
       conversation: conversationId,
       isDeleted: false,
-    })
+    };
+
+    if (before) {
+      query.createdAt = { $lt: new Date(before) };
+    }
+
+    // 2. Lấy danh sách tin nhắn (không bao gồm tin nhắn đã xóa)
+    const messages = await Message.find(query)
       .populate("sender", "username email avatarUrl")
-      .populate("replyTo", "content sender createdAt")
-      .populate("replyTo.sender", "username avatarUrl")
-      .populate("forwardedFrom", "username avatarUrl")
       .sort({ createdAt: -1 }) // Sắp xếp từ mới nhất đến cũ nhất
-      .skip(skip)
       .limit(limit)
       .lean();
 
-    // 4. Đếm tổng số tin nhắn
-    const total = await Message.countDocuments({
-      conversation: conversationId,
-      isDeleted: false,
-    });
+    // 3. Xác định còn tin nhắn để load thêm không
+    const hasMore = messages.length === limit;
 
-    // 5. Đảo ngược thứ tự để hiển thị từ cũ đến mới
+    // 4. Đảo ngược để UI hiển thị từ cũ → mới
     messages.reverse();
 
     return {
       messages,
-      pagination: {
-        currentPage: page,
-        totalPages: Math.ceil(total / limit),
-        totalItems: total,
-        itemsPerPage: limit,
-      },
+      nextCursor: messages.length ? messages[0].createdAt : null,
+      hasMore,
     };
   } catch (error) {
     console.error("Error in getMessages service:", error);

@@ -109,8 +109,8 @@ export const getConversationMessages = async (req, res) => {
     const { userId } = req.user;
 
     //Lấy pagination parameter từ query
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 50;
+    const before = req.query.before || null;
+    const limit = Math.min(Number(req.query.limit) || 20, 50);
 
     // Validation conversationId
     if (!conversationId.match(/^[0-9a-fA-F]{24}$/)) {
@@ -121,29 +121,15 @@ export const getConversationMessages = async (req, res) => {
       });
     }
 
-    // Validation pagination
-    if (page < 1 || limit < 1 || limit > 100) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid pagination parameters",
-        idCode: 2,
-      });
-    }
-
     // Gọi service lấy danh sách tin nhắn
-    const { messages, pagination } = await getMessages(
-      conversationId,
-      userId,
-      page,
-      limit
-    );
+    const result = await getMessages(conversationId, userId, before, limit);
 
     // Trả về response thành công
     return res.status(200).json({
       success: true,
       message: "Messages retrieved successfully",
       idCode: 0,
-      data: { messages, pagination },
+      data: result,
     });
   } catch (error) {
     console.error("Error in getConversationMessages controller:", error);
