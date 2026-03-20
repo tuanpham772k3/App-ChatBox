@@ -81,6 +81,25 @@ const conversationApi = {
       params: { limit },
     });
   },
+
+  /**
+   * Rời nhóm chat
+   * DELETE /conversations/:conversationId/leave
+   */
+  leaveGroupApi: (conversationId) => {
+    return instance.delete(`/conversations/${conversationId}/leave`);
+  },
+
+  /**
+   * Nhượng quyền owner cho thành viên khác (chỉ dành cho owner)
+   * PUT /conversations/:conversationId/transfer-ownership
+   * body: { newOwnerId }
+   */
+  transferGroupOwnershipApi: (conversationId, newOwnerId) => {
+    return instance.put(`/conversations/${conversationId}/transfer-ownership`, {
+      newOwnerId,
+    });
+  },
 };
 
 export default conversationApi;

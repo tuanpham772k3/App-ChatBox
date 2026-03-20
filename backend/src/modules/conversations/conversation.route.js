@@ -9,6 +9,8 @@ import {
   removeMemberFromGroup,
   markConversationAsRead,
   getConversationImages,
+  leaveGroup,
+  transferGroupOwnership,
 } from "./conversation.controller.js";
 import { verifyToken } from "../../middlewares/middleware.controller.js";
 
@@ -32,7 +34,7 @@ router.get("/", verifyToken, getConversations);
 // Lấy thông tin chi tiết một conversation
 router.get("/:conversationId", verifyToken, getConversation);
 
-// Xóa conversation (soft delete)
+// Xóa conversation (chỉ dành cho owner)
 router.delete("/:conversationId", verifyToken, deleteConversationById);
 
 // Đánh dấu tin nhắn cuối người dùng đã đọc
@@ -40,5 +42,11 @@ router.put("/:conversationId/read", verifyToken, markConversationAsRead);
 
 // Lấy danh sách ảnh trong hội thoại
 router.get("/:conversationId/images", verifyToken, getConversationImages);
+
+// Rời khỏi group conversation
+router.delete("/:conversationId/leave", verifyToken, leaveGroup);
+
+// Nhượng quyền owner cho thành viên khác (chỉ dành cho owner)
+router.put("/:conversationId/transfer-ownership", verifyToken, transferGroupOwnership);
 
 export default router;

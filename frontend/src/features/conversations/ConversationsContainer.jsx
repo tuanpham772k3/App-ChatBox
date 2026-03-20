@@ -68,16 +68,16 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
   };
 
   // Xóa hội thoại
-  const removeConversation = async (conversationId) => {
-    try {
-      await dispatch(deleteConversation(conversationId)).unwrap();
-    } catch (err) {
-      notification.error({
-        message: "Xóa hội thoại thất bại",
-        description: err.message || "Có lỗi xảy ra",
-      });
-    }
-  };
+  // const removeConversation = async (conversationId) => {
+  //   try {
+  //     await dispatch(deleteConversation(conversationId)).unwrap();
+  //   } catch (err) {
+  //     notification.error({
+  //       message: "Xóa hội thoại thất bại",
+  //       description: err.message || "Có lỗi xảy ra",
+  //     });
+  //   }
+  // };
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -113,7 +113,7 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
       {/* --- HEADER --- */}
       <ConversationHeader searchValue={searchInput} onSearchChange={setSearchInput} />
 
-      {/* LIST CONVERSATIONS */}
+      {/* ---LIST CONVERSATIONS--- */}
       {loading ? (
         <div className="flex-1 flex justify-center items-center">
           <Spin />
@@ -149,7 +149,7 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
                       isActive={activeChat === conversation._id}
                       display={displayInfo}
                       onSelect={() => handleSelectConversation(conversation._id)}
-                      onDeleteConversation={() => removeConversation(conversation._id)}
+                      // onDeleteConversation={() => removeConversation(conversation._id)}
                       typingUsers={typingInThisConversation}
                       currentUserId={user.id}
                       partnerStatus={partnerStatus}

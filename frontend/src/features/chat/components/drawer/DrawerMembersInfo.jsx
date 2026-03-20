@@ -1,13 +1,45 @@
 import React from "react";
-import { Drawer } from "antd";
+import { Drawer, Transfer } from "antd";
 import { ArrowLeft, Key, Search, Trash, Users } from "lucide-react";
 
-const DrawerMembersInfo = ({ open, onClose, openModal, members, onRemoveMember }) => {
-  const sortedMembers = [...members].sort((a, b) => {
-    if (a.role === "admin" && b.role !== "admin") return -1;
-    if (a.role !== "admin" && b.role === "admin") return 1;
-    return 0;
-  });
+const DrawerMembersInfo = ({
+  open,
+  onClose,
+  openModal,
+  currentUserId,
+  members,
+}) => {
+  // Sắp xếp members theo role: owner > admin > member
+  const rolePriority = {
+    owner: 0,
+    admin: 1,
+    member: 2,
+  };
+
+  const sortedMembers = [...members].sort(
+    (a, b) => rolePriority[a.role] - rolePriority[b.role]
+  );
+
+  // Logic hiển thị icon xóa thành viên:
+  //  -lấy thông tin participant hiện tại
+  //  -Logic hiển thị icon xóa:
+  const currentUser = members.find((m) => m.id === currentUserId);
+  const canShowDeleteIcon = (member) => {
+    if (!currentUser) return false;
+
+    // OWNER: xóa tất cả trừ chính mình (owner)
+    if (currentUser.role === "owner") {
+      return member.id !== currentUserId;
+    }
+
+    // ADMIN: chỉ xóa member (không xóa admin, owner)
+    if (currentUser.role === "admin") {
+      return member.role === "member";
+    }
+
+    // MEMBER: không có quyền
+    return false;
+  };
 
   return (
     <Drawer
@@ -78,26 +110,33 @@ const DrawerMembersInfo = ({ open, onClose, openModal, members, onRemoveMember }
                       className="w-11 h-11 rounded-full object-cover border-2 border-[var(--color-border)]"
                     />
 
-                    {member.role === "admin" && (
+                    {/* Key */}
+                    {member.role === "owner" && (
                       <div className="absolute bottom-0 right-0 w-4 h-4 bg-zinc-600 rounded-full flex items-center justify-center">
                         <Key size={12} className="text-yellow-300 transform rotate-180" />
                       </div>
                     )}
                   </div>
-                  {/* Name & role */}
+                  {/* Tên & vai trò */}
                   <div className="flex flex-col justify-center">
                     <h3 className="text-sm font-medium text-[var(--color-text-primary)]">
                       {member.name}
                     </h3>
 
+                    {member.role === "owner" && (
+                      <h3 className="text-[var(--color-text-secondary)]">Người tạo</h3>
+                    )}
+
                     {member.role === "admin" && (
-                      <h3 className="text-[var(--color-text-secondary)]">Trưởng nhóm</h3>
+                      <h3 className="text-[var(--color-text-secondary)]">
+                        Quản trị viên
+                      </h3>
                     )}
                   </div>
                 </div>
 
-                {/* Chức năng admin */}
-                {member.role === "member" && (
+                {/* Chức năng xóa thành viên */}
+                {canShowDeleteIcon(member) && (
                   <button
                     onClick={() => onRemoveMember(member.id)}
                     className="p-2 opacity-0 group-hover:opacity-100 transition rounded hover:bg-[var(--color-hover-soft)]"
@@ -114,4 +153,4 @@ const DrawerMembersInfo = ({ open, onClose, openModal, members, onRemoveMember }
   );
 };
 
-export default DrawerMembersInfo;
+export default React.memo(DrawerMembersInfo);

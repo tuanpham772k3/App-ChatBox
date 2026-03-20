@@ -151,6 +151,32 @@ export const getConversationImages = createAsyncThunk(
   }
 );
 
+// Rời nhóm chat
+export const leaveGroup = createAsyncThunk(
+  "conversations/leaveGroup",
+  async (conversationId, { rejectWithValue }) => {
+    try {
+      await conversationApi.leaveGroupApi(conversationId);
+      return { conversationId };
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+// Nhượng quyền owner cho thành viên khác (chỉ dành cho owner)
+export const transferGroupOwnership = createAsyncThunk(
+  "conversations/transferGroupOwnership",
+  async ({ conversationId, newOwnerId }, { rejectWithValue }) => {
+    try {
+      await conversationApi.transferGroupOwnershipApi(conversationId, newOwnerId);
+      return { conversationId, newOwnerId };
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
 /* =============================
  *  Slice setup
  * ============================= */
@@ -162,8 +188,8 @@ const conversationsSlice = createSlice({
     typingUsers: {},
     statusUsers: {},
     images: [],
-    loading: false,
-    error: null,
+    loading: {},
+    error: {},
   },
 
   reducers: {
@@ -257,29 +283,14 @@ const conversationsSlice = createSlice({
 
   extraReducers: (builder) => {
     builder
-      /** -----CREATE CONVERSATION----- */
-      .addCase(createConversation.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
       .addCase(createConversation.fulfilled, (state, action) => {
-        state.loading = false;
         const newConv = action.payload.conversation;
         const exists = state.conversations.some((c) => c._id === newConv._id);
         if (!exists) state.conversations.unshift(newConv);
       })
-      .addCase(createConversation.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
 
       /** -----CREATE GROUP CONVERSATION----- */
-      .addCase(createGroupConversation.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
       .addCase(createGroupConversation.fulfilled, (state, action) => {
-        state.loading = false;
         const newGroup = action.payload.conversation;
         if (!newGroup) return;
 
@@ -288,10 +299,6 @@ const conversationsSlice = createSlice({
           // Đưa nhóm mới lên đầu danh sách
           state.conversations.unshift(newGroup);
         }
-      })
-      .addCase(createGroupConversation.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
       })
 
       /** -----GET ALL CONVERSATIONS----- */
@@ -310,16 +317,8 @@ const conversationsSlice = createSlice({
       })
 
       /** -----GET CONVERSATION BY ID----- */
-      .addCase(getConversationById.pending, (state) => {
-        state.loading = true;
-      })
       .addCase(getConversationById.fulfilled, (state, action) => {
-        state.loading = false;
         state.currentConversation = action.payload;
-      })
-      .addCase(getConversationById.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
       })
 
       /** -----DELETE CONVERSATION----- */
@@ -395,16 +394,8 @@ const conversationsSlice = createSlice({
       // -------------------------------
       // GET CONVERSATION IMAGES
       // -------------------------------
-      .addCase(getConversationImages.pending, (state) => {
-        state.loading = true;
-      })
       .addCase(getConversationImages.fulfilled, (state, action) => {
-        state.loading = false;
         state.images = action.payload.images || [];
-      })
-      .addCase(getConversationImages.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
       });
   },
 });

@@ -8,6 +8,8 @@ import {
   removeMemberFromGroupService,
   markConversationAsReadService,
   getConversationImagesService,
+  leaveGroupService,
+  transferGroupOwnershipService,
 } from "./conversation.service.js";
 
 /**
@@ -116,8 +118,9 @@ export const createGroupConversation = async (req, res) => {
 
     // Lấy request body
     const { name, memberIds = [], avatar = null } = req.body;
+    console.log("Member IDs:", memberIds);
 
-    // Validate base
+    // Validate
     if (!name || typeof name !== "string" || name.trim().length === 0) {
       return res.status(400).json({
         success: false,
@@ -347,10 +350,19 @@ export const deleteConversationById = async (req, res) => {
       });
     }
 
+    // Xử lý lỗi không phải owner
+    if (error.message === "Only the owner can delete this conversation") {
+      return res.status(403).json({
+        success: false,
+        message: "Only the owner can delete this conversation",
+        idCode: 3,
+      });
+    }
+
     return res.status(500).json({
       success: false,
       message: "Internal server error",
-      idCode: 3,
+      idCode: 4,
     });
   }
 };
@@ -576,7 +588,9 @@ export const getConversationImages = async (req, res) => {
 
     return res.status(200).json({
       success: true,
+      message: "Images retrieved successfully",
       data: images,
+      idCode: 0,
     });
   } catch (error) {
     if (error.message === "Conversation not found or access denied") {
@@ -589,6 +603,113 @@ export const getConversationImages = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Internal server error",
+    });
+  }
+};
+
+export const leaveGroup = async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+    const { userId } = req.user;
+
+    // Validate conversationId
+    if (!conversationId.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid conversation ID format",
+        idCode: 1,
+      });
+    }
+
+    // Gọi service
+    await leaveGroupService(conversationId, userId);
+
+    // Phản hồi thành công
+    return res.status(200).json({
+      success: true,
+      message: "Leave group successfully",
+      idCode: 0,
+    });
+  } catch (error) {
+    console.error("Error in leaveGroup controller:", error);
+
+    if (error.message === "Group conversation not found") {
+      return res.status(404).json({
+        success: false,
+        message: "Group conversation not found",
+        idCode: 2,
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      idCode: 3,
+    });
+  }
+};
+
+export const transferGroupOwnership = async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+    const { userId } = req.user;
+    const { newOwnerId } = req.body;
+
+    // Validate
+    if (!conversationId.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid conversation ID format",
+        idCode: 1,
+      });
+    }
+
+    if (!newOwnerId || !newOwnerId.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid new owner ID format",
+        idCode: 2,
+      });
+    }
+
+    // Gọi service
+    await transferGroupOwnershipService(conversationId, userId, newOwnerId);
+
+    // Phản hồi thành công
+    return res.status(200).json({
+      success: true,
+      message: "Group ownership transferred successfully",
+      idCode: 0,
+    });
+  } catch (error) {
+    if (error.message === "Group conversation not found") {
+      return res.status(404).json({
+        success: false,
+        message: "Group conversation not found",
+        idCode: 2,
+      });
+    }
+
+    if (error.message === "Permission denied") {
+      return res.status(403).json({
+        success: false,
+        message: "Permission denied",
+        idCode: 3,
+      });
+    }
+
+    if (error.message === "New owner is not a member of the group") {
+      return res.status(403).json({
+        success: false,
+        message: "New owner is not a member of the group",
+        idCode: 4,
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      idCode: 5,
     });
   }
 };

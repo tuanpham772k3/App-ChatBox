@@ -15,6 +15,11 @@ const conversationSchema = new mongoose.Schema(
           ref: "User",
           required: true,
         },
+        role: {
+          type: String,
+          enum: ["owner", "admin", "member"],
+          default: "member",
+        },
         lastReadMessage: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "Message",

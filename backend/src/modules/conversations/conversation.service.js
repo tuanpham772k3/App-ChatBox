@@ -100,7 +100,7 @@ export const createPrivateConversation = async (creatorId, participantId) => {
  * Tạo group conversation
  * @param {string} creatorId - ID của người tạo conversation
  * @param {string} name - Tên group
- * @param {string[]} members - Danh sách ID của người tham gia (không bắt buộc chứa creator, sẽ tự thêm)
+ * @param {string[]} memberIds - Danh sách ID của người tham gia (không bắt buộc chứa creator, sẽ tự thêm)
  * @param {string|null} avatarUrl - URL avatar group (có thể null)
  * @returns {Object} - { conversation, isNew, message }
  */
@@ -118,12 +118,10 @@ export const createGroupConversationService = async (
     }
 
     // 2. Chuẩn hóa danh sách members:
-    //    - Đảm bảo là mảng các string
     //    - Loại bỏ trùng lặp
     //    - Đảm bảo creator cũng là 1 participant
-    const rawMemberIds = Array.isArray(memberIds) ? memberIds : [];
-    const memberSet = new Set(rawMemberIds.map((id) => id.toString()));
-    memberSet.add(creatorId.toString());
+    const memberSet = new Set(memberIds.map((id) => id));
+    memberSet.add(creatorId);
     const finalMemberIds = Array.from(memberSet);
 
     // 3. Đảm bảo có ít nhất 3 người (creator + 2 người nữa)
@@ -140,6 +138,7 @@ export const createGroupConversationService = async (
     // 5. Build participants theo ĐÚNG SUBDOC SCHEMA
     const participants = finalMemberIds.map((userId) => ({
       user: userId,
+      role: userId === creatorId ? "owner" : "member", // Creator là owner, còn lại là member
       lastReadMessage: null,
       lastReadAt: null,
       unreadCount: 0,
@@ -164,7 +163,6 @@ export const createGroupConversationService = async (
         createdAt: null,
       },
       isActive: true,
-      admin: [creatorId], // Người tạo là admin mặc định
     });
 
     // 6. Lưu vào database
@@ -250,24 +248,17 @@ export const addMemberToGroupService = async (
       throw new Error("Group conversation not found");
     }
 
-    // Chỉ admin mới được thêm thành viên
-    const isAdmin = conversation.admin.some(
-      (id) => id.toString() === currentUserId.toString()
-    );
-    if (!isAdmin) {
-      throw new Error("Permission denied");
-    }
-
-    // Kiểm tra tất cả user tồn tại
+    // Kiểm tra tất cả user tồn tại trong database
     const users = await User.find({ _id: { $in: memberIds } });
+
     if (users.length !== memberIds.length) {
       throw new Error("One or more users not found");
     }
 
-    // Lấy danh sách ID đã tồn tại && check trùng lặp
+    // Lấy tất cả ID thành viên đã có trong group && check trùng lặp
     const existingMemberIds = conversation.participants.map((p) => p.user.toString());
     const duplicateIds = memberIds.filter((memberId) =>
-      existingMemberIds.includes(memberId.toString())
+      existingMemberIds.includes(memberId)
     );
 
     if (duplicateIds.length > 0) {
@@ -276,8 +267,7 @@ export const addMemberToGroupService = async (
 
     // Lọc ra những người không có trong group
     const newMemberIds = memberIds.filter(
-      (memberId) =>
-        !conversation.participants.some((p) => p.user.toString() === memberId.toString())
+      (memberId) => !conversation.participants.some((p) => p.user.toString() === memberId)
     );
 
     // Chuẩn hóa theo schema
@@ -288,9 +278,11 @@ export const addMemberToGroupService = async (
       unreadCount: 0,
     }));
 
+    // Thêm vào participants và lưu
     conversation.participants.push(...formattedNewMembers);
     await conversation.save();
 
+    // Trả về thông tin conversation đã được populate đầy đủ và cập nhật mới nhất
     const populatedConversation = await Conversation.findById(conversationId)
       .populate("participants.user", "username email avatarUrl bio status lastSeenAt")
       .populate("lastMessage.sender", "username avatarUrl")
@@ -322,33 +314,32 @@ export const removeMemberFromGroupService = async (
     }
 
     // Chỉ admin mới được xóa thành viên
-    const isAdmin = conversation.admin.some(
-      (id) => id.toString() === currentUserId.toString()
+    const isAdmin = conversation.participants.some(
+      (p) => p.user.toString() === currentUserId && ["owner", "admin"].includes(p.role)
     );
 
     if (!isAdmin) {
-      throw new Error("Permission denied");
+      throw new Error("Just owner and admin can remove members");
     }
 
     // Không được xóa chính mình
-    if (currentUserId.toString() === memberId.toString()) {
-      throw new Error("Admin cannot remove themselves");
+    if (currentUserId === memberId) {
+      throw new Error("Cannot remove themselves");
     }
 
-    // Lọc thành viên cần xóa
-    const remaining = conversation.participants.filter(
-      (p) => p.user._id.toString() !== memberId.toString()
-    );
-
-    conversation.participants = remaining;
-    await conversation.save();
-
-    const populatedConversation = await Conversation.findById(conversationId)
+    // Xóa trực tiếp thành viên (=$pull) và trả về conversation đã được populate đầy đủ
+    const updatedConversation = await Conversation.findByIdAndUpdate(
+      conversationId,
+      {
+        $pull: { participants: { user: memberId } },
+      },
+      { new: true }
+    )
       .populate("participants.user", "username email avatarUrl bio status lastSeenAt")
       .populate("lastMessage.sender", "username avatarUrl")
       .lean();
 
-    return populatedConversation;
+    return updatedConversation;
   } catch (error) {
     console.error("Error in removeMemberFromGroupService:", error);
     throw error;
@@ -401,6 +392,15 @@ export const deleteConversation = async (conversationId, userId) => {
 
     if (!conversation) {
       throw new Error("Conversation not found or access denied");
+    }
+
+    // Chỉ owner mới được xóa conversation
+    const isOwner = conversation.participants.some(
+      (p) => p.user.toString() === userId && p.role === "owner"
+    );
+
+    if (!isOwner) {
+      throw new Error("Only the owner can delete this conversation");
     }
 
     // Soft delete: chỉ đánh dấu isActive = false
@@ -465,7 +465,7 @@ export const markConversationAsReadService = async (conversationId, userId) => {
 };
 
 /**
- * Đánh dấu đã đọc
+ * Lấy danh sách ảnh trong conversation
  * @param {string} conversationId - ID của conversation
  * @param {string} userId - ID của user đang đăng nhập
  * @param {number} page - Trang hiện tại
@@ -505,4 +505,104 @@ export const getConversationImagesService = async (
     .lean();
 
   return images;
+};
+
+/**
+ * Rời khỏi group conversation
+ * @param {string} conversationId - ID của conversation
+ * @param {string} userId - ID của user đang đăng nhập
+ * @returns {Object} - Kết quả rời khỏi group
+ */
+export const leaveGroupService = async (conversationId, userId) => {
+  try {
+    // Tìm conversation
+    const conversation = await Conversation.findOne({
+      _id: conversationId,
+      "participants.user": userId,
+      isActive: true,
+    });
+
+    if (!conversation) {
+      throw new Error("Group conversation not found");
+    }
+
+    if (conversation.type !== "group") {
+      return res.status(400).json({ message: "Not a group conversation" });
+    }
+
+    // Owner chưa chuyển quyền thì không được rời khỏi group
+    const owner = conversation.participants.some(
+      (p) => p.role === "owner" && p.user.toString() === userId
+    );
+
+    if (owner) {
+      throw new Error("Owner cannot leave the group. Please transfer ownership.");
+    }
+
+    // Rời khỏi group
+    conversation.participants = conversation.participants.filter(
+      (p) => p.user.toString() !== userId
+    );
+
+    await conversation.save();
+
+    return conversation;
+  } catch (error) {
+    console.error("Error in leaveGroupService:", error);
+    throw error;
+  }
+};
+
+/**
+ * Chuyển nhượng quyền sở hữu group conversation
+ * @param {string} conversationId
+ * @param {string} currentUserId
+ * @param {string} newOwnerId
+ */
+export const transferGroupOwnershipService = async (
+  conversationId,
+  currentUserId,
+  newOwnerId
+) => {
+  try {
+    // 1. Tìm conversation
+    const conversation = await Conversation.findOne({
+      _id: conversationId,
+      "participants.user": currentUserId,
+      isActive: true,
+    });
+
+    if (!conversation) {
+      throw new Error("Group conversation not found");
+    }
+
+    // 2. Kiểm tra quyền sở hữu
+    const owner = conversation.participants.find(
+      (p) => p.user.toString() === currentUserId && p.role === "owner"
+    );
+
+    if (!owner) {
+      throw new Error("Permission denied");
+    }
+
+    // 3. Kiểm tra newOwnerId có phải là thành viên không
+    const newOwner = conversation.participants.find(
+      (p) => p.user.toString() === newOwnerId
+    );
+
+    if (!newOwner) {
+      throw new Error("New owner is not a member of the group");
+    }
+
+    // 4. Chuyển nhượng quyền sở hữu
+    owner.role = "member";
+    newOwner.role = "owner";
+
+    await conversation.save();
+
+    return conversation;
+  } catch (error) {
+    console.error("Error in transferGroupOwnershipService:", error);
+    throw error;
+  }
 };

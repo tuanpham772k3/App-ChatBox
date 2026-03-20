@@ -7,29 +7,37 @@
 export const getDisplayInfo = (conversation, currentUserId) => {
   if (!conversation) return null;
 
-  // Kiểm tra participants có tồn tại và là mảng
+  // Validation participants có tồn tại và là mảng
   if (!conversation.participants || !Array.isArray(conversation.participants)) {
     return null;
   }
 
-  // Lấy người đối diện
+  // Lấy người đối diện trong conversation (1-1)
   const partner = conversation.participants.find((p) => p.user._id !== currentUserId);
-
-  // Lấy id người đối diện
   const partnerId = partner?.user?._id;
 
-  const adminIds = conversation.admin.map(String);
-
-  // Lấy danh sách thành viên && chỉ lấy thông tin cần thiết (id, name, avatarUrl, role)
+  // Lấy danh sách người tham gia conversation (GROUP) && populate (id, name, avatarUrl, role)
   const participants = conversation.participants.map((p) => {
     const isMe = p.user._id === currentUserId;
     return {
       id: p.user._id,
       name: isMe ? "Bạn" : p.user.username,
       avatarUrl: p.user.avatarUrl?.url || "/avatarA.jpg",
-      role: adminIds.includes(p.user._id) ? "admin" : "member",
+      role: p.role,
     };
   });
+
+  // Lấy thông tin của chính mình trong conversation
+  const mySelf = conversation.participants.find((p) => p.user._id === currentUserId);
+
+  const currentUser = mySelf
+    ? {
+        id: mySelf.user._id,
+        name: "Bạn",
+        avatarUrl: mySelf.user.avatarUrl?.url || "/avatarA.jpg",
+        role: mySelf.role,
+      }
+    : null;
 
   // Lấy hội thoại nhóm
   const isGroup = conversation.type === "group";
@@ -67,6 +75,7 @@ export const getDisplayInfo = (conversation, currentUserId) => {
     partner,
     partnerId,
     participants,
+    currentUser,
     displayName,
     displayAvatar,
     lastMsgSender,

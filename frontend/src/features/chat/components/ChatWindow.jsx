@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import MessageInput from "./MessageInput";
 import Messages from "./Messages";
@@ -14,18 +14,23 @@ import DrawerMembersInfo from "./drawer/DrawerMembersInfo";
 import { clearMessages } from "../messagesSlice";
 import { emitEvent } from "@/shared/lib/socket";
 import ChatEmptyState from "./ChatEmptyState";
-import { getConversationImages } from "@/features/conversations/conversationsSlice";
+import {
+  deleteConversation,
+  getConversationImages,
+} from "@/features/conversations/conversationsSlice";
 import DrawerMediaGallery from "./drawer/DrawerMediaGallery";
 import ModalRemoveMembers from "./modal/ModalRemoveMembers";
+import { useNotification } from "@/shared/hooks/useNotification";
 
 const ChatWindow = ({ activeChat, onBackToList }) => {
+  const notification = useNotification();
   const dispatch = useDispatch();
   const {
     currentConversation,
     statusUsers = {},
     images = [],
   } = useSelector((state) => state.conversations);
-  const user = useSelector((state) => state.auth.user) || {};
+  const currentUserId = useSelector((state) => state.auth.user.id) || {};
 
   const [editingMessage, setEditingMessage] = useState({
     id: null,
@@ -43,7 +48,10 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
   // Message realtime
   useMessages(activeChat);
 
-  const displayInfo = getDisplayInfo(currentConversation, user.id) || {};
+  const displayInfo = useMemo(
+    () => getDisplayInfo(currentConversation, currentUserId) || {},
+    [currentConversation, currentUserId]
+  );
   const partnerStatus = displayInfo.partnerId ? statusUsers[displayInfo.partnerId] : null;
 
   // Open Modal AddMembers
@@ -65,6 +73,18 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
       } catch (error) {
         console.log("Lỗi lấy danh sách ảnh: ", error);
       }
+    }
+  };
+
+  // GIẢI TÁN NHÓM (owner)
+  const handleRemoveConversation = async (conversationId) => {
+    try {
+      await dispatch(deleteConversation(conversationId)).unwrap();
+    } catch (err) {
+      notification.error({
+        message: "Giải tán nhóm thất bại",
+        description: err.message || "Có lỗi xảy ra",
+      });
     }
   };
 
@@ -134,6 +154,8 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
         displayInfo={displayInfo}
         openDrawerInfo={openDrawerInfo}
         images={images}
+        onRemoveConversation={handleRemoveConversation}
+        onBackToList={onBackToList}
       />
 
       {/* Drawer members info */}
@@ -141,7 +163,8 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
         open={openDrawer === "membersInfo"}
         onClose={closeDrawerInfo}
         openModal={openModalMembers}
-        members={displayInfo.participants}
+        currentUserId={currentUserId}
+        members={displayInfo.participants || []}
         onRemoveMember={(memberId) => {
           setSelectedMemberId(memberId);
           openModalMembers("removeMembers");
