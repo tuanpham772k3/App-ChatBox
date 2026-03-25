@@ -4,7 +4,8 @@ import {
   addConversation,
   removeConversationRealtime,
   syncReadStatusRealtime,
-  updateConversationMetadata,
+  updateConversationLastMessage,
+  updateConversationUnreadCount,
 } from "../conversationsSlice";
 import { offEvent, onEvent } from "@/shared/lib/socket";
 
@@ -12,39 +13,46 @@ export const useConversations = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    // ✅ Hội thoại mới
+    // Hội thoại mới
     const onNewConversation = (conversation) => {
       dispatch(addConversation(conversation));
     };
 
-    // ✅ Hội thoại bị xoá
+    // Hội thoại bị xoá
     const onDeleteConversation = (conversationId) => {
       dispatch(removeConversationRealtime(conversationId));
     };
 
-    // ✅ Realtime unread
-    const onConversationUpdate = (data) => {
-      // { conversationId, lastMessage, unreadCount, userId }
-      dispatch(updateConversationMetadata(data));
+    // Realtime unread
+    const onConversationLastMessage = (data) => {
+      // { conversationId, lastMessage }
+      dispatch(updateConversationLastMessage(data));
     };
 
-    // ✅ Realtime đã đọc
-    const onReadSync = (data) => {
+    const onConversationUnread = (data) => {
+      // { conversationId, unreadCount, userId }
+      dispatch(updateConversationUnreadCount(data));
+    };
+
+    // Realtime đánh dấu đã đọc
+    const onMarkAsRead = (data) => {
       // { conversationId, userId, lastReadAt }
       dispatch(syncReadStatusRealtime(data));
     };
 
     onEvent("conversation:new", onNewConversation);
     onEvent("conversation:delete", onDeleteConversation);
-    onEvent("conversation:update", onConversationUpdate);
-    onEvent("conversation:read", onReadSync);
+    onEvent("conversation:lastMessage", onConversationLastMessage);
+    onEvent("conversation:unread", onConversationUnread);
+    onEvent("conversation:read", onMarkAsRead);
 
     // Cleanup khi unmount
     return () => {
       offEvent("conversation:new", onNewConversation);
       offEvent("conversation:delete", onDeleteConversation);
-      offEvent("conversation:update", onConversationUpdate);
-      offEvent("conversation:read", onReadSync);
+      offEvent("conversation:lastMessage", onConversationLastMessage);
+      offEvent("conversation:unread", onConversationUnread);
+      offEvent("conversation:read", onMarkAsRead);
     };
   }, [dispatch]);
 };

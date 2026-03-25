@@ -198,8 +198,14 @@ export const getUserConversations = async (userId, page = 1, limit = 20) => {
 
     // 1. Tìm tất cả conversation mà user tham gia
     const conversations = await Conversation.find({
-      "participants.user": userId,
       isActive: true,
+      // Chỉ tìm những conversation mà user chưa xóa phía mình (deletedAt: null)
+      participants: {
+        $elemMatch: {
+          user: userId,
+          deletedAt: null,
+        },
+      },
     })
       .populate("participants.user", "username email avatarUrl bio status lastSeenAt")
       .populate("lastMessage.sender", "username avatarUrl")
@@ -212,6 +218,7 @@ export const getUserConversations = async (userId, page = 1, limit = 20) => {
     const total = await Conversation.countDocuments({
       "participants.user": userId,
       isActive: true,
+      "participants.deletedAt": null, // Chỉ đếm những conversation mà user chưa xóa phía mình
     });
 
     return {
@@ -376,7 +383,7 @@ export const getConversationById = async (conversationId, userId) => {
 };
 
 /**
- * Xóa conversation (soft delete)
+ * Xóa conversation (owner)
  * @param {string} conversationId - ID của conversation
  * @param {string} userId - ID của user thực hiện xóa
  * @returns {Object} - Kết quả xóa
@@ -603,6 +610,46 @@ export const transferGroupOwnershipService = async (
     return conversation;
   } catch (error) {
     console.error("Error in transferGroupOwnershipService:", error);
+    throw error;
+  }
+};
+
+/**
+ * Xóa hội thoại phía tôi (soft delete)
+ * @param {string} conversationId - ID của conversation
+ * @param {string} userId - ID của user đang đăng nhập
+ * @returns {Object} - Kết quả xóa
+ */
+export const deleteConversationForMeService = async (conversationId, userId) => {
+  try {
+    // 1. Tìm conversation
+    const conversation = await Conversation.findOne({
+      _id: conversationId,
+      "participants.user": userId,
+      isActive: true,
+    });
+
+    if (!conversation) {
+      throw new Error("Conversation not found or access denied");
+    }
+
+    // 2. Đánh dấu là đã xóa
+    await Conversation.updateOne(
+      { _id: conversationId, "participants.user": userId },
+      {
+        $set: {
+          "participants.$.deletedAt": new Date(),
+          "participants.$.clearedMessagesHistoryAt": new Date(),
+          "participants.$.lastReadMessage": null,
+          "participants.$.lastReadAt": null,
+          "participants.$.unreadCount": 0,
+        },
+      }
+    );
+
+    return true;
+  } catch (error) {
+    console.error("Error in deleteConversationForMeService:", error);
     throw error;
   }
 };

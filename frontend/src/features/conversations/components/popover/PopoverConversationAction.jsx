@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Popover } from "antd";
 
-const PopoverConversationAction = ({ children, onDelete }) => {
+const PopoverConversationAction = ({ children, onRemove }) => {
   const [open, setOpen] = useState(false);
 
   return (
@@ -26,7 +26,7 @@ const PopoverConversationAction = ({ children, onDelete }) => {
               Phân loại
             </button>
             <button
-              onClick={onDelete}
+              onClick={onRemove}
               className="flex items-center gap-2 w-full px-3 py-2 text-red-500 hover:bg-[var(--color-hover-surface)] rounded"
             >
               Xóa hội thoại

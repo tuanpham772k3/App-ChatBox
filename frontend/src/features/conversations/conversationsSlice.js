@@ -177,6 +177,19 @@ export const transferGroupOwnership = createAsyncThunk(
   }
 );
 
+// Nhượng quyền owner cho thành viên khác (chỉ dành cho owner)
+export const deleteConversationForMe = createAsyncThunk(
+  "conversations/deleteForMe",
+  async (conversationId, { rejectWithValue }) => {
+    try {
+      await conversationApi.deleteConversationForMeApi(conversationId);
+      return { conversationId };
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
 /* =============================
  *  Slice setup
  * ============================= */
@@ -212,24 +225,32 @@ const conversationsSlice = createSlice({
       }
     },
 
-    // Realtime unreadCount + lastMessage
-    updateConversationMetadata: (state, action) => {
-      const { conversationId, lastMessage, unreadCount, userId } = action.payload;
+    // Realtime lastMessage
+    updateConversationLastMessage: (state, action) => {
+      const { conversationId, lastMessage } = action.payload;
 
       const idx = state.conversations.findIndex((c) => c._id === conversationId);
       if (idx === -1) return;
 
       state.conversations[idx].lastMessage = lastMessage;
 
-      const p = state.conversations[idx].participants.find((p) => p.user._id === userId);
-      if (p) p.unreadCount = unreadCount;
-
       // move to top
       const [conv] = state.conversations.splice(idx, 1);
       state.conversations.unshift(conv);
     },
 
-    // ✅ Realtime đã đọc (sync cho người khác)
+    // Realtime unread
+    updateConversationUnreadCount: (state, action) => {
+      const { conversationId, unreadCount, userId } = action.payload;
+
+      const conv = state.conversations.find((c) => c._id === conversationId);
+      if (!conv) return;
+
+      const p = conv.participants.find((p) => p.user._id === userId);
+      if (p) p.unreadCount = unreadCount;
+    },
+
+    // Realtime đã đọc (sync cho người khác)
     syncReadStatusRealtime: (state, action) => {
       const { conversationId, userId, lastReadMessage } = action.payload;
 
@@ -404,7 +425,8 @@ export const {
   addConversation,
   removeConversationRealtime,
   setCurrentConversation,
-  updateConversationMetadata,
+  updateConversationLastMessage,
+  updateConversationUnreadCount,
   syncReadStatusRealtime,
   userStatus,
   userStartTyping,

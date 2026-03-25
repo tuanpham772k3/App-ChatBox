@@ -3,12 +3,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { MessageSquareText } from "lucide-react";
 import { Spin } from "antd";
 import {
-  deleteConversation,
+  deleteConversationForMe,
   getConversationById,
   getConversations,
   markConversationAsRead,
 } from "./conversationsSlice";
-import { clearMessages, fetchConversationMessages } from "@/features/chat/messagesSlice";
 import ConversationHeader from "./components/ConversationHeader";
 import ConversationItem from "./components/ConversationItem";
 import { getDisplayInfo } from "./utils/conversationHelper";
@@ -67,17 +66,22 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
     }
   };
 
-  // Xóa hội thoại
-  // const removeConversation = async (conversationId) => {
-  //   try {
-  //     await dispatch(deleteConversation(conversationId)).unwrap();
-  //   } catch (err) {
-  //     notification.error({
-  //       message: "Xóa hội thoại thất bại",
-  //       description: err.message || "Có lỗi xảy ra",
-  //     });
-  //   }
-  // };
+  // Xóa hội thoại phía tôi
+  const handleRemoveConversationForMe = async (conversationId) => {
+    console.log("conversation", conversationId);
+
+    try {
+      await dispatch(deleteConversationForMe(conversationId)).unwrap();
+      notification.success({
+        message: "Xóa hội thoại phía tôi thành công",
+      });
+    } catch (err) {
+      notification.error({
+        message: "Xóa hội thoại phía tôi thất bại",
+        description: err.message || "Có lỗi xảy ra",
+      });
+    }
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -149,7 +153,9 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
                       isActive={activeChat === conversation._id}
                       display={displayInfo}
                       onSelect={() => handleSelectConversation(conversation._id)}
-                      // onDeleteConversation={() => removeConversation(conversation._id)}
+                      onRemoveConversationForMe={() =>
+                        handleRemoveConversationForMe(conversation._id)
+                      }
                       typingUsers={typingInThisConversation}
                       currentUserId={user.id}
                       partnerStatus={partnerStatus}

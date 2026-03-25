@@ -100,6 +100,16 @@ const conversationApi = {
       newOwnerId,
     });
   },
+
+  /**
+   * Xóa hội thoại của chính tôi
+   * DELETE /conversations/:conversationId/for-me
+   */
+  deleteConversationForMeApi: (conversationId) => {
+    return instance.delete(`/conversations/${conversationId}/for-me`);
+  },
+
+
 };
 
 export default conversationApi;

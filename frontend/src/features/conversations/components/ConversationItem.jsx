@@ -9,7 +9,7 @@ const ConversationItem = ({
   isActive,
   display,
   onSelect,
-  onDeleteConversation,
+  onRemoveConversationForMe,
   typingUsers,
   currentUserId,
   partnerStatus,
@@ -77,7 +77,7 @@ const ConversationItem = ({
 
         {/* Ellipsis + Unread badge*/}
         <div className="flex items-center gap-1 ml-2 mr-2 shrink-0">
-          <PopoverConversationAction onDelete={onDeleteConversation}>
+          <PopoverConversationAction onRemove={onRemoveConversationForMe}>
             {({ open }) => (
               <button
                 type="button"

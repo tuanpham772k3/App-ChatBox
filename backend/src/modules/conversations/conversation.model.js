@@ -20,6 +20,18 @@ const conversationSchema = new mongoose.Schema(
           enum: ["owner", "admin", "member"],
           default: "member",
         },
+        joinedAt: {
+          type: Date,
+          default: Date.now,
+        }, // Mốc thời gian người dùng tham gia cuộc trò chuyện
+        clearedMessagesHistoryAt: {
+          type: Date,
+          default: null,
+        }, // Mốc thời gian xóa lịch sử trò chuyện của người dùng (để soft delete)
+        deletedAt: {
+          type: Date,
+          default: null,
+        }, // Mốc thời gian người dùng xóa cuộc trò chuyện (soft delete)
         lastReadMessage: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "Message",
@@ -51,13 +63,6 @@ const conversationSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     }, // Cuộc trò chuyện có đang hoạt động không (để soft delete)
-
-    admin: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ], // Danh sách admin của nhóm(chỉ áp dụng cho group)
   },
   { timestamps: true } // Tự động thêm createdAt và updatedAt
 );

@@ -91,6 +91,7 @@ export const createMessage = async (conversationId, senderId, content, fileInfo)
             createdAt: savedMessage.createdAt,
           },
           updatedAt: new Date(),
+          "participants.$[p].deletedAt": null,
         },
         $inc: {
           "participants.$[p].unreadCount": 1,
@@ -103,15 +104,13 @@ export const createMessage = async (conversationId, senderId, content, fileInfo)
       }
     );
 
-    let io = getSocket();
     // Emit tin nhắn mới đến từng user (để người dùng online vẫn nhận được dù chưa join room conversation)
+    let io = getSocket();
     try {
-      const participantIds = (conversation?.participants || [])
-        .map((p) => (p?.user ? String(p.user) : null))
-        .filter(Boolean);
+      const participantIds = conversation.participants.map((p) => p.user.toString());
 
       participantIds.forEach((uid) => {
-        if (uid !== String(senderId)) {
+        if (uid !== senderId) {
           io.to(`user_${uid}`).emit("message_new", populatedMessage);
         }
       });
@@ -123,39 +122,63 @@ export const createMessage = async (conversationId, senderId, content, fileInfo)
       );
     }
 
+    // Emit lastMessage realtime cho từng user
     try {
-      // Emit unreadCount realtime cho từng user (TRỪ người gửi)
+      const lastMessagePayload = {
+        conversationId,
+        lastMessage: {
+          _id: populatedMessage._id,
+          sender: {
+            _id: populatedMessage.sender._id,
+            username: populatedMessage.sender.username,
+            avatarUrl: populatedMessage.sender.avatarUrl,
+          },
+          type: populatedMessage.type,
+          content:
+            populatedMessage.type === "text"
+              ? populatedMessage.content
+              : populatedMessage.file?.filename || populatedMessage.type,
+          file: populatedMessage.file || null,
+          createdAt: populatedMessage.createdAt,
+        },
+      };
+
       updatedConv.participants.forEach((p) => {
-        if (p.user?.toString() !== senderId) {
-          io.to(`user_${p.user}`).emit("conversation:update", {
-            conversationId,
-            lastMessage: {
-              _id: populatedMessage._id,
-              sender: {
-                _id: populatedMessage.sender._id,
-                username: populatedMessage.sender.username,
-                avatarUrl: populatedMessage.sender.avatarUrl,
-              },
-              type: populatedMessage.type,
-              content:
-                populatedMessage.type === "text"
-                  ? populatedMessage.content
-                  : populatedMessage.file?.filename || populatedMessage.type,
-              file: populatedMessage.file || null,
-              createdAt: populatedMessage.createdAt,
-            },
-            unreadCount: p.unreadCount,
-            userId: p.user?.toString(),
-          });
-          // Log emit
-          console.log("[SOCKET][EMIT] conversation:update", p.unreadCount);
-        }
+        io.to(`user_${p.user}`).emit("conversation:lastMessage", lastMessagePayload);
+        // Log emit
+        console.log("[SOCKET][EMIT] conversation:lastMessage", conversationId);
       });
     } catch (err) {
       console.error(
-        "Socket emit conversation:unread:update failed for conversation:",
+        "Socket emit conversation:lastMessage failed for conversation:",
         conversationId,
         err
+      );
+    }
+
+    // Emit realtime unreadCount cho từng user (Trừ người gửi)
+    try {
+      updatedConv.participants.forEach((p) => {
+        if (p.user.toString() !== senderId) {
+          io.to(`user_${p.user}`).emit("conversation:unread", {
+            conversationId,
+            unreadCount: p.unreadCount,
+            userId: p.user.toString(),
+          });
+          // Log emit
+          console.log(
+            "[SOCKET][EMIT] conversation:unread",
+            conversationId,
+            p.user.toString(),
+            p.unreadCount
+          );
+        }
+      });
+    } catch (error) {
+      console.error(
+        "Socket emit conversation:unread failed for conversation:",
+        conversationId,
+        error
       );
     }
 
@@ -188,13 +211,21 @@ export const getMessages = async (conversationId, userId, before, limit = 20) =>
       throw new Error("Conversation not found or access denied");
     }
 
+    // Lấy người tham gia hiện tại để xác định mốc thời gian lấy tin nhắn
+    const participant = conversation.participants.find(
+      (p) => p.user.toString() === userId
+    );
+
+    const fromTime = participant.clearedMessagesHistoryAt || participant.joinedAt;
+
     const query = {
       conversation: conversationId,
       isDeleted: false,
+      createdAt: { $gte: fromTime },
     };
 
     if (before) {
-      query.createdAt = { $lt: new Date(before) };
+      query.createdAt.$lt = new Date(before);
     }
 
     // 2. Lấy danh sách tin nhắn (không bao gồm tin nhắn đã xóa)

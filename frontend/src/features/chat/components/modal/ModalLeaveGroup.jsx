@@ -43,7 +43,6 @@ const ModalLeaveGroup = ({
 
   // Filter member có thể làm owner (trừ chính mình)
   const availableMembers = members.filter((m) => m.id !== currentUser?.id);
-  console.log(availableMembers);
 
   return (
     <Modal

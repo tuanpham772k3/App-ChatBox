@@ -10,6 +10,7 @@ import {
   getConversationImagesService,
   leaveGroupService,
   transferGroupOwnershipService,
+  deleteConversationForMeService,
 } from "./conversation.service.js";
 
 /**
@@ -564,6 +565,7 @@ export const markConversationAsRead = async (req, res) => {
   }
 };
 
+// Lấy ảnh trong conversation (dùng cho phần media trong conversation details)
 export const getConversationImages = async (req, res) => {
   try {
     const { conversationId } = req.params;
@@ -607,6 +609,7 @@ export const getConversationImages = async (req, res) => {
   }
 };
 
+// Rời nhóm
 export const leaveGroup = async (req, res) => {
   try {
     const { conversationId } = req.params;
@@ -649,6 +652,7 @@ export const leaveGroup = async (req, res) => {
   }
 };
 
+// Chuyển quyền sở hữu nhóm
 export const transferGroupOwnership = async (req, res) => {
   try {
     const { conversationId } = req.params;
@@ -710,6 +714,54 @@ export const transferGroupOwnership = async (req, res) => {
       success: false,
       message: "Internal server error",
       idCode: 5,
+    });
+  }
+};
+
+/**
+ * Xóa hội thoại của chính tôi (soft delete)
+ * DELETE /api/conversations/:conversationId/for-me
+ */
+export const deleteConversationForMe = async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+    console.log("conversationId", conversationId);
+
+    const { userId } = req.user;
+
+    // Validation conversationId
+    if (!conversationId.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid conversation ID format",
+        idCode: 1,
+      });
+    }
+
+    // Gọi service
+    await deleteConversationForMeService(conversationId, userId);
+
+    // Phản hồi thành công
+    return res.status(200).json({
+      success: true,
+      message: "Delete conversation successfully",
+      idCode: 0,
+    });
+  } catch (error) {
+    console.error("Error in deleteConversationForMe controller:", error);
+
+    if (error.message === "Conversation not found or access denied") {
+      return res.status(404).json({
+        success: false,
+        message: error.message,
+        idCode: 2,
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      idCode: 3,
     });
   }
 };

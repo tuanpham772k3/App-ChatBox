@@ -11,6 +11,7 @@ import {
   getConversationImages,
   leaveGroup,
   transferGroupOwnership,
+  deleteConversationForMe,
 } from "./conversation.controller.js";
 import { verifyToken } from "../../middlewares/middleware.controller.js";
 
@@ -48,5 +49,8 @@ router.delete("/:conversationId/leave", verifyToken, leaveGroup);
 
 // Nhượng quyền owner cho thành viên khác (chỉ dành cho owner)
 router.put("/:conversationId/transfer-ownership", verifyToken, transferGroupOwnership);
+
+// Xóa hội thoại của chính tôi
+router.delete("/:conversationId/for-me", verifyToken, deleteConversationForMe);
 
 export default router;
