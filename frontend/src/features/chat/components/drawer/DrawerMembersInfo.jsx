@@ -1,5 +1,5 @@
 import React from "react";
-import { Drawer, Transfer } from "antd";
+import { Drawer } from "antd";
 import { ArrowLeft, Key, Search, Trash, Users } from "lucide-react";
 
 const DrawerMembersInfo = ({
@@ -8,6 +8,7 @@ const DrawerMembersInfo = ({
   openModal,
   currentUserId,
   members,
+  onRemoveMember,
 }) => {
   // Sắp xếp members theo role: owner > admin > member
   const rolePriority = {

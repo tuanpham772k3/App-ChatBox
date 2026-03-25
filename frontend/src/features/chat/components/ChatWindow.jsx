@@ -133,20 +133,6 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
         setEditingMessage={setEditingMessage}
       />
 
-      {/* Modal */}
-      <ModalAddMembers
-        isOpen={openModal === "addMembers"}
-        onCancel={closeModalMembers}
-        conversationId={currentConversation?._id}
-      />
-
-      <ModalRemoveMembers
-        isOpen={openModal === "removeMembers"}
-        onCancel={closeModalMembers}
-        conversationId={currentConversation?._id}
-        memberId={selectedMemberId}
-      />
-
       {/* Drawer conversation info */}
       <DrawerConversationInfo
         open={openDrawer === "conversationInfo"}
@@ -177,6 +163,20 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
           openDrawerInfo("conversationInfo");
         }}
         images={images}
+      />
+
+      {/* === MODAL === */}
+      <ModalAddMembers
+        isOpen={openModal === "addMembers"}
+        onCancel={closeModalMembers}
+        conversationId={currentConversation?._id}
+      />
+
+      <ModalRemoveMembers
+        isOpen={openModal === "removeMembers"}
+        onCancel={closeModalMembers}
+        conversationId={currentConversation?._id}
+        memberId={selectedMemberId}
       />
     </div>
   );
