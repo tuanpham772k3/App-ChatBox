@@ -2,6 +2,7 @@ import User from "../users/user.model.js";
 import Message from "./message.model.js";
 import Conversation from "../conversations/conversation.model.js";
 import { getSocket } from "../../socket.js";
+import { AppError } from "../../utils/AppError.js";
 
 /**Tạo tin nhắn mới
  * @param {string} conversationId - ID của conversation
@@ -13,181 +14,97 @@ import { getSocket } from "../../socket.js";
  * @returns {object} - Tin nhắn đã được tạo
  */
 export const createMessage = async (conversationId, senderId, content, fileInfo) => {
-  try {
-    // Kiểm tra conversation tồn tại và user có quyền truy cập không
-    const conversation = await Conversation.findOne({
-      _id: conversationId,
-      "participants.user": senderId,
-      isActive: true,
-    }).lean();
+  const conversation = await Conversation.findOne({
+    _id: conversationId,
+    "participants.user": senderId,
+    isActive: true,
+  }).lean();
 
-    if (!conversation) {
-      throw new Error("Conversation not found or access denied");
-    }
-
-    // Xác định message type (BACKEND QUYẾT)
-    let type = "text";
-
-    if (fileInfo) {
-      type = fileInfo.mimeType.startsWith("image/") ? "image" : "file";
-    }
-
-    // Validate payload theo type
-    if (type === "text") {
-      if (!content || !content.trim()) {
-        throw new Error("Message content cannot be empty");
-      }
-      if (content.length > 2000) {
-        throw new Error("Message content too long (max 2000 characters)");
-      }
-    }
-
-    if ((type === "image" || type === "file") && !fileInfo?.url) {
-      throw new Error("File info is required for file/image message");
-    }
-
-    // Tạo message object & thêm file nếu có
-    const messageData = {
-      conversation: conversationId,
-      sender: senderId,
-      type,
-      content: content ? content.trim() : null,
-      file: fileInfo
-        ? {
-            url: fileInfo.url,
-            public_id: fileInfo.public_id,
-            filename: fileInfo.filename,
-            mimeType: fileInfo.mimeType,
-            size: fileInfo.size,
-          }
-        : null,
-    };
-
-    const savedMessage = await Message.create(messageData);
-
-    // Populate thông tin đầy đủ của message
-    const populatedMessage = await Message.findById(savedMessage._id)
-      .populate("sender", "username email avatarUrl")
-      .lean();
-
-    // Cập nhật conversation.lastMessage và tăng unreadCount cho participants khác
-    const updatedConv = await Conversation.findOneAndUpdate(
-      { _id: conversationId },
-      {
-        $set: {
-          lastMessage: {
-            _id: savedMessage._id,
-            sender: senderId,
-            type,
-            content: type === "text" ? content.trim() : fileInfo?.filename || type,
-            file: fileInfo
-              ? {
-                  url: fileInfo.url,
-                  filename: fileInfo.filename,
-                  size: fileInfo.size,
-                }
-              : null,
-            isDeleted: false,
-            createdAt: savedMessage.createdAt,
-          },
-          updatedAt: new Date(),
-          "participants.$[p].deletedAt": null,
-        },
-        $inc: {
-          "participants.$[p].unreadCount": 1,
-        },
-      },
-      {
-        arrayFilters: [{ "p.user": { $ne: senderId } }],
-        new: true,
-        lean: true,
-      }
-    );
-
-    // Emit tin nhắn mới đến từng user (để người dùng online vẫn nhận được dù chưa join room conversation)
-    let io = getSocket();
-    try {
-      const participantIds = conversation.participants.map((p) => p.user.toString());
-
-      participantIds.forEach((uid) => {
-        if (uid !== senderId) {
-          io.to(`user_${uid}`).emit("message_new", populatedMessage);
-        }
-      });
-    } catch (err) {
-      console.error(
-        "Socket emit message:new failed for user rooms (conversation):",
-        conversationId,
-        err
-      );
-    }
-
-    // Emit lastMessage realtime cho từng user
-    try {
-      const lastMessagePayload = {
-        conversationId,
-        lastMessage: {
-          _id: populatedMessage._id,
-          sender: {
-            _id: populatedMessage.sender._id,
-            username: populatedMessage.sender.username,
-            avatarUrl: populatedMessage.sender.avatarUrl,
-          },
-          type: populatedMessage.type,
-          content:
-            populatedMessage.type === "text"
-              ? populatedMessage.content
-              : populatedMessage.file?.filename || populatedMessage.type,
-          file: populatedMessage.file || null,
-          createdAt: populatedMessage.createdAt,
-        },
-      };
-
-      updatedConv.participants.forEach((p) => {
-        io.to(`user_${p.user}`).emit("conversation:lastMessage", lastMessagePayload);
-        // Log emit
-        console.log("[SOCKET][EMIT] conversation:lastMessage", conversationId);
-      });
-    } catch (err) {
-      console.error(
-        "Socket emit conversation:lastMessage failed for conversation:",
-        conversationId,
-        err
-      );
-    }
-
-    // Emit realtime unreadCount cho từng user (Trừ người gửi)
-    try {
-      updatedConv.participants.forEach((p) => {
-        if (p.user.toString() !== senderId) {
-          io.to(`user_${p.user}`).emit("conversation:unread", {
-            conversationId,
-            unreadCount: p.unreadCount,
-            userId: p.user.toString(),
-          });
-          // Log emit
-          console.log(
-            "[SOCKET][EMIT] conversation:unread",
-            conversationId,
-            p.user.toString(),
-            p.unreadCount
-          );
-        }
-      });
-    } catch (error) {
-      console.error(
-        "Socket emit conversation:unread failed for conversation:",
-        conversationId,
-        error
-      );
-    }
-
-    // Result
-    return populatedMessage;
-  } catch (error) {
-    console.log("Error in createMessage service:", error);
-    throw error;
+  if (!conversation) {
+    throw new AppError("Conversation not found or access denied", 404);
   }
+
+  // Xác định message type (BACKEND QUYẾT)
+  let type = "text";
+
+  if (fileInfo) {
+    type = fileInfo.mimeType.startsWith("image/") ? "image" : "file";
+  }
+
+  if (type === "text") {
+    if (!content || !content.trim()) {
+      throw new AppError("Message content cannot be empty", 400);
+    }
+    if (content.length > 2000) {
+      throw new AppError("Message content too long (max 2000 characters)", 400);
+    }
+  }
+
+  if ((type === "image" || type === "file") && !fileInfo?.url) {
+    throw new AppError("File info is required for file/image message", 400);
+  }
+
+  // Tạo message object & thêm file nếu có
+  const messageData = {
+    conversation: conversationId,
+    sender: senderId,
+    type,
+    content: content ? content.trim() : null,
+    file: fileInfo
+      ? {
+          url: fileInfo.url,
+          public_id: fileInfo.public_id,
+          filename: fileInfo.filename,
+          mimeType: fileInfo.mimeType,
+          size: fileInfo.size,
+        }
+      : null,
+  };
+
+  const savedMessage = await Message.create(messageData);
+
+  const populatedMessage = await Message.findById(savedMessage._id)
+    .populate("sender", "username email avatarUrl")
+    .lean();
+
+  // Cập nhật conversation.lastMessage và tăng unreadCount cho participants khác
+  const updatedConv = await Conversation.findOneAndUpdate(
+    { _id: conversationId },
+    {
+      $set: {
+        lastMessage: {
+          _id: savedMessage._id,
+          sender: senderId,
+          type,
+          content: type === "text" ? content.trim() : fileInfo?.filename || type,
+          file: fileInfo
+            ? {
+                url: fileInfo.url,
+                filename: fileInfo.filename,
+                size: fileInfo.size,
+              }
+            : null,
+          isDeleted: false,
+          createdAt: savedMessage.createdAt,
+        },
+        updatedAt: new Date(),
+        "participants.$[p].deletedAt": null,
+      },
+      $inc: {
+        "participants.$[p].unreadCount": 1,
+      },
+    },
+    {
+      arrayFilters: [{ "p.user": { $ne: senderId } }],
+      new: true,
+      lean: true,
+    }
+  );
+
+  return {
+    message: populatedMessage,
+    participants: updatedConv.participants,
+  };
 };
 
 /**
@@ -199,57 +116,50 @@ export const createMessage = async (conversationId, senderId, content, fileInfo)
  * @returns {object} - Danh sách tin nhắn với pagination
  */
 export const getMessages = async (conversationId, userId, before, limit = 20) => {
-  try {
-    // 1. Kiểm tra user có quyền truy cập conversation không
-    const conversation = await Conversation.findOne({
-      _id: conversationId,
-      "participants.user": userId,
-      isActive: true,
-    });
+  // 1. Kiểm tra user có quyền truy cập conversation không
+  const conversation = await Conversation.findOne({
+    _id: conversationId,
+    "participants.user": userId,
+    isActive: true,
+  });
 
-    if (!conversation) {
-      throw new Error("Conversation not found or access denied");
-    }
-
-    // Lấy người tham gia hiện tại để xác định mốc thời gian lấy tin nhắn
-    const participant = conversation.participants.find(
-      (p) => p.user.toString() === userId
-    );
-
-    const fromTime = participant.clearedMessagesHistoryAt || participant.joinedAt;
-
-    const query = {
-      conversation: conversationId,
-      isDeleted: false,
-      createdAt: { $gte: fromTime },
-    };
-
-    if (before) {
-      query.createdAt.$lt = new Date(before);
-    }
-
-    // 2. Lấy danh sách tin nhắn (không bao gồm tin nhắn đã xóa)
-    const messages = await Message.find(query)
-      .populate("sender", "username email avatarUrl")
-      .sort({ createdAt: -1 }) // Sắp xếp từ mới nhất đến cũ nhất
-      .limit(limit)
-      .lean();
-
-    // 3. Xác định còn tin nhắn để load thêm không
-    const hasMore = messages.length === limit;
-
-    // 4. Đảo ngược để UI hiển thị từ cũ → mới
-    messages.reverse();
-
-    return {
-      messages,
-      nextCursor: messages.length ? messages[0].createdAt : null,
-      hasMore,
-    };
-  } catch (error) {
-    console.error("Error in getMessages service:", error);
-    throw error;
+  if (!conversation) {
+    throw new AppError("Conversation not found or access denied", 404);
   }
+
+  // Lấy người tham gia hiện tại để xác định mốc thời gian lấy tin nhắn
+  const participant = conversation.participants.find((p) => p.user.toString() === userId);
+
+  const fromTime = participant.clearedMessagesHistoryAt || participant.joinedAt;
+
+  const query = {
+    conversation: conversationId,
+    isDeleted: false,
+    createdAt: { $gte: fromTime },
+  };
+
+  if (before) {
+    query.createdAt.$lt = new Date(before);
+  }
+
+  // 2. Lấy danh sách tin nhắn (không bao gồm tin nhắn đã xóa)
+  const messages = await Message.find(query)
+    .populate("sender", "username email avatarUrl")
+    .sort({ createdAt: -1 }) // Sắp xếp từ mới nhất đến cũ nhất
+    .limit(limit)
+    .lean();
+
+  // 3. Xác định còn tin nhắn để load thêm không
+  const hasMore = messages.length === limit;
+
+  // 4. Đảo ngược để UI hiển thị từ cũ → mới
+  messages.reverse();
+
+  return {
+    messages,
+    nextCursor: messages.length ? messages[0].createdAt : null,
+    hasMore,
+  };
 };
 
 /**
@@ -259,79 +169,58 @@ export const getMessages = async (conversationId, userId, before, limit = 20) =>
  * @returns {object} - Kết quả xóa tin nhắn
  */
 export const deleteMessage = async (messageId, userId) => {
-  try {
-    //1. Tìm tin nhắn
-    const message = await Message.findById(messageId);
-    if (!message) {
-      throw new Error("Message not found");
-    }
-
-    //2. Check quyền
-    if (message.sender.toString() !== userId) {
-      throw new Error("You can only delete your own messages");
-    }
-
-    // 3. Nếu đã xóa thì thôi
-    if (message.isDeleted) {
-      return message;
-    }
-
-    //4. Soft delete
-    message.isDeleted = true;
-    message.content = "This message has been deleted.";
-    message.file = null;
-    const updatedMessage = await message.save();
-
-    // 5. Emit sự kiện xóa tin nhắn
-    try {
-      let io = getSocket();
-      io.to(`conversation_${updatedMessage.conversation}`).emit(
-        "message_delete",
-        messageId
-      );
-    } catch (err) {
-      console.error(
-        "Socket emit failed for conversation:",
-        updatedMessage.conversation,
-        err
-      );
-    }
-
-    // 6. Nếu là lastMessage thì update lại
-    const conversation = await Conversation.findById(message.conversation);
-
-    const isLastMessage = conversation?.lastMessage?._id.toString() === messageId;
-
-    if (isLastMessage) {
-      const prevMessage = await Message.findOne({
-        conversation: message.conversation,
-        isDeleted: false,
-      })
-        .sort({ createdAt: -1 })
-        .lean();
-
-      if (prevMessage) {
-        conversation.lastMessage = {
-          _id: prevMessage._id,
-          sender: prevMessage.sender,
-          type: prevMessage.type,
-          content: prevMessage.type === "text" ? prevMessage.content : "File",
-          file: prevMessage.file || null,
-          isDeleted: false,
-          createdAt: prevMessage.createdAt,
-        };
-      } else {
-        conversation.lastMessage = null;
-      }
-      await conversation.save();
-    }
-
-    //Trả về kết quả
-    return updatedMessage;
-  } catch (error) {
-    console.log("Error in deleteMessage service:", error);
-    throw error;
+  const message = await Message.findById(messageId);
+  if (!message) {
+    throw new AppError("Message not found", 404);
   }
+
+  if (message.sender.toString() !== userId) {
+    throw new AppError("You can only delete your own messages", 403);
+  }
+
+  if (message.isDeleted) {
+    return message;
+  }
+
+  message.isDeleted = true;
+  message.content = "This message has been deleted.";
+  message.file = null;
+
+  const updatedMessage = await message.save();
+
+  // 6. Nếu là lastMessage thì update lại
+  const conversation = await Conversation.findById(message.conversation);
+
+  const isLastMessage = conversation?.lastMessage?._id.toString() === messageId;
+
+  if (isLastMessage) {
+    const prevMessage = await Message.findOne({
+      conversation: message.conversation,
+      isDeleted: false,
+    })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    if (prevMessage) {
+      conversation.lastMessage = {
+        _id: prevMessage._id,
+        sender: prevMessage.sender,
+        type: prevMessage.type,
+        content: prevMessage.type === "text" ? prevMessage.content : "File",
+        file: prevMessage.file || null,
+        isDeleted: false,
+        createdAt: prevMessage.createdAt,
+      };
+    } else {
+      conversation.lastMessage = null;
+    }
+    await conversation.save();
+  }
+
+  return {
+    message: updatedMessage,
+    conversationId: message.conversation,
+  };
 };
 
 /**
@@ -342,63 +231,46 @@ export const deleteMessage = async (messageId, userId) => {
  * @returns {object} - Tin nhắn đã được chỉnh sửa
  */
 export const editMessage = async (messageId, userId, newContent) => {
-  try {
-    // 1. Tìm tin nhắn
-    const message = await Message.findById(messageId)
-      .populate("sender", "username email avatarUrl")
-      .populate("replyTo", "content sender createdAt")
-      .populate("replyTo.sender", "username avatarUrl");
+  const message = await Message.findById(messageId)
+    .populate("sender", "username email avatarUrl")
+    .populate("replyTo", "content sender createdAt")
+    .populate("replyTo.sender", "username avatarUrl");
 
-    if (!message) {
-      throw new Error("Message not found");
-    }
-
-    // 2. Check quyền
-    if (message.sender._id.toString() !== userId) {
-      throw new Error("You can only edit your own messages");
-    }
-
-    // 3. Check tin nhắn đã bị xóa
-    if (message.isDeleted) {
-      throw new Error("Cannot edit a deleted message");
-    }
-
-    // 4. Validation nội dung mới
-    if (!newContent || newContent.trim().length === 0) {
-      throw new Error("Message content cannot be empty");
-    }
-
-    if (newContent.length > 2000) {
-      throw new Error("Message content too long(max 2000 characters)");
-    }
-
-    // 5. Cập nhật tin nhắn
-    message.content = newContent.trim();
-    message.isEdited = true;
-    message.editedAt = new Date();
-    const updatedMessage = await message.save();
-
-    // 6. Emit sự kiện chỉnh sửa tin nhắn
-    try {
-      const io = getSocket();
-      io.to(`conversation_${updatedMessage.conversation}`).emit(
-        "message_edit",
-        updatedMessage
-      );
-    } catch (error) {
-      console.log("Lỗi emit message:edit trong editMessageById:", error);
-    }
-
-    // 7. Nếu là lastMessage thì cập nhật
-    const conversation = await Conversation.findOne(updatedMessage.conversation);
-    if (conversation.lastMessage._id.toString() === messageId) {
-      conversation.lastMessage.content = updatedMessage.content;
-      await conversation.save();
-    }
-
-    return updatedMessage;
-  } catch (error) {
-    console.log("Error in editMessage service:", error);
-    throw error;
+  if (!message) {
+    throw new AppError("Message not found", 404);
   }
+
+  if (message.sender._id.toString() !== userId) {
+    throw new AppError("You can only edit your own messages", 403);
+  }
+
+  if (message.isDeleted) {
+    throw new AppError("Cannot edit a deleted message", 400);
+  }
+
+  if (!newContent || newContent.trim().length === 0) {
+    throw new AppError("Message content cannot be empty", 400);
+  }
+
+  if (newContent.length > 2000) {
+    throw new AppError("Message content too long(max 2000 characters)", 400);
+  }
+
+  message.content = newContent.trim();
+  message.isEdited = true;
+  message.editedAt = new Date();
+
+  const updatedMessage = await message.save();
+
+  // Nếu là lastMessage thì cập nhật
+  const conversation = await Conversation.findOne(updatedMessage.conversation);
+  if (conversation.lastMessage._id.toString() === messageId) {
+    conversation.lastMessage.content = updatedMessage.content;
+    await conversation.save();
+  }
+
+  return {
+    message: updatedMessage,
+    conversationId: updatedMessage.conversation,
+  };
 };

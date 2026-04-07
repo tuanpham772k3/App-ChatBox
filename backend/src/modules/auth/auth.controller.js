@@ -30,7 +30,7 @@ const clearRefreshCookie = (res) => {
 };
 
 // Register
-export const register = async (req, res) => {
+export const register = async (req, res, next) => {
   console.log("req.body", req.body);
 
   try {
@@ -77,8 +77,7 @@ export const register = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Error in register:", error);
-    return res.status(500).json({ message: "Internal server error", idCode: 3 });
+    return next(error);
   }
 };
 
@@ -97,7 +96,7 @@ let hashToken = (token) => {
 };
 
 // Login
-export const login = async (req, res) => {
+export const login = async (req, res, next) => {
   console.log("req.body", req.body);
 
   try {
@@ -185,12 +184,11 @@ export const login = async (req, res) => {
       },
     });
   } catch (error) {
-    console.log("Error in login:", error);
-    return res.status(500).json({ message: "Internal server error", idCode: 3 });
+    return next(error);
   }
 };
 
-export const refreshToken = async (req, res) => {
+export const refreshToken = async (req, res, next) => {
   try {
     const refToken = req.cookies?.refreshToken;
 
@@ -247,12 +245,11 @@ export const refreshToken = async (req, res) => {
       accessToken: newAccessToken,
     });
   } catch (error) {
-    console.log("Error in refreshToken: ", error);
-    return res.status(500).json({ message: "Internal server error", idCode: 3 });
+    return next(error);
   }
 };
 
-export const logoutCurrent = async (req, res) => {
+export const logoutCurrent = async (req, res, next) => {
   try {
     const refToken = req.cookies?.refreshToken;
 
@@ -295,7 +292,6 @@ export const logoutCurrent = async (req, res) => {
       data: null,
     });
   } catch (error) {
-    console.log("Error logout current :", error);
-    return res.status(500).json({ message: "Internal server error", idCode: 3 });
+    return next(error);
   }
 };

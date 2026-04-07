@@ -1,5 +1,5 @@
 import express from "express";
-import { verifyToken } from "../../middlewares/middleware.controller.js";
+import { verifyToken } from "../../middlewares/authMiddleware.js";
 import {
   createNewMessage,
   getConversationMessages,

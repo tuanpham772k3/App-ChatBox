@@ -3,41 +3,30 @@ import User from "./user.model.js";
 import { searchUserService } from "./user.service.js";
 
 // lấy thông tin người dùng
-export const getProfile = async (req, res) => {
+export const getProfile = async (req, res, next) => {
   try {
-    //req.user lấy từ verifyToken
     const userId = req.user.userId;
 
-    //find and check user
     const user = await User.findById(userId).select("-passwordHash");
     if (!user) {
       return res.status(401).json({
         message: "User not found",
-        idCode: 1,
       });
     }
 
-    // result
     return res.status(200).json({
       success: true,
       message: "Get user profile successfully!",
-      idCode: 0,
       data: user,
     });
   } catch (error) {
-    console.log("getProfile error:", error);
-    return res.status(500).json({
-      message: "Internal server error",
-      idCode: 3,
-    });
+    return next(error);
   }
 };
 
 // cập nhật hồ sơ
-export const updateProfile = async (req, res) => {
+export const updateProfile = async (req, res, next) => {
   try {
-    console.log("REQ.FILE:", req.file);
-
     const userId = req.user.userId;
     const { username, bio } = req.body;
 
@@ -81,11 +70,9 @@ export const updateProfile = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         message: "User not found",
-        idCode: 1,
       });
     }
 
-    //trả kết quả
     return res.status(200).json({
       success: true,
       message: "Update profile successfully",
@@ -93,11 +80,7 @@ export const updateProfile = async (req, res) => {
       data: user,
     });
   } catch (error) {
-    console.log("updateProfile error:", error);
-    return res.status(500).json({
-      message: "Internal error server",
-      idCode: 3,
-    });
+    return next(error);
   }
 };
 
@@ -111,30 +94,18 @@ export const updateProfile = async (req, res) => {
  * 3. Gọi service xử lý logic
  * 4. Trả về response
  */
-export const searchUsers = async (req, res) => {
+export const searchUsers = async (req, res, next) => {
   try {
     const { userId } = req.user;
-
-    // keyword từ client
     const { keyword } = req.query;
 
-    // Gọi service xử lý logic
     const users = await searchUserService(keyword, userId);
 
-    // Trả kết quả
     return res.status(200).json({
       success: true,
-      idCode: 0,
       data: users,
     });
   } catch (error) {
-    console.log("Error in getUsers controller", error);
-
-    // Error server
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      idCode: 1,
-    });
+    return next(error);
   }
 };

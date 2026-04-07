@@ -9,9 +9,8 @@ import cloudinary from "../../config/cloudinary.js";
  * 2. Upload file lên Cloudinary
  * 3. Trả về thông tin file (url, public_id, filename, mimeType, size)
  */
-export const uploadFile = async (req, res) => {
+export const uploadFile = async (req, res, next) => {
   try {
-    // Kiểm tra có file không
     if (!req.file) {
       return res.status(400).json({ success: false, message: "No file uploaded" });
     }
@@ -19,7 +18,6 @@ export const uploadFile = async (req, res) => {
     // Lấy file từ multer (đã được lưu trong memory)
     const file = req.file;
 
-    // Kiểm tra kích thước file (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
       return res
         .status(400)
@@ -38,7 +36,6 @@ export const uploadFile = async (req, res) => {
       }
     );
 
-    // Chuẩn bị thông tin file để trả về
     const fileInfo = {
       url: result.secure_url,
       public_id: result.public_id,
@@ -47,19 +44,12 @@ export const uploadFile = async (req, res) => {
       size: file.size,
     };
 
-    // Trả về kết quả
     return res.status(200).json({
       success: true,
       message: "File uploaded successfully",
       data: fileInfo,
     });
   } catch (error) {
-    console.log("Error in uploadFile:", error);
-
-    // Lỗi server
-    return res.status(500).json({
-      success: false,
-      message: "Failed to upload file",
-    });
+    return next(error);
   }
 };

@@ -1,3 +1,4 @@
+import { getSocket } from "../../socket.js";
 import {
   createMessage,
   deleteMessage,
@@ -15,15 +16,11 @@ import {
  * 4. Gọi service tạo tin nhắn mới
  * 5. Trả về phản hồi cho client
  */
-export const createNewMessage = async (req, res) => {
+export const createNewMessage = async (req, res, next) => {
   try {
-    //Lấy userId từ JWT token
     const { userId } = req.user;
-
-    //Lấy dữ liệu từ request body
     const { tempId, conversationId, content, file } = req.body;
 
-    // Validation cơ bản
     if (!conversationId) {
       return res.status(400).json({
         success: false,
@@ -31,61 +28,61 @@ export const createNewMessage = async (req, res) => {
       });
     }
 
-    //Gọi service tạo tin nhắn mới
-    const newMessage = await createMessage(conversationId, userId, content, file);
+    const result = await createMessage(conversationId, userId, content, file);
 
-    // Trả về phản hồi thành công
+    const { message, participants } = result;
+
+    const io = getSocket();
+
+    // 1. message_new
+    participants.forEach((p) => {
+      if (p.user.toString() !== userId) {
+        io.to(`user_${p.user}`).emit("message_new", message);
+      }
+    });
+
+    // 2. lastMessage
+    const lastMessagePayload = {
+      conversationId,
+      lastMessage: {
+        _id: message._id,
+        sender: {
+          _id: message.sender._id,
+          username: message.sender.username,
+          avatarUrl: message.sender.avatarUrl,
+        },
+        type: message.type,
+        content:
+          message.type === "text"
+            ? message.content
+            : message.file?.filename || message.type,
+        file: message.file || null,
+        createdAt: message.createdAt,
+      },
+    };
+
+    participants.forEach((p) => {
+      io.to(`user_${p.user}`).emit("conversation:lastMessage", lastMessagePayload);
+    });
+
+    // 3. unread
+    participants.forEach((p) => {
+      if (p.user.toString() !== userId) {
+        io.to(`user_${p.user}`).emit("conversation:unread", {
+          conversationId,
+          unreadCount: p.unreadCount,
+          userId: p.user.toString(),
+        });
+      }
+    });
+
     return res.status(201).json({
       success: true,
       message: "Message created successfully",
-      idCode: 0,
-      data: { newMessage, tempId },
+      data: { newMessage: message, tempId },
     });
   } catch (error) {
-    console.log("Error in createNewMessage:", error);
-
-    // Xử lý các loại lỗi khác nhau
-    if (error.message === "Conversation not found or access denied") {
-      return res.status(404).json({
-        success: false,
-        message: "Conversation not found or access denied",
-        idCode: 3,
-      });
-    }
-
-    if (error.message === "Sender not found") {
-      return res.status(404).json({
-        success: false,
-        message: "Sender not found",
-        idCode: 4,
-      });
-    }
-
-    if (
-      error.message === "Message content cannot be empty" ||
-      error.message === "Message content too long (max 2000 characters)"
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: error.message,
-        idCode: 5,
-      });
-    }
-
-    if (error.message === "Reply message not found") {
-      return res.status(404).json({
-        success: false,
-        message: "Reply message not found",
-        idCode: 6,
-      });
-    }
-
-    //Lỗi server
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      idCode: 7,
-    });
+    return next(error);
   }
 };
 
@@ -100,54 +97,30 @@ export const createNewMessage = async (req, res) => {
  * 5. Gọi service lấy danh sách tin nhắn
  * 6. Trả về response với pagination
  */
-export const getConversationMessages = async (req, res) => {
+export const getConversationMessages = async (req, res, next) => {
   try {
-    //Lấy conversationId từ params
     const { conversationId } = req.params;
-
-    // Lấy userId từ JWT token
     const { userId } = req.user;
 
-    //Lấy pagination parameter từ query
     const before = req.query.before || null;
     const limit = Math.min(Number(req.query.limit) || 20, 50);
 
-    // Validation conversationId
     if (!conversationId.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({
         success: false,
         message: "Invalid conversation ID format",
-        idCode: 1,
       });
     }
 
-    // Gọi service lấy danh sách tin nhắn
     const result = await getMessages(conversationId, userId, before, limit);
 
-    // Trả về response thành công
     return res.status(200).json({
       success: true,
       message: "Messages retrieved successfully",
-      idCode: 0,
       data: result,
     });
   } catch (error) {
-    console.error("Error in getConversationMessages controller:", error);
-
-    // Xử lý lỗi không tìm thấy conversation
-    if (error.message === "Conversation not found or access denied") {
-      return res.status(404).json({
-        success: false,
-        message: "Conversation not found or access denied",
-        idCode: 3,
-      });
-    }
-
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      idCode: 4,
-    });
+    return next(error);
   }
 };
 
@@ -162,7 +135,7 @@ export const getConversationMessages = async (req, res) => {
  * 4. Gọi service để xóa tin nhắn
  * 5. Trả về phản hồi cho client
  */
-export const deleteMessageById = async (req, res) => {
+export const deleteMessageById = async (req, res, next) => {
   try {
     const { messageId } = req.params;
     const { userId } = req.user;
@@ -171,44 +144,22 @@ export const deleteMessageById = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Invalid message ID format",
-        idCode: 1,
       });
     }
 
-    const message = await deleteMessage(messageId, userId);
+    const { message, conversationId } = await deleteMessage(messageId, userId);
+
+    let io = getSocket();
+
+    io.to(`conversation_${conversationId}`).emit("message_delete", messageId);
 
     return res.status(200).json({
       success: true,
       message: "Message deleted successfully",
-      idCode: 0,
       data: message,
     });
   } catch (error) {
-    console.log("Error in deleteMessageById controller:", error);
-
-    // Xử lý lỗi không tìm thấy tin nhắn
-    if (error.message === "Message not found") {
-      return res.status(404).json({
-        success: false,
-        message: "Message not found",
-        idCode: 2,
-      });
-    }
-
-    if (error.message === "You can only delete your own messages") {
-      return res.status(403).json({
-        success: false,
-        message: "You can only delete your own messages",
-        idCode: 3,
-      });
-    }
-
-    //Lỗi server
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      idCode: 1,
-    });
+    return next(error);
   }
 };
 
@@ -219,82 +170,38 @@ export const deleteMessageById = async (req, res) => {
  * 1. Lấy messageId từ URL params
  * 2. Lấy userId từ JWT token
  */
-export const editMessageById = async (req, res) => {
+export const editMessageById = async (req, res, next) => {
   try {
-    const { messageId } = req.params;
     const { userId } = req.user;
-
+    const { messageId } = req.params;
     const { content: newContent } = req.body;
 
     if (!messageId.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({
         success: false,
         message: "Invalid message ID format",
-        idCode: 1,
       });
     }
 
-    if (!newContent) {
+    if (typeof newContent !== "string") {
       return res.status(400).json({
         success: false,
-        message: "Content is required",
-        idCode: 2,
+        message: "Content is required and must be a string",
       });
     }
 
-    const message = await editMessage(messageId, userId, newContent);
+    const { message, conversationId } = await editMessage(messageId, userId, newContent);
 
-    // Trả về response thành công
+    const io = getSocket();
+
+    io.to(`conversation_${conversationId}`).emit("message_edit", message);
+
     return res.status(200).json({
       success: true,
       message: "Message edited successfully",
-      idCode: 0,
       data: message,
     });
   } catch (error) {
-    console.log("Error in editMessageById controller:", error);
-
-    // Xử lỹ lỗi không tìm thấy tin nhắn
-    if (error.message === "Message not found") {
-      return res.status(404).json({
-        success: false,
-        message: "Message not found",
-        idCode: 3,
-      });
-    }
-
-    if (error.message === "You can only edit your own messages") {
-      return res.status(403).json({
-        success: false,
-        message: "You can only edit your own messages",
-        idCode: 4,
-      });
-    }
-
-    if (error.message === "Cannot edit a deleted message") {
-      return res.status(400).json({
-        success: false,
-        message: "Cannot edit a deleted message",
-        idCode: 5,
-      });
-    }
-
-    if (
-      error.message === "Message content cannot be empty" ||
-      error.message === "Message content too long(max 2000 characters)"
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: error.message,
-        idCode: 6,
-      });
-    }
-
-    //Lỗi server
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      idCode: 1,
-    });
+    return next(error);
   }
 };

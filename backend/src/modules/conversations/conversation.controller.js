@@ -1,3 +1,4 @@
+import { getSocket } from "../../socket.js";
 import {
   createPrivateConversation,
   getUserConversations,
@@ -28,77 +29,40 @@ import {
  * 3. Gọi service tạo conversation
  * 4. Trả về response cho client
  */
-export const createConversation = async (req, res) => {
+export const createConversation = async (req, res, next) => {
   try {
-    // Lấy userId từ JWT token (đã được middleware authenticate xử lý)
     const { userId } = req.user;
-
-    // Lấy participantId từ request body
     const { participantId } = req.body;
 
-    // Validation cơ bản
     if (!participantId) {
       return res.status(400).json({
         success: false,
         message: "Participant ID is required",
-        idCode: 1,
       });
     }
 
-    // Kiểm tra participantId có đúng format ObjectId không
     if (!participantId.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({
         success: false,
         message: "Invalid participant ID format",
-        idCode: 2,
       });
     }
 
-    // Gọi service tạo conversation
     const { conversation, isNew, message } = await createPrivateConversation(
       userId,
       participantId
     );
 
-    // Trả về response thành công
     return res.status(201).json({
       success: true,
       message,
-      idCode: 0,
       data: {
         conversation,
         isNew,
       },
     });
   } catch (error) {
-    console.error("Error in createConversation controller:", error);
-
-    // Xử lý các loại lỗi khác nhau
-    if (
-      error.message === "Creator not found" ||
-      error.message === "Participant not found"
-    ) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-        idCode: 3,
-      });
-    }
-
-    if (error.message === "Cannot create conversation with yourself") {
-      return res.status(400).json({
-        success: false,
-        message: "Cannot create conversation with yourself",
-        idCode: 4,
-      });
-    }
-
-    // Lỗi server
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      idCode: 5,
-    });
+    return next(error);
   }
 };
 
@@ -112,21 +76,15 @@ export const createConversation = async (req, res) => {
  * 3. Gọi service tạo conversation
  * 4. Trả về response cho client
  */
-export const createGroupConversation = async (req, res) => {
+export const createGroupConversation = async (req, res, next) => {
   try {
-    // Lấy userId từ JWT token
     const { userId } = req.user;
-
-    // Lấy request body
     const { name, memberIds = [], avatar = null } = req.body;
-    console.log("Member IDs:", memberIds);
 
-    // Validate
     if (!name || typeof name !== "string" || name.trim().length === 0) {
       return res.status(400).json({
         success: false,
         message: "Group name is required",
-        idCode: 1,
       });
     }
 
@@ -134,7 +92,6 @@ export const createGroupConversation = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Member must be an array of user IDs",
-        idCode: 2,
       });
     }
 
@@ -142,7 +99,6 @@ export const createGroupConversation = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "A group needs at least 3 members",
-        idCode: 3,
       });
     }
 
@@ -153,43 +109,16 @@ export const createGroupConversation = async (req, res) => {
       avatar
     );
 
-    // Trả kết quả
     return res.status(201).json({
       success: true,
       message,
-      idCode: 0,
       data: {
         conversation,
         isNew,
       },
     });
   } catch (error) {
-    console.error("Error in createGroupConversation controller:", error);
-
-    if (
-      error.message === "Creator not found" ||
-      error.message === "Some members not found"
-    ) {
-      return res.status(404).json({
-        success: false,
-        message: error.message,
-        idCode: 4,
-      });
-    }
-
-    if (error.message === "A group needs at least 3 members") {
-      return res.status(400).json({
-        success: false,
-        message: "A group needs at least 3 members",
-        idCode: 5,
-      });
-    }
-
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      idCode: 6,
-    });
+    return next(error);
   }
 };
 
@@ -203,45 +132,31 @@ export const createGroupConversation = async (req, res) => {
  * 3. Gọi service lấy danh sách conversation
  * 4. Trả về response với pagination
  */
-export const getConversations = async (req, res) => {
+export const getConversations = async (req, res, next) => {
   try {
-    // Lấy userId từ JWT token
     const { userId } = req.user;
-
-    // Lấy pagination parameters từ query
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
 
-    // Validation pagination
     if (page < 1 || limit < 1 || limit > 100) {
       return res.status(400).json({
         success: false,
         message: "Invalid pagination parameters",
-        idCode: 1,
       });
     }
 
-    // Gọi service lấy danh sách conversation
     const { conversations, pagination } = await getUserConversations(userId, page, limit);
 
-    // Trả về response thành công
     return res.status(200).json({
       success: true,
       message: "Conversations retrieved successfully",
-      idCode: 0,
       data: {
         conversations,
         pagination,
       },
     });
   } catch (error) {
-    console.error("Error in getConversations controller:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      idCode: 2,
-    });
+    return next(error);
   }
 };
 
@@ -255,50 +170,27 @@ export const getConversations = async (req, res) => {
  * 3. Gọi service lấy thông tin conversation
  * 4. Trả về response
  */
-export const getConversation = async (req, res) => {
+export const getConversation = async (req, res, next) => {
   try {
-    // Lấy conversationId từ URL params
     const { conversationId } = req.params;
-
-    // Lấy userId từ JWT token
     const { userId } = req.user;
 
-    // Validation conversationId
     if (!conversationId.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({
         success: false,
         message: "Invalid conversation ID format",
-        idCode: 1,
       });
     }
 
-    // Gọi service lấy thông tin conversation
     const conversation = await getConversationById(conversationId, userId);
 
-    // Trả về response thành công
     return res.status(200).json({
       success: true,
       message: "Conversation retrieved successfully",
-      idCode: 0,
       data: conversation,
     });
   } catch (error) {
-    console.error("Error in getConversation controller:", error);
-
-    // Xử lý lỗi không tìm thấy conversation
-    if (error.message === "Conversation not found or access denied") {
-      return res.status(404).json({
-        success: false,
-        message: "Conversation not found or access denied",
-        idCode: 2,
-      });
-    }
-
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      idCode: 3,
-    });
+    return next(error);
   }
 };
 
@@ -312,59 +204,27 @@ export const getConversation = async (req, res) => {
  * 3. Gọi service xóa conversation
  * 4. Trả về response
  */
-export const deleteConversationById = async (req, res) => {
+export const deleteConversationById = async (req, res, next) => {
   try {
-    // Lấy conversationId từ URL params
+    const { userId } = req.user;
     const { conversationId } = req.params;
 
-    // Lấy userId từ JWT token
-    const { userId } = req.user;
-
-    // Validation conversationId
     if (!conversationId.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({
         success: false,
         message: "Invalid conversation ID format",
-        idCode: 1,
       });
     }
 
-    // Gọi service xóa conversation
     await deleteConversation(conversationId, userId);
 
-    // Trả về response thành công
     return res.status(200).json({
       success: true,
       message: "Conversation deleted successfully",
-      idCode: 0,
       data: null,
     });
   } catch (error) {
-    console.error("Error in deleteConversationById controller:", error);
-
-    // Xử lý lỗi không tìm thấy conversation
-    if (error.message === "Conversation not found or access denied") {
-      return res.status(404).json({
-        success: false,
-        message: "Conversation not found or access denied",
-        idCode: 2,
-      });
-    }
-
-    // Xử lý lỗi không phải owner
-    if (error.message === "Only the owner can delete this conversation") {
-      return res.status(403).json({
-        success: false,
-        message: "Only the owner can delete this conversation",
-        idCode: 3,
-      });
-    }
-
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      idCode: 4,
-    });
+    return next(error);
   }
 };
 
@@ -372,18 +232,16 @@ export const deleteConversationById = async (req, res) => {
  * Thêm thành viên vào group
  * PUT /api/conversations/:conversationId/members
  */
-export const addMemberToGroup = async (req, res) => {
+export const addMemberToGroup = async (req, res, next) => {
   try {
     const { userId } = req.user;
     const { conversationId } = req.params;
     const { memberIds = [] } = req.body;
 
-    // Validate base
     if (!conversationId.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({
         success: false,
         message: "Invalid ID format",
-        idCode: 1,
       });
     }
 
@@ -391,7 +249,6 @@ export const addMemberToGroup = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "memberIds must be a non-empty array",
-        idCode: 2,
       });
     }
 
@@ -400,52 +257,13 @@ export const addMemberToGroup = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Member added successfully",
-      idCode: 0,
       data: {
         conversation,
         conversationId,
       },
     });
   } catch (error) {
-    console.error("Error in addMemberToGroup controller:", error);
-
-    if (error.message === "Group conversation not found") {
-      return res.status(404).json({
-        success: false,
-        message: "Group conversation not found",
-        idCode: 3,
-      });
-    }
-
-    if (error.message === "Permission denied") {
-      return res.status(403).json({
-        success: false,
-        message: "Permission denied",
-        idCode: 4,
-      });
-    }
-
-    if (error.message === "User not found") {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-        idCode: 5,
-      });
-    }
-
-    if (error.message === "Some users already exist in group") {
-      return res.status(400).json({
-        success: false,
-        message: error.message,
-        idCode: 6,
-      });
-    }
-
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      idCode: 6,
-    });
+    return next(error);
   }
 };
 
@@ -453,7 +271,7 @@ export const addMemberToGroup = async (req, res) => {
  * Xóa thành viên khỏi group
  * DELETE /api/conversations/:conversationId/members/:memberId
  */
-export const removeMemberFromGroup = async (req, res) => {
+export const removeMemberFromGroup = async (req, res, next) => {
   try {
     const { userId } = req.user;
     const { conversationId, memberId } = req.params;
@@ -465,56 +283,22 @@ export const removeMemberFromGroup = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Invalid ID format",
-        idCode: 1,
       });
     }
 
-    // Gọi service
     const conversation = await removeMemberFromGroupService(
       conversationId,
       userId,
       memberId
     );
 
-    // Trả về kết quả
     return res.status(200).json({
       success: true,
       message: "Member removed successfully",
-      idCode: 0,
       data: { conversation, conversationId },
     });
   } catch (error) {
-    console.error("Error in removeMemberFromGroup controller:", error);
-
-    if (error.message === "Group conversation not found") {
-      return res.status(404).json({
-        success: false,
-        message: "Group conversation not found",
-        idCode: 2,
-      });
-    }
-
-    if (error.message === "Permission denied") {
-      return res.status(403).json({
-        success: false,
-        message: "Permission denied",
-        idCode: 3,
-      });
-    }
-
-    if (error.message === "Group must have at least 2 members") {
-      return res.status(400).json({
-        success: false,
-        message: error.message,
-        idCode: 4,
-      });
-    }
-
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      idCode: 5,
-    });
+    return next(error);
   }
 };
 
@@ -528,45 +312,39 @@ export const removeMemberFromGroup = async (req, res) => {
  * 3. Gọi service
  * 4. Trả về response
  */
-export const markConversationAsRead = async (req, res) => {
+export const markConversationAsRead = async (req, res, next) => {
   try {
     const { conversationId } = req.params;
     const { userId } = req.user;
 
-    // Validate
     if (!conversationId.match(/^[0-9a-fA-F]{24}$/)) {
       return res
         .status(400)
-        .json({ success: false, message: "Invalid conversation ID format", idCode: 1 });
+        .json({ success: false, message: "Invalid conversation ID format" });
     }
 
-    // Gọi service
-    await markConversationAsReadService(conversationId, userId);
+    const result = await markConversationAsReadService(conversationId, userId);
 
-    // Trả kết quả
+    // read
+    let io = getSocket();
+    io.to(`conversation_${conversationId}`).emit("conversation:read", {
+      conversationId,
+      userId,
+      lastReadMessage: result.lastReadMessage,
+    });
+
     return res.status(200).json({
       success: true,
       message: "Conversation marked as read",
-      idCode: 0,
       data: null,
     });
   } catch (error) {
-    console.error("Error in markConversationAsRead controller:", error);
-    if (error.message === "Group conversation not found") {
-      return res.status(404).json({
-        success: false,
-        message: "Conversation not found or access denied",
-        idCode: 2,
-      });
-    }
-    return res
-      .status(500)
-      .json({ success: false, message: "Internal server error", idCode: 3 });
+    return next(error);
   }
 };
 
 // Lấy ảnh trong conversation (dùng cho phần media trong conversation details)
-export const getConversationImages = async (req, res) => {
+export const getConversationImages = async (req, res, next) => {
   try {
     const { conversationId } = req.params;
     const { userId } = req.user;
@@ -592,79 +370,48 @@ export const getConversationImages = async (req, res) => {
       success: true,
       message: "Images retrieved successfully",
       data: images,
-      idCode: 0,
     });
   } catch (error) {
-    if (error.message === "Conversation not found or access denied") {
-      return res.status(404).json({
-        success: false,
-        message: error.message,
-      });
-    }
-
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
+    return next(error);
   }
 };
 
 // Rời nhóm
-export const leaveGroup = async (req, res) => {
+export const leaveGroup = async (req, res, next) => {
   try {
     const { conversationId } = req.params;
     const { userId } = req.user;
 
-    // Validate conversationId
     if (!conversationId.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({
         success: false,
         message: "Invalid conversation ID format",
-        idCode: 1,
       });
     }
 
-    // Gọi service
     await leaveGroupService(conversationId, userId);
 
-    // Phản hồi thành công
     return res.status(200).json({
       success: true,
       message: "Leave group successfully",
-      idCode: 0,
+      data: null,
     });
   } catch (error) {
-    console.error("Error in leaveGroup controller:", error);
-
-    if (error.message === "Group conversation not found") {
-      return res.status(404).json({
-        success: false,
-        message: "Group conversation not found",
-        idCode: 2,
-      });
-    }
-
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      idCode: 3,
-    });
+    return next(error);
   }
 };
 
 // Chuyển quyền sở hữu nhóm
-export const transferGroupOwnership = async (req, res) => {
+export const transferGroupOwnership = async (req, res, next) => {
   try {
     const { conversationId } = req.params;
     const { userId } = req.user;
     const { newOwnerId } = req.body;
 
-    // Validate
     if (!conversationId.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({
         success: false,
         message: "Invalid conversation ID format",
-        idCode: 1,
       });
     }
 
@@ -672,49 +419,18 @@ export const transferGroupOwnership = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Invalid new owner ID format",
-        idCode: 2,
       });
     }
 
-    // Gọi service
     await transferGroupOwnershipService(conversationId, userId, newOwnerId);
 
-    // Phản hồi thành công
     return res.status(200).json({
       success: true,
       message: "Group ownership transferred successfully",
-      idCode: 0,
+      data: null,
     });
   } catch (error) {
-    if (error.message === "Group conversation not found") {
-      return res.status(404).json({
-        success: false,
-        message: "Group conversation not found",
-        idCode: 2,
-      });
-    }
-
-    if (error.message === "Permission denied") {
-      return res.status(403).json({
-        success: false,
-        message: "Permission denied",
-        idCode: 3,
-      });
-    }
-
-    if (error.message === "New owner is not a member of the group") {
-      return res.status(403).json({
-        success: false,
-        message: "New owner is not a member of the group",
-        idCode: 4,
-      });
-    }
-
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      idCode: 5,
-    });
+    return next(error);
   }
 };
 
@@ -722,46 +438,26 @@ export const transferGroupOwnership = async (req, res) => {
  * Xóa hội thoại của chính tôi (soft delete)
  * DELETE /api/conversations/:conversationId/for-me
  */
-export const deleteConversationForMe = async (req, res) => {
+export const deleteConversationForMe = async (req, res, next) => {
   try {
     const { conversationId } = req.params;
-    console.log("conversationId", conversationId);
-
     const { userId } = req.user;
 
-    // Validation conversationId
     if (!conversationId.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({
         success: false,
         message: "Invalid conversation ID format",
-        idCode: 1,
       });
     }
 
-    // Gọi service
     await deleteConversationForMeService(conversationId, userId);
 
-    // Phản hồi thành công
     return res.status(200).json({
       success: true,
       message: "Delete conversation successfully",
-      idCode: 0,
+      data: null,
     });
   } catch (error) {
-    console.error("Error in deleteConversationForMe controller:", error);
-
-    if (error.message === "Conversation not found or access denied") {
-      return res.status(404).json({
-        success: false,
-        message: error.message,
-        idCode: 2,
-      });
-    }
-
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      idCode: 3,
-    });
+    return next(error);
   }
 };

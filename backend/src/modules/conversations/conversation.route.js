@@ -13,7 +13,7 @@ import {
   transferGroupOwnership,
   deleteConversationForMe,
 } from "./conversation.controller.js";
-import { verifyToken } from "../../middlewares/middleware.controller.js";
+import { verifyToken } from "../../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
