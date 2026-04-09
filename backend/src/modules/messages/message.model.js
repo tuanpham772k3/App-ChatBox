@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const messageSchema = new mongoose.Schema(
   {
@@ -82,4 +82,4 @@ messageSchema.index({ sender: 1 }); // Tìm tin nhắn theo người gửi
 messageSchema.index({ status: 1 }); // Tìm tin nhắn theo trạng thái
 
 const Message = mongoose.model("Message", messageSchema);
-export default Message;
+module.exports = Message;

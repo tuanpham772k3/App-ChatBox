@@ -1,14 +1,15 @@
-import express from "express";
-import cors from "cors";
-import cookieParser from "cookie-parser";
+require("dotenv").config();
+const express = require("express");
+const cors = require("cors");
+const cookieParser = require("cookie-parser");
 
-import authRoutes from "./modules/auth/auth.route.js";
-import userRoutes from "./modules/users/user.route.js";
-import conversationRoutes from "./modules/conversations/conversation.route.js";
-import messageRoutes from "./modules/messages/message.route.js";
-import uploadRoutes from "./modules/upload/upload.route.js";
+const authRoutes = require("./modules/auth/auth.route.js");
+const userRoutes = require("./modules/users/user.route.js");
+const conversationRoutes = require("./modules/conversations/conversation.route.js");
+const messageRoutes = require("./modules/messages/message.route.js");
+const uploadRoutes = require("./modules/upload/upload.route.js");
 
-import { errorHandler, notFoundHandler } from "./middlewares/errorMiddleware.js";
+const { errorHandler, notFoundHandler } = require("./middlewares/errorMiddleware.js");
 
 const app = express();
 
@@ -35,4 +36,4 @@ app.use("/api/upload", uploadRoutes);
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-export default app;
+module.exports = app;

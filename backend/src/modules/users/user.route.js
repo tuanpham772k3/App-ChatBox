@@ -1,7 +1,7 @@
-import express from "express";
-import { verifyToken } from "../../middlewares/authMiddleware.js";
-import { upload } from "../../config/multer.js";
-import { getProfile, searchUsers, updateProfile } from "./user.controller.js";
+const express = require("express");
+const { verifyToken } = require("../../middlewares/authMiddleware.js");
+const { upload } = require("../../config/multer.js");
+const { getProfile, updateProfile, searchUsers } = require("./user.controller.js");
 
 const router = express.Router();
 
@@ -14,4 +14,4 @@ router.put("/profile", verifyToken, upload.single("avatar"), updateProfile);
 // Tìm kiếm người dùng
 router.get("/search", verifyToken, searchUsers);
 
-export default router;
+module.exports = router;

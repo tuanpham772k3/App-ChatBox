@@ -1,9 +1,9 @@
-import cloudinary from "../../config/cloudinary.js";
-import User from "./user.model.js";
-import { searchUserService } from "./user.service.js";
+const cloudinary = require("../../config/cloudinary.js");
+const User = require("./user.model.js");
+const UserService = require("./user.service.js");
 
 // lấy thông tin người dùng
-export const getProfile = async (req, res, next) => {
+const getProfile = async (req, res, next) => {
   try {
     const userId = req.user.userId;
 
@@ -25,7 +25,7 @@ export const getProfile = async (req, res, next) => {
 };
 
 // cập nhật hồ sơ
-export const updateProfile = async (req, res, next) => {
+const updateProfile = async (req, res, next) => {
   try {
     const userId = req.user.userId;
     const { username, bio } = req.body;
@@ -86,20 +86,13 @@ export const updateProfile = async (req, res, next) => {
 
 /**
  * Tìm kiếm người dùng
- * GET api/user/search
- *
- * Flow:
- * 1. Lấy userId từ JWT Token
- * 2. Nhận keyword từ client
- * 3. Gọi service xử lý logic
- * 4. Trả về response
  */
-export const searchUsers = async (req, res, next) => {
+const searchUsers = async (req, res, next) => {
   try {
     const { userId } = req.user;
     const { keyword } = req.query;
 
-    const users = await searchUserService(keyword, userId);
+    const users = await UserService.searchUsers(keyword, userId);
 
     return res.status(200).json({
       success: true,
@@ -108,4 +101,10 @@ export const searchUsers = async (req, res, next) => {
   } catch (error) {
     return next(error);
   }
+};
+
+module.exports = {
+  getProfile,
+  updateProfile,
+  searchUsers,
 };

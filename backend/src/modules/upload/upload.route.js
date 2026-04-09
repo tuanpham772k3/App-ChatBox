@@ -1,7 +1,7 @@
-import express from "express";
-import { verifyToken } from "../../middlewares/authMiddleware.js";
-import { upload } from "../../config/multer.js";
-import { uploadFile } from "./upload.controller.js";
+const express = require("express");
+const { verifyToken } = require("../../middlewares/authMiddleware.js");
+const { upload } = require("../../config/multer.js");
+const { uploadFile } = require("./upload.controller.js");
 
 const router = express.Router();
 
@@ -9,4 +9,4 @@ const router = express.Router();
 // Multer middleware: single('file') - field name là 'file'
 router.post("/", verifyToken, upload.single("file"), uploadFile);
 
-export default router;
+module.exports = router;

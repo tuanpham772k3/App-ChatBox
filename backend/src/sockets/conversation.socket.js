@@ -1,6 +1,6 @@
-import Conversation from "../modules/conversations/conversation.model.js";
+const Conversation = require("../modules/conversations/conversation.model.js");
 
-export const conversationSocket = (io, socket) => {
+const conversationSocket = (io, socket) => {
   socket.on("join_conversation", async ({ conversationId }) => {
     if (!conversationId) {
       return socket.emit("error", {
@@ -53,3 +53,5 @@ export const conversationSocket = (io, socket) => {
     );
   });
 };
+
+module.exports = { conversationSocket };

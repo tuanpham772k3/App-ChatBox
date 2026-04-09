@@ -1,7 +1,7 @@
-import jwt from "jsonwebtoken";
-import User from "../modules/users/user.model.js";
+const jwt = require("jsonwebtoken");
+const User = require("../modules/users/user.model.js");
 
-export const authSocket = (io) => {
+const authSocket = (io) => {
   io.use(async (socket, next) => {
     const token = socket.handshake.auth?.token || socket.handshake.query?.token;
 
@@ -33,3 +33,5 @@ export const authSocket = (io) => {
     }
   });
 };
+
+module.exports = { authSocket };

@@ -1,9 +1,8 @@
-// user.socket.js
-import User from "../modules/users/user.model.js";
-import Session from "../modules/auth/session.model.js";
-import Conversation from "../modules/conversations/conversation.model.js";
+const User = require("../modules/users/user.model.js");
+const Session = require("../modules/auth/session.model.js");
+const Conversation = require("../modules/conversations/conversation.model.js");
 
-export const userSocket = (io, socket) => {
+const userSocket = (io, socket) => {
   // Xử lý disconnect
   socket.on("disconnect", async () => {
     try {
@@ -44,3 +43,5 @@ export const userSocket = (io, socket) => {
     }
   });
 };
+
+module.exports = { userSocket };

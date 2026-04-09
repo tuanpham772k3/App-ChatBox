@@ -1,7 +1,6 @@
-import Message from "../modules/messages/message.model.js";
-import Conversation from "../modules/conversations/conversation.model.js";
+const Message = require("../modules/messages/message.model.js");
 
-export const messageSocket = (io, socket) => {
+const messageSocket = (io, socket) => {
   socket.on("typing_start", ({ conversationId }) => {
     if (!conversationId) return;
     socket.to(`conversation_${conversationId}`).emit("user_typing", {
@@ -42,3 +41,5 @@ export const messageSocket = (io, socket) => {
     }
   });
 };
+
+module.exports = { messageSocket };

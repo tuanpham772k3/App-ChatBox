@@ -1,6 +1,6 @@
-import jwt from "jsonwebtoken";
+const jwt = require("jsonwebtoken");
 
-export const verifyToken = (req, res, next) => {
+const verifyToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (
@@ -10,7 +10,6 @@ export const verifyToken = (req, res, next) => {
   ) {
     return res.status(401).json({
       message: "token không hợp lệ hoặc thiếu",
-      idCode: 1,
     });
   }
 
@@ -21,7 +20,6 @@ export const verifyToken = (req, res, next) => {
       console.error("Token verification error:", err.message);
       return res.status(403).json({
         message: "Token không hợp lệ hoặc đã hết hạn",
-        idCode: 2,
       });
     }
 
@@ -29,3 +27,5 @@ export const verifyToken = (req, res, next) => {
     next();
   });
 };
+
+module.exports = { verifyToken };

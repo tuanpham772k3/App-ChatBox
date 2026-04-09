@@ -1,16 +1,16 @@
-import Session from "../modules/auth/session.model.js";
-import { authSocket } from "./auth.socket.js";
-import { userSocket } from "./user.socket.js";
-import { messageSocket } from "./message.socket.js";
-import { conversationSocket } from "./conversation.socket.js";
-import Conversation from "../modules/conversations/conversation.model.js";
-import Message from "../modules/messages/message.model.js";
+const Session = require("../modules/auth/session.model.js");
+const { authSocket } = require("./auth.socket.js");
+const { userSocket } = require("./user.socket.js");
+const { messageSocket } = require("./message.socket.js");
+const { conversationSocket } = require("./conversation.socket.js");
+const Conversation = require("../modules/conversations/conversation.model.js");
+const Message = require("../modules/messages/message.model.js");
 
 /**
  * Đăng ký middleware auth, và xử lý connection/disconnect chung ở đây.
  * Đây là nơi cập nhật Session/socketId và broadcast online/offline.
  */
-export const registerSocket = (io) => {
+const registerSocket = (io) => {
   // Auth middleware
   authSocket(io);
 
@@ -88,3 +88,5 @@ export const registerSocket = (io) => {
     }
   });
 };
+
+module.exports = { registerSocket };

@@ -1,35 +1,10 @@
-import { getSocket } from "../../socket.js";
-import {
-  createPrivateConversation,
-  getUserConversations,
-  getConversationById,
-  deleteConversation,
-  createGroupConversationService,
-  addMemberToGroupService,
-  removeMemberFromGroupService,
-  markConversationAsReadService,
-  getConversationImagesService,
-  leaveGroupService,
-  transferGroupOwnershipService,
-  deleteConversationForMeService,
-} from "./conversation.service.js";
-
-/**
- * Controller layer xử lý HTTP request/response cho Conversation
- * Nhận request từ route, gọi service, trả về response cho client
- */
+const ConversationService = require("./conversation.service.js");
+const { getSocket } = require("../../socket.js");
 
 /**
  * Tạo conversation 1-1
- * POST /api/conversations/private
- *
- * Flow:
- * 1. Nhận request từ client với participantId
- * 2. Lấy userId từ JWT token (đã được middleware xác thực)
- * 3. Gọi service tạo conversation
- * 4. Trả về response cho client
  */
-export const createConversation = async (req, res, next) => {
+const createPrivateConversation = async (req, res, next) => {
   try {
     const { userId } = req.user;
     const { participantId } = req.body;
@@ -48,10 +23,8 @@ export const createConversation = async (req, res, next) => {
       });
     }
 
-    const { conversation, isNew, message } = await createPrivateConversation(
-      userId,
-      participantId
-    );
+    const { conversation, isNew, message } =
+      await ConversationService.createPrivateConversation(userId, participantId);
 
     return res.status(201).json({
       success: true,
@@ -68,15 +41,8 @@ export const createConversation = async (req, res, next) => {
 
 /**
  * Tạo group conversation
- * POST /api/conversations/group
- *
- * Flow:
- * 1. Nhận request từ client với participantId
- * 2. Lấy userId từ JWT token (đã được middleware xác thực)
- * 3. Gọi service tạo conversation
- * 4. Trả về response cho client
  */
-export const createGroupConversation = async (req, res, next) => {
+const createGroupConversation = async (req, res, next) => {
   try {
     const { userId } = req.user;
     const { name, memberIds = [], avatar = null } = req.body;
@@ -102,12 +68,8 @@ export const createGroupConversation = async (req, res, next) => {
       });
     }
 
-    const { conversation, isNew, message } = await createGroupConversationService(
-      userId,
-      name,
-      memberIds,
-      avatar
-    );
+    const { conversation, isNew, message } =
+      await ConversationService.createGroupConversation(userId, name, memberIds, avatar);
 
     return res.status(201).json({
       success: true,
@@ -124,15 +86,8 @@ export const createGroupConversation = async (req, res, next) => {
 
 /**
  * Lấy danh sách conversation của user hiện tại
- * GET /api/conversations?page=1&limit=20
- *
- * Flow:
- * 1. Lấy userId từ JWT token
- * 2. Lấy page và limit từ query parameters
- * 3. Gọi service lấy danh sách conversation
- * 4. Trả về response với pagination
  */
-export const getConversations = async (req, res, next) => {
+const getConversations = async (req, res, next) => {
   try {
     const { userId } = req.user;
     const page = parseInt(req.query.page) || 1;
@@ -145,7 +100,11 @@ export const getConversations = async (req, res, next) => {
       });
     }
 
-    const { conversations, pagination } = await getUserConversations(userId, page, limit);
+    const { conversations, pagination } = await ConversationService.getConversations(
+      userId,
+      page,
+      limit
+    );
 
     return res.status(200).json({
       success: true,
@@ -162,15 +121,8 @@ export const getConversations = async (req, res, next) => {
 
 /**
  * Lấy thông tin chi tiết một conversation
- * GET /api/conversations/:conversationId
- *
- * Flow:
- * 1. Lấy conversationId từ URL params
- * 2. Lấy userId từ JWT token
- * 3. Gọi service lấy thông tin conversation
- * 4. Trả về response
  */
-export const getConversation = async (req, res, next) => {
+const getConversationById = async (req, res, next) => {
   try {
     const { conversationId } = req.params;
     const { userId } = req.user;
@@ -182,7 +134,10 @@ export const getConversation = async (req, res, next) => {
       });
     }
 
-    const conversation = await getConversationById(conversationId, userId);
+    const conversation = await ConversationService.getConversationById(
+      conversationId,
+      userId
+    );
 
     return res.status(200).json({
       success: true,
@@ -195,44 +150,9 @@ export const getConversation = async (req, res, next) => {
 };
 
 /**
- * Xóa conversation (soft delete)
- * DELETE /api/conversations/:conversationId
- *
- * Flow:
- * 1. Lấy conversationId từ URL params
- * 2. Lấy userId từ JWT token
- * 3. Gọi service xóa conversation
- * 4. Trả về response
- */
-export const deleteConversationById = async (req, res, next) => {
-  try {
-    const { userId } = req.user;
-    const { conversationId } = req.params;
-
-    if (!conversationId.match(/^[0-9a-fA-F]{24}$/)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid conversation ID format",
-      });
-    }
-
-    await deleteConversation(conversationId, userId);
-
-    return res.status(200).json({
-      success: true,
-      message: "Conversation deleted successfully",
-      data: null,
-    });
-  } catch (error) {
-    return next(error);
-  }
-};
-
-/**
  * Thêm thành viên vào group
- * PUT /api/conversations/:conversationId/members
  */
-export const addMemberToGroup = async (req, res, next) => {
+const addMemberToGroup = async (req, res, next) => {
   try {
     const { userId } = req.user;
     const { conversationId } = req.params;
@@ -252,7 +172,11 @@ export const addMemberToGroup = async (req, res, next) => {
       });
     }
 
-    const conversation = await addMemberToGroupService(conversationId, userId, memberIds);
+    const conversation = await ConversationService.addMemberToGroup(
+      conversationId,
+      userId,
+      memberIds
+    );
 
     return res.status(200).json({
       success: true,
@@ -269,9 +193,8 @@ export const addMemberToGroup = async (req, res, next) => {
 
 /**
  * Xóa thành viên khỏi group
- * DELETE /api/conversations/:conversationId/members/:memberId
  */
-export const removeMemberFromGroup = async (req, res, next) => {
+const removeMemberFromGroup = async (req, res, next) => {
   try {
     const { userId } = req.user;
     const { conversationId, memberId } = req.params;
@@ -286,7 +209,7 @@ export const removeMemberFromGroup = async (req, res, next) => {
       });
     }
 
-    const conversation = await removeMemberFromGroupService(
+    const conversation = await ConversationService.removeMemberFromGroup(
       conversationId,
       userId,
       memberId
@@ -304,15 +227,8 @@ export const removeMemberFromGroup = async (req, res, next) => {
 
 /**
  * Đánh dấu đã đọc (soft delete)
- * PUT /api/conversations/:conversationId/read
- *
- * Flow:
- * 1. Lấy conversationId từ URL params
- * 2. Lấy userId từ JWT token
- * 3. Gọi service
- * 4. Trả về response
  */
-export const markConversationAsRead = async (req, res, next) => {
+const markAsRead = async (req, res, next) => {
   try {
     const { conversationId } = req.params;
     const { userId } = req.user;
@@ -323,7 +239,7 @@ export const markConversationAsRead = async (req, res, next) => {
         .json({ success: false, message: "Invalid conversation ID format" });
     }
 
-    const result = await markConversationAsReadService(conversationId, userId);
+    const result = await ConversationService.markAsRead(conversationId, userId);
 
     // read
     let io = getSocket();
@@ -344,7 +260,7 @@ export const markConversationAsRead = async (req, res, next) => {
 };
 
 // Lấy ảnh trong conversation (dùng cho phần media trong conversation details)
-export const getConversationImages = async (req, res, next) => {
+const getConversationImages = async (req, res, next) => {
   try {
     const { conversationId } = req.params;
     const { userId } = req.user;
@@ -359,7 +275,7 @@ export const getConversationImages = async (req, res, next) => {
       });
     }
 
-    const images = await getConversationImagesService(
+    const images = await ConversationService.getConversationImages(
       conversationId,
       userId,
       page,
@@ -377,7 +293,7 @@ export const getConversationImages = async (req, res, next) => {
 };
 
 // Rời nhóm
-export const leaveGroup = async (req, res, next) => {
+const leaveGroup = async (req, res, next) => {
   try {
     const { conversationId } = req.params;
     const { userId } = req.user;
@@ -389,7 +305,7 @@ export const leaveGroup = async (req, res, next) => {
       });
     }
 
-    await leaveGroupService(conversationId, userId);
+    await ConversationService.leaveGroup(conversationId, userId);
 
     return res.status(200).json({
       success: true,
@@ -402,7 +318,7 @@ export const leaveGroup = async (req, res, next) => {
 };
 
 // Chuyển quyền sở hữu nhóm
-export const transferGroupOwnership = async (req, res, next) => {
+const transferGroupOwnership = async (req, res, next) => {
   try {
     const { conversationId } = req.params;
     const { userId } = req.user;
@@ -422,7 +338,7 @@ export const transferGroupOwnership = async (req, res, next) => {
       });
     }
 
-    await transferGroupOwnershipService(conversationId, userId, newOwnerId);
+    await ConversationService.transferGroupOwnership(conversationId, userId, newOwnerId);
 
     return res.status(200).json({
       success: true,
@@ -436,9 +352,8 @@ export const transferGroupOwnership = async (req, res, next) => {
 
 /**
  * Xóa hội thoại của chính tôi (soft delete)
- * DELETE /api/conversations/:conversationId/for-me
  */
-export const deleteConversationForMe = async (req, res, next) => {
+const deleteConversationForMe = async (req, res, next) => {
   try {
     const { conversationId } = req.params;
     const { userId } = req.user;
@@ -450,7 +365,7 @@ export const deleteConversationForMe = async (req, res, next) => {
       });
     }
 
-    await deleteConversationForMeService(conversationId, userId);
+    await ConversationService.deleteConversationForMe(conversationId, userId);
 
     return res.status(200).json({
       success: true,
@@ -460,4 +375,18 @@ export const deleteConversationForMe = async (req, res, next) => {
   } catch (error) {
     return next(error);
   }
+};
+
+module.exports = {
+  createPrivateConversation,
+  getConversations,
+  getConversationById,
+  createGroupConversation,
+  addMemberToGroup,
+  removeMemberFromGroup,
+  markAsRead,
+  getConversationImages,
+  leaveGroup,
+  transferGroupOwnership,
+  deleteConversationForMe,
 };

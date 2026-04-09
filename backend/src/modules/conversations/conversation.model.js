@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const conversationSchema = new mongoose.Schema(
   {
@@ -73,4 +73,4 @@ conversationSchema.index({ type: 1 }); // Tìm theo loại cuộc trò chuyện
 conversationSchema.index({ "lastMessage.createdAt": -1 }); // Sắp xếp theo tin nhắn cuối
 
 const Conversation = mongoose.model("Conversation", conversationSchema);
-export default Conversation;
+module.exports = Conversation;

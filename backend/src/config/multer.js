@@ -1,5 +1,6 @@
-// config/multer.js
-import multer from "multer";
+const multer = require("multer");
 
 const storage = multer.memoryStorage();
-export const upload = multer({ storage });
+const upload = multer({ storage });
+
+module.exports = { upload };

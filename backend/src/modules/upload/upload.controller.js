@@ -1,15 +1,9 @@
-import cloudinary from "../../config/cloudinary.js";
+const cloudinary = require("../../config/cloudinary.js");
 
 /**
  * Upload file/image lên Cloudinary
- * POST /api/upload
- *
- * Flow:
- * 1. Nhận file từ request (multer middleware xử lý trước)
- * 2. Upload file lên Cloudinary
- * 3. Trả về thông tin file (url, public_id, filename, mimeType, size)
  */
-export const uploadFile = async (req, res, next) => {
+const uploadFile = async (req, res, next) => {
   try {
     if (!req.file) {
       return res.status(400).json({ success: false, message: "No file uploaded" });
@@ -53,3 +47,5 @@ export const uploadFile = async (req, res, next) => {
     return next(error);
   }
 };
+
+module.exports = { uploadFile };

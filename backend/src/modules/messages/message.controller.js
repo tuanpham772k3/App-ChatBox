@@ -1,22 +1,10 @@
-import { getSocket } from "../../socket.js";
-import {
-  createMessage,
-  deleteMessage,
-  editMessage,
-  getMessages,
-} from "./message.service.js";
+const MessageService = require("./message.service.js");
+const { getSocket } = require("../../socket.js");
 
-/**Tạo tin nhắn mới
- * POST /api/messages
- *
- * Flow:
- * 1. Lấy userId từ JWT token
- * 2. Nhận dữ liệu từ request body
- * 3. Validation cơ bản
- * 4. Gọi service tạo tin nhắn mới
- * 5. Trả về phản hồi cho client
+/**
+ * Tạo tin nhắn mới
  */
-export const createNewMessage = async (req, res, next) => {
+const createNewMessage = async (req, res, next) => {
   try {
     const { userId } = req.user;
     const { tempId, conversationId, content, file } = req.body;
@@ -28,7 +16,7 @@ export const createNewMessage = async (req, res, next) => {
       });
     }
 
-    const result = await createMessage(conversationId, userId, content, file);
+    const result = await MessageService.createMessage(conversationId, userId, content, file);
 
     const { message, participants } = result;
 
@@ -86,18 +74,10 @@ export const createNewMessage = async (req, res, next) => {
   }
 };
 
-/**Lấy danh sách tin nhắn trong conversation
- * GET /api/messages/:conversationId?page=1&limit=50
- *
- * Flow:
- * 1. Lấy conversationId từ params
- * 2. Lấy userId từ JWT token
- * 3. Lấy page và limit từ query parameters
- * 4. Validation cơ bản
- * 5. Gọi service lấy danh sách tin nhắn
- * 6. Trả về response với pagination
+/**
+ * Lấy danh sách tin nhắn trong conversation
  */
-export const getConversationMessages = async (req, res, next) => {
+const getConversationMessages = async (req, res, next) => {
   try {
     const { conversationId } = req.params;
     const { userId } = req.user;
@@ -112,7 +92,7 @@ export const getConversationMessages = async (req, res, next) => {
       });
     }
 
-    const result = await getMessages(conversationId, userId, before, limit);
+    const result = await MessageService.getConversationMessages(conversationId, userId, before, limit);
 
     return res.status(200).json({
       success: true,
@@ -126,16 +106,8 @@ export const getConversationMessages = async (req, res, next) => {
 
 /**
  * Xóa tin nhắn
- * DELETE /api/messages/:messageId
- *
- * Flow:
- * 1. Lấy messageId từ URL params
- * 2. Lấy userId từ JWT token
- * 3. Validation cơ bản
- * 4. Gọi service để xóa tin nhắn
- * 5. Trả về phản hồi cho client
  */
-export const deleteMessageById = async (req, res, next) => {
+const deleteMessageById = async (req, res, next) => {
   try {
     const { messageId } = req.params;
     const { userId } = req.user;
@@ -147,7 +119,7 @@ export const deleteMessageById = async (req, res, next) => {
       });
     }
 
-    const { message, conversationId } = await deleteMessage(messageId, userId);
+    const { message, conversationId } = await MessageService.deleteMessageById(messageId, userId);
 
     let io = getSocket();
 
@@ -163,14 +135,10 @@ export const deleteMessageById = async (req, res, next) => {
   }
 };
 
-/** * Chỉnh sửa tin nhắn
- * PUT /api/messages/:messageId
- *
- * Flow:
- * 1. Lấy messageId từ URL params
- * 2. Lấy userId từ JWT token
+/**
+ * Chỉnh sửa tin nhắn
  */
-export const editMessageById = async (req, res, next) => {
+const editMessageById = async (req, res, next) => {
   try {
     const { userId } = req.user;
     const { messageId } = req.params;
@@ -190,7 +158,7 @@ export const editMessageById = async (req, res, next) => {
       });
     }
 
-    const { message, conversationId } = await editMessage(messageId, userId, newContent);
+    const { message, conversationId } = await MessageService.editMessageById(messageId, userId, newContent);
 
     const io = getSocket();
 
@@ -204,4 +172,11 @@ export const editMessageById = async (req, res, next) => {
   } catch (error) {
     return next(error);
   }
+};
+
+module.exports = {
+  createNewMessage,
+  getConversationMessages,
+  deleteMessageById,
+  editMessageById,
 };

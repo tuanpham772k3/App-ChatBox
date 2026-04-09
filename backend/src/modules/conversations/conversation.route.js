@@ -1,24 +1,23 @@
-import express from "express";
-import {
-  createConversation,
+const express = require("express");
+const {
+  createPrivateConversation,
   getConversations,
-  getConversation,
-  deleteConversationById,
+  getConversationById,
   createGroupConversation,
   addMemberToGroup,
   removeMemberFromGroup,
-  markConversationAsRead,
+  markAsRead,
   getConversationImages,
   leaveGroup,
   transferGroupOwnership,
   deleteConversationForMe,
-} from "./conversation.controller.js";
-import { verifyToken } from "../../middlewares/authMiddleware.js";
+} = require("./conversation.controller.js");
+const { verifyToken } = require("../../middlewares/authMiddleware.js");
 
 const router = express.Router();
 
 // Tạo conversation 1-1 mới
-router.post("/private", verifyToken, createConversation);
+router.post("/private", verifyToken, createPrivateConversation);
 
 // Tạo conversation group
 router.post("/group", verifyToken, createGroupConversation);
@@ -33,13 +32,10 @@ router.delete("/:conversationId/members/:memberId", verifyToken, removeMemberFro
 router.get("/", verifyToken, getConversations);
 
 // Lấy thông tin chi tiết một conversation
-router.get("/:conversationId", verifyToken, getConversation);
-
-// Xóa conversation (chỉ dành cho owner)
-router.delete("/:conversationId", verifyToken, deleteConversationById);
+router.get("/:conversationId", verifyToken, getConversationById);
 
 // Đánh dấu tin nhắn cuối người dùng đã đọc
-router.put("/:conversationId/read", verifyToken, markConversationAsRead);
+router.put("/:conversationId/read", verifyToken, markAsRead);
 
 // Lấy danh sách ảnh trong hội thoại
 router.get("/:conversationId/images", verifyToken, getConversationImages);
@@ -53,4 +49,4 @@ router.put("/:conversationId/transfer-ownership", verifyToken, transferGroupOwne
 // Xóa hội thoại của chính tôi
 router.delete("/:conversationId/for-me", verifyToken, deleteConversationForMe);
 
-export default router;
+module.exports = router;

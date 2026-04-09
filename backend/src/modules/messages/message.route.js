@@ -1,11 +1,11 @@
-import express from "express";
-import { verifyToken } from "../../middlewares/authMiddleware.js";
-import {
+const express = require("express");
+const { verifyToken } = require("../../middlewares/authMiddleware.js");
+const {
   createNewMessage,
   getConversationMessages,
   deleteMessageById,
   editMessageById,
-} from "./message.controller.js";
+} = require("./message.controller.js");
 
 const router = express.Router();
 
@@ -21,4 +21,4 @@ router.delete("/:messageId", verifyToken, deleteMessageById);
 // Chỉnh sửa tin nhắn
 router.put("/:messageId", verifyToken, editMessageById);
 
-export default router;
+module.exports = router;

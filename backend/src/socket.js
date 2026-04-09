@@ -1,11 +1,11 @@
-import { Server } from "socket.io";
+const { Server } = require("socket.io");
 
 let io = null;
 
 /**
  * Khởi tạo Socket.IO và lưu singleton
  */
-export const initSocket = (server) => {
+const initSocket = (server) => {
   io = new Server(server, { cors: { origin: "*" } });
   return io;
 };
@@ -13,8 +13,10 @@ export const initSocket = (server) => {
 /**
  * Lấy instance Socket.IO ở bất cứ đâu
  */
-export const getSocket = () => {
+const getSocket = () => {
   if (!io) throw new Error("Socket.IO not initialized. Call initSocket first.");
 
   return io;
 };
+
+module.exports = { initSocket, getSocket };

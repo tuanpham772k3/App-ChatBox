@@ -1,9 +1,9 @@
-import "./config/loadEnv.js";
-import http from "http";
-import app from "./app.js";
-import { connectDB } from "./config/db.js";
-import { initSocket } from "./socket.js";
-import { registerSocket } from "./sockets/registerSocket.js";
+const http = require("http");
+const app = require("./app.js");
+const { connectDB } = require("./config/db.js");
+const { initSocket } = require("./socket.js");
+const { registerSocket } = require("./sockets/registerSocket.js");
+
 const port = process.env.PORT || 8080;
 
 const startServer = async () => {
