@@ -234,7 +234,7 @@ const logoutCurrent = async (req, res, next) => {
       await User.findByIdAndUpdate(session.userId, { status: "inactive" });
 
       if (session.socketId) {
-        io = getSocket();
+        const io = getSocket();
         const socket = io.sockets.sockets.get(session.socketId);
         if (socket) socket.disconnect(true);
       }
