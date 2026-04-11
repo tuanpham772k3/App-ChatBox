@@ -2,24 +2,21 @@ const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const User = require("../users/user.model.js");
-const Session = require("./session.model.js");
-const { getSocket } = require("../../socket.js");
 
-// Time To Live for refresh token (7 days)
-const REFRESH_TTL_MS = 7 * 24 * 60 * 60 * 1000; // change to ms
+const REFRESH_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 // Helper: send refresh token to client as HTTP cookie.
 const setRefreshCookie = (res, refreshToken) => {
   res.cookie("refreshToken", refreshToken, {
-    httpOnly: true, // client JS không đọc được
+    httpOnly: true, // client JS không thể truy cập cookie này, giảm nguy cơ bị XSS đánh cắp token
     secure: process.env.NODE_ENV === "production", // Nếu false gửi cả http và https, true chỉ gửi https
     sameSite: "lax", // ngăn chặn tấn công CSRF
-    maxAge: REFRESH_TTL_MS, // time to live
+    maxAge: REFRESH_TTL_MS,
     path: "/", // gửi cookie trong mọi request đến backend
   });
 };
 
-// Xóa cúc kỳ
+// Xóa cookie
 const clearRefreshCookie = (res) => {
   res.clearCookie("refreshToken", {
     httpOnly: true,
@@ -27,6 +24,20 @@ const clearRefreshCookie = (res) => {
     sameSite: "lax",
     path: "/",
   });
+};
+
+let signAccessToken = (payload) => {
+  return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
+    expiresIn: "15m",
+  });
+};
+
+let generateRefreshToken = () => {
+  return crypto.randomBytes(64).toString("hex");
+};
+
+let hashToken = (token) => {
+  return crypto.createHash("sha256").update(token).digest("hex");
 };
 
 // Register
@@ -71,20 +82,6 @@ const register = async (req, res, next) => {
   }
 };
 
-let signAccessToken = (payload) => {
-  return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
-    expiresIn: "30d",
-  });
-};
-
-let generateRefreshToken = () => {
-  return crypto.randomBytes(64).toString("hex");
-};
-
-let hashToken = (token) => {
-  return crypto.createHash("sha256").update(token).digest("hex");
-};
-
 // Login
 const login = async (req, res, next) => {
   try {
@@ -110,36 +107,19 @@ const login = async (req, res, next) => {
       });
     }
 
-    user.status = "active";
-    user.lastSeenAt = new Date();
-    await user.save();
-
     const accessToken = signAccessToken({
       userId: user._id,
       roles: user.roles,
     });
+
     const refreshToken = generateRefreshToken();
-    const hashesRefreshToken = hashToken(refreshToken);
 
-    const existingSessions = await Session.find({ userId: user._id })
-      .sort({ createdAt: 1 }) // sắp xếp theo thời gian tạo, lấy cũ nhất lên đầu mảng
-      .exec(); // truy vấn
+    user.refreshTokenHash = hashToken(refreshToken);
+    user.refreshTokenExpiresAt = new Date(Date.now() + REFRESH_TTL_MS);
+    user.status = "active";
+    user.lastSeenAt = new Date();
 
-    if (existingSessions.length >= 5) {
-      // Xóa session đầu mảng
-      await Session.findByIdAndDelete(existingSessions[0]._id);
-    }
-
-    const session = new Session({
-      userId: user._id,
-      refreshTokenHash: hashesRefreshToken,
-      ip: req.ip,
-      userAgent: req.get("User-Agent") || "unknown",
-      expiresAt: new Date(Date.now() + REFRESH_TTL_MS),
-      valid: true,
-    });
-
-    await session.save();
+    await user.save();
 
     setRefreshCookie(res, refreshToken);
 
@@ -161,29 +141,24 @@ const login = async (req, res, next) => {
   }
 };
 
+// Refresh token
 const refreshToken = async (req, res, next) => {
   try {
-    const refToken = req.cookies?.refreshToken;
+    const token = req.cookies?.refreshToken;
 
-    if (!refToken) {
-      return res.status(401).json({ message: "No refresh token provided" });
+    if (!token) {
+      return res.status(401).json({ message: "No token provided" });
     }
 
-    const hashedRefToken = hashToken(refToken);
+    const hashed = hashToken(token);
 
-    const session = await Session.findOne({
-      refreshTokenHash: hashedRefToken,
-      valid: true,
-      expiresAt: { $gt: new Date() }, // chưa hết hạn
+    const user = await User.findOne({
+      refreshTokenHash: hashed,
+      refreshTokenExpiresAt: { $gt: new Date() },
     });
 
-    if (!session) {
-      return res.status(401).json({ message: "Invalid refresh token" });
-    }
-
-    const user = await User.findById(session.userId);
     if (!user) {
-      return res.status(401).json({ message: "User not found" });
+      return res.status(401).json({ message: "Invalid token" });
     }
 
     const newAccessToken = signAccessToken({
@@ -192,19 +167,16 @@ const refreshToken = async (req, res, next) => {
     });
 
     const newRefreshToken = generateRefreshToken();
-    const newHashedRefreshToken = hashToken(newRefreshToken);
 
-    session.refreshTokenHash = newHashedRefreshToken;
-    session.ip = req.ip;
-    session.userAgent = req.get("User-Agent") || "unknown";
-    session.expiresAt = new Date(Date.now() + REFRESH_TTL_MS);
-    await session.save();
+    user.refreshTokenHash = hashToken(newRefreshToken);
+    user.refreshTokenExpiresAt = new Date(Date.now() + REFRESH_TTL_MS);
+
+    await user.save();
 
     setRefreshCookie(res, newRefreshToken);
 
     return res.status(200).json({
       success: true,
-      message: "Token refreshed",
       accessToken: newAccessToken,
     });
   } catch (error) {
@@ -212,41 +184,29 @@ const refreshToken = async (req, res, next) => {
   }
 };
 
-const logoutCurrent = async (req, res, next) => {
+// Logout
+const logout = async (req, res, next) => {
   try {
-    const refToken = req.cookies?.refreshToken;
+    const token = req.cookies?.refreshToken;
 
-    if (!refToken) {
-      clearRefreshCookie(res); // tránh sót cookie cũ
-      return res.status(200).json({ message: "Logged out" });
+    if (token) {
+      const hashed = hashToken(token);
+
+      await User.findOneAndUpdate(
+        { refreshTokenHash: hashed },
+        {
+          refreshTokenHash: null,
+          refreshTokenExpiresAt: null,
+          status: "inactive",
+        }
+      );
     }
 
-    const refTokenHash = hashToken(refToken);
-
-    const session = await Session.findOne({
-      refreshTokenHash: refTokenHash,
-    });
-
-    if (session) {
-      session.valid = false;
-      await session.save();
-
-      await User.findByIdAndUpdate(session.userId, { status: "inactive" });
-
-      if (session.socketId) {
-        const io = getSocket();
-        const socket = io.sockets.sockets.get(session.socketId);
-        if (socket) socket.disconnect(true);
-      }
-    }
-
-    // Clear cookie on client
     clearRefreshCookie(res);
 
     return res.status(200).json({
       success: true,
       message: "Logged out",
-      data: null,
     });
   } catch (error) {
     return next(error);
@@ -257,5 +217,5 @@ module.exports = {
   register,
   login,
   refreshToken,
-  logoutCurrent,
+  logout,
 };
