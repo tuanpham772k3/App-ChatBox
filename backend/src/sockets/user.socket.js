@@ -1,5 +1,4 @@
 const User = require("../modules/users/user.model.js");
-const Session = require("../modules/auth/session.model.js");
 const Conversation = require("../modules/conversations/conversation.model.js");
 
 const userSocket = (io, socket) => {
@@ -12,12 +11,6 @@ const userSocket = (io, socket) => {
         status: "inactive",
         lastSeenAt: new Date(),
       });
-
-      // Xóa socketId trong session (nếu có)
-      await Session.findOneAndUpdate(
-        { userId: socket.userId, socketId: socket.id },
-        { $unset: { socketId: 1 } }
-      );
 
       const conversations = await Conversation.find({
         "participants.user": socket.userId,

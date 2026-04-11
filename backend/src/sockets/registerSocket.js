@@ -1,10 +1,9 @@
-const Session = require("../modules/auth/session.model.js");
+const Conversation = require("../modules/conversations/conversation.model.js");
+const Message = require("../modules/messages/message.model.js");
 const { authSocket } = require("./auth.socket.js");
 const { userSocket } = require("./user.socket.js");
 const { messageSocket } = require("./message.socket.js");
 const { conversationSocket } = require("./conversation.socket.js");
-const Conversation = require("../modules/conversations/conversation.model.js");
-const Message = require("../modules/messages/message.model.js");
 
 /**
  * Đăng ký middleware auth, và xử lý connection/disconnect chung ở đây.
@@ -18,16 +17,6 @@ const registerSocket = (io) => {
   io.on("connection", async (socket) => {
     try {
       console.log(`User connected: ${socket.user.username} (${socket.id})`);
-
-      // Cập nhật session: gán socketId
-      try {
-        await Session.findOneAndUpdate(
-          { userId: socket.userId, valid: true },
-          { socketId: socket.id }
-        );
-      } catch (error) {
-        console.error("Session update failed:", error);
-      }
 
       // Join room user_{userId}
       socket.join(`user_${socket.userId}`);
