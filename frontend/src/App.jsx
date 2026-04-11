@@ -16,7 +16,12 @@ export const NotificationContext = createContext(null);
 
 const PrivateRoute = ({ element }) => {
   const { accessToken } = useSelector((state) => state.auth);
-  return accessToken ? element : <Navigate to="/login" />;
+  return !accessToken ? <Navigate to="/login" /> : element;
+};
+
+const PublicRoute = ({ element }) => {
+  const { accessToken } = useSelector((state) => state.auth);
+  return accessToken ? <Navigate to="/" replace /> : element;
 };
 
 function App() {
@@ -43,11 +48,11 @@ function App() {
     <NotificationContext.Provider value={api}>
       {contextHolder}
       <Routes>
-        {/* Các tuyến đường công khai */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        {/* Public */}
+        <Route path="/login" element={<PublicRoute element={<Login />} />} />
+        <Route path="/register" element={<PublicRoute element={<Register />} />} />
 
-        {/* Các tuyến đường bảo vệ */}
+        {/* Private */}
         <Route path="/profile" element={<PrivateRoute element={<ProfilePage />} />} />
         <Route path="/" element={<PrivateRoute element={<ChatPage />} />} />
       </Routes>
