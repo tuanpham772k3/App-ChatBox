@@ -1,15 +1,18 @@
-import { Button, Card, Checkbox, Form, Input } from "antd";
-import Title from "antd/es/typography/Title";
+import { Button, Card, Checkbox, Form, Input, Typography } from "antd";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
-import { registerUser } from "@/store/authSlice";
+import { Link, useNavigate } from "react-router-dom";
+import { registerUser, clearAuthState } from "@/store/authSlice";
 import { useNotification } from "@/hooks/useNotification";
+import { useEffect } from "react";
+
+const { Text, Title } = Typography;
 
 const RegisterPage = () => {
   const [form] = Form.useForm();
   const dispatch = useDispatch();
-  const { loading } = useSelector((state) => state.auth);
+  const { isLoading, isError } = useSelector((state) => state.auth);
   const notification = useNotification();
+  const navigate = useNavigate();
 
   const onFinish = async (values) => {
     const { confirmPassword, ...info } = values;
@@ -31,6 +34,7 @@ const RegisterPage = () => {
       });
 
       form.resetFields();
+      navigate("/login");
     } catch (err) {
       notification.error({
         message: "Đăng ký thất bại",
@@ -38,6 +42,13 @@ const RegisterPage = () => {
       });
     }
   };
+
+  // Reset state khi component unmount
+  useEffect(() => {
+    return () => {
+      dispatch(clearAuthState());
+    };
+  }, [dispatch]);
 
   return (
     <div className="flex justify-center items-center h-screen">
@@ -49,6 +60,9 @@ const RegisterPage = () => {
 
         {/* Form AntD (layout vertical) */}
         <Form
+          onValuesChange={() => {
+            if (isError) dispatch(clearAuthState());
+          }}
           form={form}
           name="login"
           layout="vertical"
@@ -67,7 +81,7 @@ const RegisterPage = () => {
               },
             ]}
           >
-            <Input placeholder="nguyen_van_a" disabled={loading} />
+            <Input placeholder="nguyen_van_a" disabled={isLoading} />
           </Form.Item>
 
           {/* Email */}
@@ -76,7 +90,7 @@ const RegisterPage = () => {
             name="email"
             rules={[{ required: true, message: "Vui lòng nhập email!" }]}
           >
-            <Input placeholder="abc123@gmail.com" disabled={loading} />
+            <Input placeholder="abc123@gmail.com" disabled={isLoading} />
           </Form.Item>
 
           {/* Password */}
@@ -97,7 +111,7 @@ const RegisterPage = () => {
           >
             <Input.Password
               placeholder="Mật khẩu chưa ít nhất 6 ký tự"
-              disabled={loading}
+              disabled={isLoading}
             />
           </Form.Item>
 
@@ -113,26 +127,35 @@ const RegisterPage = () => {
               },
             ]}
           >
-            <Input.Password placeholder="Nhập lại mật khẩu" disabled={loading} />
+            <Input.Password placeholder="Nhập lại mật khẩu" disabled={isLoading} />
           </Form.Item>
 
           <Form.Item name="remember" valuePropName="checked">
-            <Checkbox disabled={loading}>Chấp nhận điều khoản & điều kiện</Checkbox>
+            <Checkbox disabled={isLoading}>Chấp nhận điều khoản & điều kiện</Checkbox>
           </Form.Item>
+
+          {/* Hiển thị lỗi */}
+          <div className="mb-2">
+            {isError && (
+              <Text type="danger" className="text-sm italic">
+                * {isError}
+              </Text>
+            )}
+          </div>
 
           <Form.Item>
             <Button
               type="primary"
               htmlType="submit"
               block
-              disabled={loading}
-              loading={loading}
+              disabled={isLoading}
+              loading={isLoading}
             >
-              Đăng ký
+              {isLoading ? "Đang xử lý..." : "Đăng ký"}
             </Button>
           </Form.Item>
         </Form>
-        {/* ✅ Thêm phần “Đã có tài khoản? Đăng nhập” */}
+
         <div className="text-center mt-2">
           Đã có tài khoản?{" "}
           <Link to="/login" className="text-blue-600 hover:text-blue-800 font-medium">

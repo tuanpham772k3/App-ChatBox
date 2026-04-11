@@ -29,8 +29,6 @@ instance.interceptors.response.use(
       return Promise.reject({
         status,
         message: data?.message || "Có lỗi xảy ra từ server",
-        idCode: data?.idCode ?? -1,
-        errors: data?.errors ?? null,
       });
     }
 
@@ -38,7 +36,7 @@ instance.interceptors.response.use(
     if (error.request) {
       return Promise.reject({
         status: 0,
-        message: "Không thể kết nối tới server",
+        message: "Không thể kết nối tới server. Hãy kiểm tra lại kết nối internet",
         idCode: -2,
       });
     }
