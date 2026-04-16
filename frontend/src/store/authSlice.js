@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import authApi from "../services/authApi";
 
 const savedToken = localStorage.getItem("accessToken");
-const savedUser = localStorage.getItem("user");
+const savedUser = JSON.parse(localStorage.getItem("user"));
 
 // Register
 export const registerUser = createAsyncThunk(

@@ -107,7 +107,7 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
         displayInfo.lastMsgContent?.toLowerCase().includes(keyword)
       );
     });
-  }, [conversations, user.id, searchTerm]);
+  }, [conversations, user?.id, searchTerm]);
 
   return (
     <section

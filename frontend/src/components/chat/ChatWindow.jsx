@@ -22,7 +22,7 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
     statusUsers = {},
     images = [],
   } = useSelector((state) => state.conversations);
-  const currentUserId = useSelector((state) => state.auth.user.id) || {};
+  const currentUserId = useSelector((state) => state.auth.user?.id) || {};
 
   const [editingMessage, setEditingMessage] = useState({
     id: null,
