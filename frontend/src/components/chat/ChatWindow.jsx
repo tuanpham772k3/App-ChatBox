@@ -15,7 +15,7 @@ import { getDisplayInfo, getTypingNames } from "@/utils/conversationHelper";
 import { useMessages } from "@/hooks/useMessages";
 import { emitEvent } from "@/lib/socket";
 
-const ChatWindow = ({ activeChat, onBackToList }) => {
+const ChatWindow = ({ activeChatId, onBack }) => {
   const dispatch = useDispatch();
   const {
     currentConversation,
@@ -38,7 +38,7 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
   // const typingNames = getTypingNames(currentTypingMap, user.id);
 
   // Message realtime
-  useMessages(activeChat);
+  useMessages(activeChatId);
 
   const displayInfo = useMemo(
     () => getDisplayInfo(currentConversation, currentUserId) || {},
@@ -71,33 +71,32 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
   // Clear tin nhắn cũ khi chuyển sang cuộc trò chuyện mới
   useEffect(() => {
     dispatch(clearMessages());
-  }, [activeChat]);
+  }, [activeChatId]);
 
   useEffect(() => {
-    if (!activeChat) return;
+    if (!activeChatId) return;
 
     emitEvent("join_conversation", {
-      conversationId: activeChat,
+      conversationId: activeChatId,
     });
 
     return () => {
       emitEvent("leave_conversation", {
-        conversationId: activeChat,
+        conversationId: activeChatId,
       });
     };
-  }, [activeChat]);
+  }, [activeChatId]);
 
-  if (!activeChat) return <ChatEmptyState />;
+  if (!activeChatId) return <ChatEmptyState />;
 
   return (
     <div
       className={`flex-2 bg-[var(--color-app)] flex flex-col overflow-hidden
-      ${activeChat ? "flex" : "hidden"} md:flex`}
+      ${activeChatId ? "flex" : "hidden"} md:flex`}
     >
-      {/* {activeChat} */}
       {/* --- Header --- */}
       <ChatHeader
-        onBackToList={onBackToList}
+        onBack={onBack}
         openDrawerInfo={openDrawerInfo}
         openModal={openModalMembers}
         displayInfo={displayInfo}
@@ -120,7 +119,6 @@ const ChatWindow = ({ activeChat, onBackToList }) => {
         displayInfo={displayInfo}
         openDrawerInfo={openDrawerInfo}
         images={images}
-        onBackToList={onBackToList}
       />
 
       {/* Drawer members info */}

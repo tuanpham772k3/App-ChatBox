@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Ellipsis } from "lucide-react";
 import { getTypingNames } from "../../utils/conversationHelper";
-import { emitEvent } from "@/lib/socket";
 import GroupAvatar from "@/components/ui/avatar/GroupAvatar";
 import PopoverConversationAction from "./PopoverConversationAction";
 
@@ -44,13 +43,13 @@ const ConversationItem = ({
         )}
       </div>
 
-      {/* Nội dung */}
+      {/* Content */}
       <div className="flex flex-1 justify-between items-center min-w-0">
         <div className="flex flex-col min-w-0">
           <h3 className="text-sm font-medium truncate">{display.displayName}</h3>
 
           <div className="flex items-center text-xs text-[var(--color-text-secondary)] min-w-0">
-            {/* Phần nội dung chính (last message hoặc đang gõ) */}
+            {/* Main Content (Last Message or Typing) */}
             <span className="flex-1 min-w-0 max-w-60 overflow-hidden truncate">
               {typingNames.length > 0 ? (
                 <span className="text-xs italic text-green-500">
@@ -59,16 +58,18 @@ const ConversationItem = ({
               ) : (
                 <>
                   {display.lastMsgSender && (
-                    <span className="text-[var(--color-text-secondary)]">
-                      {display.lastMsgSender}:{" "}
-                    </span>
+                    <>
+                      <span className="text-[var(--color-text-secondary)]">
+                        {display.lastMsgSender}:{" "}
+                      </span>
+                      <span>{display.lastMsgContent}</span>
+                    </>
                   )}
-                  <span>{display.lastMsgContent}</span>
                 </>
               )}
             </span>
 
-            {/* Thời gian */}
+            {/* Time */}
             <span className="ml-2 text-[var(--color-text-secondary)] whitespace-nowrap">
               {display.lastMsgTime}
             </span>

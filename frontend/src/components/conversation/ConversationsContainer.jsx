@@ -13,7 +13,7 @@ import ConversationItem from "./ConversationItem";
 import { getDisplayInfo } from "../../utils/conversationHelper";
 import { useNotification } from "@/hooks/useNotification";
 
-const ConversationContainer = ({ activeChat, onActiveChatId }) => {
+const ConversationContainer = ({ activeChatId, onSelectChat }) => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const {
@@ -28,70 +28,53 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
 
   const notification = useNotification();
 
-  /* ==============================
-      LOAD LIST CONVERSATIONS
-     ============================== */
   useEffect(() => {
-    const fetchConversations = async () => {
-      try {
-        await dispatch(getConversations()).unwrap();
-      } catch (err) {
+    dispatch(getConversations())
+      .unwrap()
+      .catch((err) => {
         notification.error({
           message: "Lấy danh sách hội thoại thất bại",
           description: err.message || "Có lỗi xảy ra",
         });
-      }
-    };
-
-    fetchConversations();
+      });
   }, [dispatch]);
 
-  /* ==============================
-      CLICK CONVERSATION
-     ============================== */
-  const handleSelectConversation = async (conversationId) => {
-    // Nếu đang mở rồi → bỏ qua (tránh gọi API lại)
-    if (conversationId === activeChat) return;
+  const handleSelectConversation = (conversationId) => {
+    if (conversationId === activeChatId) return;
 
-    try {
-      await dispatch(getConversationById(conversationId)).unwrap();
+    dispatch(getConversationById(conversationId));
 
-      onActiveChatId(conversationId); // giữ logic hiển thị ChatWindow
+    onSelectChat(conversationId); // giữ logic hiển thị ChatWindow
 
-      await dispatch(
-        markConversationAsRead({ conversationId, userId: user.id })
-      ).unwrap();
-    } catch (err) {
-      console.log("Lỗi handleSelectConversation:", err);
-    }
+    dispatch(markConversationAsRead({ conversationId, userId: user.id }));
   };
 
   // Xóa hội thoại phía tôi
-  const handleRemoveConversationForMe = async (conversationId) => {
-    console.log("conversation", conversationId);
-
-    try {
-      await dispatch(deleteConversationForMe(conversationId)).unwrap();
-      notification.success({
-        message: "Xóa hội thoại phía tôi thành công",
+  const handleRemoveConversationForMe = (conversationId) => {
+    dispatch(deleteConversationForMe(conversationId))
+      .unwrap()
+      .then(() => {
+        notification.success({
+          message: "Xóa hội thoại phía tôi thành công",
+        });
+      })
+      .catch((err) => {
+        notification.error({
+          message: "Xóa hội thoại phía tôi thất bại",
+          description: err.message || "Có lỗi xảy ra",
+        });
       });
-    } catch (err) {
-      notification.error({
-        message: "Xóa hội thoại phía tôi thất bại",
-        description: err.message || "Có lỗi xảy ra",
-      });
-    }
   };
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       setSearchTerm(searchInput);
     }, 300);
 
-    return () => clearTimeout(timer);
+    return () => clearTimeout(timeoutId);
   }, [searchInput]);
 
-  // Lọc Hội thoại
+  // Lọc hội thoại
   const filteredConversations = useMemo(() => {
     if (!searchTerm.trim()) return conversations;
 
@@ -99,8 +82,7 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
 
     return conversations.filter((conversation) => {
       const displayInfo = getDisplayInfo(conversation, user.id);
-
-      if (!displayInfo) return;
+      if (!displayInfo) return false;
 
       return (
         displayInfo.displayName?.toLowerCase().includes(keyword) ||
@@ -112,7 +94,7 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
   return (
     <section
       className={`flex-1 flex flex-col bg-[var(--color-app)] border-r border-[var(--color-border)]
-      ${activeChat ? "hidden" : "flex"} md:flex`}
+      ${activeChatId ? "hidden" : "flex"} md:flex`}
     >
       {/* --- HEADER --- */}
       <ConversationHeader searchValue={searchInput} onSearchChange={setSearchInput} />
@@ -150,7 +132,7 @@ const ConversationContainer = ({ activeChat, onActiveChatId }) => {
                     // CONVERSATION ITEM
                     <ConversationItem
                       key={conversation._id}
-                      isActive={activeChat === conversation._id}
+                      isActive={activeChatId === conversation._id}
                       display={displayInfo}
                       onSelect={() => handleSelectConversation(conversation._id)}
                       onRemoveConversationForMe={() =>

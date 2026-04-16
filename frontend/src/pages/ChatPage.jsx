@@ -4,15 +4,7 @@ import ConversationContainer from "@/components/conversation/ConversationsContai
 import ChatWindow from "@/components/chat/ChatWindow";
 
 const ChatPage = () => {
-  const [activeChat, setActiveChat] = useState(null);
-
-  const handleActiveChatId = (chatId) => {
-    setActiveChat(chatId);
-  };
-
-  const handleBackToList = () => {
-    setActiveChat(null);
-  };
+  const [activeChatId, setActiveChatId] = useState(null);
 
   return (
     <div className="w-full h-screen">
@@ -20,11 +12,11 @@ const ChatPage = () => {
         <Sidebar />
 
         <ConversationContainer
-          activeChat={activeChat}
-          onActiveChatId={handleActiveChatId}
+          activeChatId={activeChatId}
+          onSelectChat={setActiveChatId}
         />
 
-        <ChatWindow activeChat={activeChat} onBackToList={handleBackToList} />
+        <ChatWindow activeChatId={activeChatId} onBack={() => setActiveChatId(null)} />
       </div>
     </div>
   );

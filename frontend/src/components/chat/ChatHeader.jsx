@@ -3,7 +3,7 @@ import { ArrowLeft, PanelRight, Phone, UserRound, Users, Video } from "lucide-re
 import GroupAvatar from "@/components/ui/avatar/GroupAvatar";
 
 const ChatHeader = ({
-  onBackToList,
+  onBack,
   openDrawerInfo,
   openModal,
   displayInfo,
@@ -14,7 +14,7 @@ const ChatHeader = ({
       <div className="flex items-center gap-3">
         {/* Back button (only visible on mobile) */}
         <button
-          onClick={onBackToList}
+          onClick={onBack}
           className="md:hidden mr-2 text-[var(--color-text-primary)]"
         >
           <ArrowLeft size={20} />
