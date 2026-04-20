@@ -4,8 +4,9 @@ import GroupAvatar from "@/components/ui/avatar/GroupAvatar";
 
 const ChatHeader = ({
   onBack,
-  openDrawerInfo,
-  openModal,
+  onOpenConversationInfo,
+  onOpenAddMembers,
+  onOpenMembersInfo,
   displayInfo,
   partnerStatus,
 }) => {
@@ -20,20 +21,17 @@ const ChatHeader = ({
           <ArrowLeft size={20} />
         </button>
 
-        {/* --- Avatar --- */}
+        {/* ===== AVATAR ===== */}
         <div className="relative">
           {displayInfo.isGroup ? (
-            // Nếu là nhóm thì hiển thị GroupAvatar
-            <GroupAvatar users={displayInfo.participants} size={48} />
+            <GroupAvatar users={displayInfo.participants || []} size={48} />
           ) : (
-            // Nếu là cá nhân thì hiển thị avatar người dùng
             <>
               <img
                 src={displayInfo.displayAvatar}
                 alt={displayInfo.displayName}
                 className="w-13 h-13 rounded-full border-2 border-[var(--color-border)]"
               />
-              {/* Trạng thái người dùng */}
               {partnerStatus?.status === "online" && (
                 <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[var(--color-app)] rounded-full" />
               )}
@@ -41,18 +39,16 @@ const ChatHeader = ({
           )}
         </div>
 
-        {/* --- Info --- */}
+        {/* ===== INFO ===== */}
         <div className="flex flex-col">
-          {/* --- Display Name --- */}
           <h3 className="text-[var(--color-text-primary)] font-semibold">
             {displayInfo.displayName}
           </h3>
 
-          {/* -- User status or number of group members -- */}
+          {/* USER STATUS OR NUMBER */}
           {displayInfo.isGroup ? (
-            // Hiển thị số thành viên nếu là nhóm
             <button
-              onClick={() => openDrawerInfo("membersInfo")}
+              onClick={onOpenMembersInfo}
               type="button"
               className="flex items-center gap-1 text-[var(--color-text-secondary)]"
             >
@@ -60,7 +56,6 @@ const ChatHeader = ({
               <span className="text-sm">{`${displayInfo.participants.length} thành viên`}</span>
             </button>
           ) : (
-            // Hiển thị trạng thái nếu là cuộc trò chuyện cá nhân
             <span className="text-xs text-[var(--color-text-secondary)]">
               {partnerStatus?.status === "online" ? "Đang hoạt động" : "Ngoại tuyến"}
             </span>
@@ -68,28 +63,26 @@ const ChatHeader = ({
         </div>
       </div>
 
-      {/* --- Action icons --- */}
+      {/* ============ ACTION ========== */}
       <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
-        {/* --- Add members (only for group) --- */}
+        {/* --- Add members (GROUP) --- */}
         {displayInfo.isGroup && (
-          <button className="p-2 rounded-full hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)]">
-            <Users onClick={() => openModal("addMembers")} size={20} />
+          <button
+            onClick={onOpenAddMembers}
+            size={20}
+            className="p-2 rounded-full hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)]"
+          >
+            <Users />
           </button>
         )}
-
-        {/* --- Voice call --- */}
         <button className="p-2 rounded-full hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)]">
           <Phone size={20} />
         </button>
-
-        {/* --- Video call --- */}
         <button className="p-2 rounded-full hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)]">
           <Video size={20} />
         </button>
-
-        {/* --- Info panel --- */}
         <button className="p-2 rounded-full hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)]">
-          <PanelRight onClick={() => openDrawerInfo("conversationInfo")} size={20} />
+          <PanelRight onClick={onOpenConversationInfo} size={20} />
         </button>
       </div>
     </div>

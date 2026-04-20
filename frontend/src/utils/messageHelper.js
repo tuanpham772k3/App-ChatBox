@@ -1,68 +1,39 @@
-// Hàm helper xử lý Show date
-export const showDateDivider = (previousMsg, currentMsg) => {
-  if (!previousMsg) return true; // Tin đầu tiên luôn hiển thị
+export const buildMessageMeta = (messages, currentUserId) => {
+  return messages.map((msg, index) => {
+    const prevMsg = messages[index - 1];
+    const nextMsg = messages[index + 1];
 
-  const prevTime = new Date(previousMsg.createdAt);
-  const currTime = new Date(currentMsg.createdAt);
+    const currTime = new Date(msg.createdAt);
+    const prevTime = prevMsg ? new Date(prevMsg.createdAt) : null;
+    const nextTime = nextMsg ? new Date(nextMsg.createdAt) : null;
 
-  // Kiểm tra ngày gửi tin
-  return currTime.toDateString() !== prevTime.toDateString();
-};
+    const isMine = msg.sender?._id === currentUserId;
 
-// Hàm helper xử lý Show time
-export const showTimeDivider = (currentMsg, nextMsg) => {
-  // Tin cuối cùng trong danh sách → luôn hiển thị time
-  if (!nextMsg) return true;
+    const isNewDayWithPrev =
+      !prevMsg || currTime.toDateString() !== prevTime.toDateString();
 
-  const currSender = currentMsg.sender?._id;
-  const nextSender = nextMsg.sender?._id;
+    const isDifferentSenderWithPrev = prevMsg && prevMsg.sender?._id !== msg.sender?._id;
 
-  // Nếu người gửi KHÁC → kết thúc block hiện tại → show time
-  if (currSender !== nextSender) return true;
+    const isDifferentSenderWithNext = nextMsg && nextMsg.sender?._id !== msg.sender?._id;
 
-  const currTime = new Date(currentMsg.createdAt);
-  const nextTime = new Date(nextMsg.createdAt);
+    return {
+      ...msg,
 
-  return currTime.toDateString() !== nextTime.toDateString(); // Ngày khác nhau thì hiển thị
-};
+      meta: {
+        isMine,
 
-// Hiển thị tên người dùng trong group chat
-export const showSenderName = (previousMsg, currentMsg, currentUserId) => {
-  // Không hiển thị tên nếu không có tin nhắn hiện tại
-  if (!currentMsg) return false;
+        showDate: isNewDayWithPrev,
 
-  // Tin nhắn của chính mình → không cần hiện tên
-  if (currentMsg.sender?._id === currentUserId) return false;
+        showName: !isMine && (!prevMsg || isDifferentSenderWithPrev || isNewDayWithPrev),
 
-  if (!previousMsg) return true; // Tin đầu tiên luôn hiển thị tên
+        showAvatar:
+          !isMine && (!prevMsg || isDifferentSenderWithPrev || isNewDayWithPrev),
 
-  // Nếu tin trước là của mình → hiện tên người khác
-  if (previousMsg.sender?._id !== currentMsg.sender?._id) return true;
-
-  const prevTime = new Date(previousMsg.createdAt);
-  const currTime = new Date(currentMsg.createdAt);
-
-  const isNewDay = currTime.toDateString() !== prevTime.toDateString();
-
-  return isNewDay;
-};
-
-// Hiển thị avatar người gửi
-export const showAvatarDivider = (previousMsg, currentMsg, currentUserId) => {
-  // Không hiển thị avatar nếu không có tin nhắn hiện tại
-  if (!currentMsg) return false;
-
-  // Tin nhắn của chính mình → không cần hiện avatar
-  if (currentMsg.sender?._id === currentUserId) return false;
-
-  if (!previousMsg) return true; // Tin đầu tiên luôn hiển thị avatar
-
-  const isDifferentSender = previousMsg.sender?._id !== currentMsg.sender?._id;
-
-  const prevTime = new Date(previousMsg.createdAt);
-  const currTime = new Date(currentMsg.createdAt);
-  const isNewDay = currTime.toDateString() !== prevTime.toDateString();
-
-  // Nếu ngắt mạch hội thoại
-  return isDifferentSender || isNewDay;
+        showTime:
+          !nextMsg ||
+          isDifferentSenderWithNext ||
+          (nextTime && currTime.toDateString() !== nextTime.toDateString()),
+      },
+    };
+  });
 };

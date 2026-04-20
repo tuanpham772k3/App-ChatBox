@@ -7,17 +7,12 @@ const ChatPage = () => {
   const [activeChatId, setActiveChatId] = useState(null);
 
   return (
-    <div className="w-full h-screen">
-      <div className="w-full h-full flex justify-center">
-        <Sidebar />
+    <div className="w-full h-screen flex justify-center">
+      <Sidebar />
 
-        <ConversationContainer
-          activeChatId={activeChatId}
-          onSelectChat={setActiveChatId}
-        />
+      <ConversationContainer activeChatId={activeChatId} onSelectChat={setActiveChatId} />
 
-        <ChatWindow activeChatId={activeChatId} onBack={() => setActiveChatId(null)} />
-      </div>
+      <ChatWindow activeChatId={activeChatId} onBack={() => setActiveChatId(null)} />
     </div>
   );
 };

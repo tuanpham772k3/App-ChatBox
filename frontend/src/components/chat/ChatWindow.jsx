@@ -10,10 +10,22 @@ import DrawerMediaGallery from "./DrawerMediaGallery";
 import ModalRemoveMembers from "./ModalRemoveMembers";
 import ModalAddMembers from "./ModalAddMembers";
 import { getConversationImages } from "@/store/conversationsSlice";
-import { clearMessages } from "@/store/messagesSlice";
 import { getDisplayInfo, getTypingNames } from "@/utils/conversationHelper";
 import { useMessages } from "@/hooks/useMessages";
 import { emitEvent } from "@/lib/socket";
+import ModalLeaveGroup from "./ModalLeaveGroup";
+
+const MODAL = {
+  ADD: "addMembers",
+  REMOVE: "removeMembers",
+  LEAVE: "leaveGroup",
+};
+
+const DRAWER = {
+  INFO: "conversationInfo",
+  MEMBERS: "membersInfo",
+  MEDIA: "media",
+};
 
 const ChatWindow = ({ activeChatId, onBack }) => {
   const dispatch = useDispatch();
@@ -22,15 +34,15 @@ const ChatWindow = ({ activeChatId, onBack }) => {
     statusUsers = {},
     images = [],
   } = useSelector((state) => state.conversations);
-  const currentUserId = useSelector((state) => state.auth.user?.id) || {};
+  const currentUserId = useSelector((state) => state.auth.user?.id);
 
   const [editingMessage, setEditingMessage] = useState({
     id: null,
     content: "",
     originalContent: "",
   });
-  const [openModal, setOpenModal] = useState(null); // "addMembers" | "removeMembers"
-  const [openDrawer, setOpenDrawer] = useState(null); // "conversationInfo" | "membersInfo" | "media" | null
+  const [openModal, setOpenModal] = useState(null);
+  const [openDrawer, setOpenDrawer] = useState(null);
   const [selectedMemberId, setSelectedMemberId] = useState(null);
 
   // typingUsers: { [conversationId]: { [userId]: username } }
@@ -46,32 +58,18 @@ const ChatWindow = ({ activeChatId, onBack }) => {
   );
   const partnerStatus = displayInfo.partnerId ? statusUsers[displayInfo.partnerId] : null;
 
-  // Open Modal AddMembers
-  const openModalMembers = (type) => setOpenModal(type);
-  const closeModalMembers = () => setOpenModal(false);
-  // Open Drawer
-  const closeDrawerInfo = () => setOpenDrawer(null);
-  const openDrawerInfo = async (type) => {
-    setOpenDrawer(type);
-
-    if (type === "conversationInfo" && currentConversation?._id) {
-      try {
-        await dispatch(
-          getConversationImages({
-            conversationId: currentConversation._id,
-            limit: 8,
-          })
-        ).unwrap();
-      } catch (error) {
-        console.log("Lỗi lấy danh sách ảnh: ", error);
-      }
-    }
-  };
-
-  // Clear tin nhắn cũ khi chuyển sang cuộc trò chuyện mới
   useEffect(() => {
-    dispatch(clearMessages());
-  }, [activeChatId]);
+    if (openDrawer === DRAWER.INFO && currentConversation?._id) {
+      dispatch(
+        getConversationImages({
+          conversationId: currentConversation._id,
+          limit: 8,
+        })
+      )
+        .unwrap()
+        .catch(console.error);
+    }
+  }, [openDrawer, currentConversation?._id, dispatch]);
 
   useEffect(() => {
     if (!activeChatId) return;
@@ -97,63 +95,66 @@ const ChatWindow = ({ activeChatId, onBack }) => {
       {/* --- Header --- */}
       <ChatHeader
         onBack={onBack}
-        openDrawerInfo={openDrawerInfo}
-        openModal={openModalMembers}
+        onOpenConversationInfo={() => setOpenDrawer(DRAWER.INFO)}
+        onOpenAddMembers={() => setOpenModal(MODAL.ADD)}
+        onOpenMembersInfo={() => setOpenDrawer(DRAWER.MEMBERS)}
         displayInfo={displayInfo}
         partnerStatus={partnerStatus}
       />
 
-      {/* Messages */}
       <Messages setEditingMessage={setEditingMessage} />
 
-      {/* Input Message */}
       <MessageInput
         editingMessage={editingMessage}
         setEditingMessage={setEditingMessage}
       />
 
-      {/* Drawer conversation info */}
       <DrawerConversationInfo
-        open={openDrawer === "conversationInfo"}
-        onClose={closeDrawerInfo}
+        open={openDrawer === DRAWER.INFO}
+        onClose={() => setOpenDrawer(null)}
         displayInfo={displayInfo}
-        openDrawerInfo={openDrawerInfo}
+        onOpenMembersInfo={() => setOpenDrawer(DRAWER.MEMBERS)}
+        onOpenMediaGallery={() => setOpenDrawer(DRAWER.MEDIA)}
         images={images}
       />
 
-      {/* Drawer members info */}
       <DrawerMembersInfo
-        open={openDrawer === "membersInfo"}
-        onClose={closeDrawerInfo}
-        openModal={openModalMembers}
+        open={openDrawer === DRAWER.MEMBERS}
+        onClose={() => setOpenDrawer(null)}
+        onOpenAddMembers={() => setOpenModal(MODAL.ADD)}
         currentUserId={currentUserId}
         members={displayInfo.participants || []}
         onRemoveMember={(memberId) => {
           setSelectedMemberId(memberId);
-          openModalMembers("removeMembers");
+          setOpenModal(MODAL.REMOVE);
         }}
       />
 
       <DrawerMediaGallery
-        open={openDrawer === "media"}
-        onClose={() => {
-          openDrawerInfo("conversationInfo");
-        }}
+        open={openDrawer === DRAWER.MEDIA}
+        onClose={() => setOpenDrawer(DRAWER.INFO)}
         images={images}
       />
 
-      {/* === MODAL === */}
       <ModalAddMembers
-        isOpen={openModal === "addMembers"}
-        onCancel={closeModalMembers}
+        isOpen={openModal === MODAL.ADD}
+        onCancel={() => setOpenModal(null)}
         conversationId={currentConversation?._id}
       />
 
       <ModalRemoveMembers
-        isOpen={openModal === "removeMembers"}
-        onCancel={closeModalMembers}
+        isOpen={openModal === MODAL.REMOVE}
+        onCancel={() => setOpenModal(null)}
         conversationId={currentConversation?._id}
         memberId={selectedMemberId}
+      />
+
+      <ModalLeaveGroup
+        isOpen={openModal === MODAL.LEAVE}
+        onClose={() => setOpenModal(null)}
+        conversationId={currentConversation?._id}
+        currentUser={displayInfo?.currentUser}
+        members={displayInfo?.participants}
       />
     </div>
   );

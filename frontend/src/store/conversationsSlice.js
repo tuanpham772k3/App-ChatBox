@@ -122,10 +122,7 @@ export const getConversationImages = createAsyncThunk(
   "conversations/getImages",
   async ({ conversationId, limit = 8 }, { rejectWithValue }) => {
     try {
-      const images = await conversationApi.getConversationImages(
-        conversationId,
-        limit
-      );
+      const images = await conversationApi.getConversationImages(conversationId, limit);
       return {
         conversationId,
         images,
@@ -217,10 +214,11 @@ const conversationsSlice = createSlice({
       const idx = state.conversations.findIndex((c) => c._id === conversationId);
       if (idx === -1) return;
 
-      state.conversations[idx].lastMessage = lastMessage;
+      const conv = state.conversations[idx];
+      conv.lastMessage = lastMessage;
 
       // move to top
-      const [conv] = state.conversations.splice(idx, 1);
+      state.conversations.splice(idx, 1);
       state.conversations.unshift(conv);
     },
 
@@ -231,8 +229,8 @@ const conversationsSlice = createSlice({
       const conv = state.conversations.find((c) => c._id === conversationId);
       if (!conv) return;
 
-      const p = conv.participants.find((p) => p.user._id === userId);
-      if (p) p.unreadCount = unreadCount;
+      const participants = conv.participants.find((p) => p.user._id === userId);
+      if (participants) participants.unreadCount = unreadCount;
     },
 
     // Realtime đã đọc (sync cho người khác)

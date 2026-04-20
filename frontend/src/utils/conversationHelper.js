@@ -4,135 +4,99 @@
  * @param {string} currentUserId - id của chính mình
  * @returns {Object|null} thông tin hiển thị của conversation
  */
-export const getDisplayInfo = (conversation, currentUserId) => {
-  if (!conversation) return null;
-
-  // Validation participants có tồn tại và là mảng
-  if (!conversation.participants || !Array.isArray(conversation.participants)) {
-    return null;
-  }
-
-  // Lấy người đối diện trong conversation (1-1)
-  const partner = conversation.participants.find((p) => p.user._id !== currentUserId);
-  const partnerId = partner?.user?._id;
-
-  // Lấy danh sách người tham gia conversation (GROUP) && populate (id, name, avatarUrl, role)
-  const participants = conversation.participants.map((p) => {
-    const isMe = p.user._id === currentUserId;
-    return {
-      id: p.user._id,
-      name: isMe ? "Bạn" : p.user.username,
-      avatarUrl: p.user.avatarUrl?.url || "/avatarA.jpg",
-      role: p.role,
-    };
-  });
-
-  // Lấy thông tin của chính mình trong conversation
-  const mySelf = conversation.participants.find((p) => p.user._id === currentUserId);
-
-  const currentUser = mySelf
-    ? {
-        id: mySelf.user._id,
-        name: "Bạn",
-        avatarUrl: mySelf.user.avatarUrl?.url || "/avatarA.jpg",
-        role: mySelf.role,
-      }
-    : null;
-
-  // Lấy hội thoại nhóm
-  const isGroup = conversation.type === "group";
-
-  // Tên hiển thị
-  const displayName = isGroup
-    ? conversation.name
-    : partner?.user?.username || "Người dùng";
-
-  // Avatar hiển thị
-  const displayAvatar = isGroup ? null : partner?.user?.avatarUrl.url || "/avatarA.jpg";
-
-  // Thông tin tin nhắn cuối
-  const lastMsg = conversation.lastMessage; // message cuối cùng
-  const isMeLastSender = lastMsg?.sender?._id === currentUserId; // Kiểm tra người gửi có phải mình không
-
-  // Người gửi tin nhắn cuối
-  const lastMsgSender = isMeLastSender ? "Bạn" : lastMsg?.sender?.username || "";
-
-  // Nội dung tin nhắn cuối
-  const lastMsgContent = lastMsg?.content || "Chưa có tin nhắn";
-
-  // Thời gian tin nhắn cuối
-  const lastMsgTime = lastMsg?.createdAt ? formatConversationTime(lastMsg.createdAt) : "";
-
-  // Số tin nhắn chưa đọc
-  const selfParticipant = conversation.participants.find(
-    (p) => p.user._id === currentUserId
-  );
-  const unreadCount = selfParticipant?.unreadCount || 0;
-
-  return {
-    id: conversation._id,
-    isGroup,
-    partner,
-    partnerId,
-    participants,
-    currentUser,
-    displayName,
-    displayAvatar,
-    lastMsgSender,
-    lastMsgContent,
-    lastMsgTime,
-    unreadCount,
-  };
+const getPartner = (participants, currentUserId) => {
+  return participants.find((p) => p.user._id !== currentUserId);
 };
 
-/**
- * Định dạng thời gian giống các app chat:
- * - Hôm nay: HH:mm
- * - Hôm qua: "Hôm qua"
- * - Cùng tuần: "Thứ x"
- * - Còn lại: "dd/MM"
- */
-export const formatConversationTime = (isoString) => {
+const getCurrentUser = (participants, currentUserId) => {
+  return participants.find((p) => p.user._id === currentUserId);
+};
+
+const mapParticipants = (participants, currentUserId) => {
+  return participants.map((p) => ({
+    id: p.user._id,
+    name: p.user._id === currentUserId ? "Bạn" : p.user.username,
+    avatarUrl: p.user.avatarUrl?.url || "/avatarA.jpg",
+    role: p.role,
+  }));
+};
+
+const formatConversationTime = (isoString) => {
   if (!isoString) return "";
+
   const date = new Date(isoString);
   const now = new Date();
 
-  const isSameDay =
-    date.getFullYear() === now.getFullYear() &&
-    date.getMonth() === now.getMonth() &&
-    date.getDate() === now.getDate();
+  const isSameDay = date.toDateString() === now.toDateString();
 
-  const yesterday = new Date(now);
+  const yesterday = new Date();
   yesterday.setDate(now.getDate() - 1);
 
-  const isYesterday =
-    date.getFullYear() === yesterday.getFullYear() &&
-    date.getMonth() === yesterday.getMonth() &&
-    date.getDate() === yesterday.getDate();
+  const isYesterday = date.toDateString() === yesterday.toDateString();
 
   if (isSameDay) {
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   }
 
-  if (isYesterday) {
-    return "Hôm qua";
-  }
+  if (isYesterday) return "Hôm qua";
 
-  // Thứ trong tuần (0: CN)
-  const weekdayNames = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
-
-  // Nếu trong cùng tuần hiện tại thì hiển thị "T2/T3..."
-  const startOfWeek = new Date(now);
-  startOfWeek.setDate(now.getDate() - now.getDay()); // Chủ nhật
+  const startOfWeek = new Date();
+  startOfWeek.setDate(now.getDate() - now.getDay());
 
   if (date >= startOfWeek) {
-    return weekdayNames[date.getDay()];
+    return ["CN", "T2", "T3", "T4", "T5", "T6", "T7"][date.getDay()];
   }
 
-  // Mặc định dd/MM
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  return `${day}/${month}`;
+  return `${String(date.getDate()).padStart(2, "0")}/${String(
+    date.getMonth() + 1
+  ).padStart(2, "0")}`;
+};
+
+const getLastMessageInfo = (lastMsg, currentUserId) => {
+  if (!lastMsg) {
+    return {
+      sender: "",
+      content: "Chưa có tin nhắn",
+      time: "",
+    };
+  }
+
+  const isMe = lastMsg.sender?._id === currentUserId;
+
+  return {
+    sender: isMe ? "Bạn" : lastMsg.sender?.username || "",
+    content: lastMsg.content || "",
+    time: lastMsg.createdAt ? formatConversationTime(lastMsg.createdAt) : "",
+  };
+};
+
+export const getDisplayInfo = (conversation, currentUserId) => {
+  if (!conversation) return null;
+
+  const { participants = [], type, name, lastMessage } = conversation;
+
+  const partner = getPartner(participants, currentUserId);
+  const currentUser = getCurrentUser(participants, currentUserId);
+  const mappedParticipants = mapParticipants(participants, currentUserId);
+  const lastMsg = getLastMessageInfo(lastMessage, currentUserId);
+
+  const isGroup = type === "group";
+
+  return {
+    id: conversation._id,
+    isGroup,
+    partner,
+    partnerId: partner?.user?._id,
+    currentUser,
+    participants: mappedParticipants,
+    displayName: isGroup ? name : partner?.user?.username || "Người dùng",
+    displayAvatar: isGroup
+      ? null
+      : partner?.user?.avatarUrl?.url || "/avatar-default.jpg",
+    lastMsgSender: lastMsg.sender,
+    lastMsgContent: lastMsg.content,
+    lastMsgTime: lastMsg.time,
+  };
 };
 
 /**

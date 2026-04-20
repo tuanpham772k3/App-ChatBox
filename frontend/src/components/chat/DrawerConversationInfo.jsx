@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Drawer } from "antd";
 import {
   ArrowLeft,
@@ -13,17 +13,15 @@ import {
   Users,
 } from "lucide-react";
 import GroupAvatar from "@/components/ui/avatar/GroupAvatar";
-import ModalLeaveGroup from "./ModalLeaveGroup";
 
 const DrawerConversationInfo = ({
   open,
   onClose,
   displayInfo,
-  openDrawerInfo,
+  onOpenMembersInfo,
+  onOpenMediaGallery,
   images,
 }) => {
-  const [openLeaveModal, setOpenLeaveModal] = useState(false);
-
   const headerActions = [
     { icon: <Bell size={20} />, label: "Tắt thông báo" },
     { icon: <Pin size={20} />, label: "Ghim hội thoại" },
@@ -57,7 +55,7 @@ const DrawerConversationInfo = ({
           <div className="flex flex-col items-center gap-2 p-4 border-b-4 border-[var(--color-border)]">
             {/* Group Avatar */}
             {displayInfo.isGroup ? (
-              <GroupAvatar users={displayInfo?.participants} size={60} />
+              <GroupAvatar users={displayInfo.participants || []} size={60} />
             ) : (
               <img
                 src={displayInfo.displayAvatar}
@@ -94,7 +92,7 @@ const DrawerConversationInfo = ({
               Thành viên nhóm
             </h3>
             <button
-              onClick={() => openDrawerInfo("membersInfo")}
+              onClick={onOpenMembersInfo}
               className="w-full flex items-center gap-2 px-4 py-3 text-sm text-[var(--color-text-primary)] hover:bg-[var(--color-hover-soft)] rounded"
             >
               <Users size={18} />
@@ -132,7 +130,7 @@ const DrawerConversationInfo = ({
               ))}
             </div>
             <button
-              onClick={() => openDrawerInfo("media")}
+              onClick={onOpenMediaGallery}
               className="w-full py-1 my-1 text-base font-semibold text-[var(--color-text-primary)] bg-[var(--color-chat)] hover:bg-[var(--color-hover-soft)] rounded"
             >
               Xem tất cả
@@ -171,15 +169,6 @@ const DrawerConversationInfo = ({
           </div>
         </div>
       </Drawer>
-
-      {/* Modal xác nhận rời nhóm */}
-      <ModalLeaveGroup
-        open={openLeaveModal}
-        onClose={() => setOpenLeaveModal(false)}
-        conversationId={displayInfo?.id}
-        currentUser={displayInfo?.currentUser}
-        members={displayInfo?.participants}
-      />
     </>
   );
 };

@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Image, MapPin, Mic, Navigation, Smile } from "lucide-react";
+import { Image, MapPin, Mic, Navigation, Send, Smile } from "lucide-react";
 import { Upload } from "antd";
 import { emitEvent } from "@/lib/socket";
 import { useNotification } from "@/hooks/useNotification";
@@ -18,11 +18,12 @@ const MessageInput = ({ editingMessage, setEditingMessage }) => {
 
   const notification = useNotification();
 
-  // Xử lý gửi tin nhắn
-  const handleSend = async () => {
-    try {
-      if (!text.trim()) return;
+  const isEditing = Boolean(id);
+  const inputValue = isEditing ? content : text;
 
+  // Xử lý gửi tin nhắn
+  const sendMessage = async (payload) => {
+    try {
       // 1. Tạo id message tạm thời
       const tempId = "temp-" + Date.now();
 
@@ -33,10 +34,9 @@ const MessageInput = ({ editingMessage, setEditingMessage }) => {
           content: text,
           sender: { _id: user.id }, // Để xử lý redux thunk
           tempId,
+          ...payload,
         })
       ).unwrap();
-
-      setText("");
     } catch (err) {
       notification.error({
         message: "Gửi tin nhắn thất bại",
@@ -45,10 +45,33 @@ const MessageInput = ({ editingMessage, setEditingMessage }) => {
     }
   };
 
+  const handleSend = async () => {
+    if (!text.trim()) return;
+
+    await sendMessage({
+      content: text,
+    });
+
+    setText("");
+  };
+
+  const handleUploadImage = async ({ file }) => {
+    const previewUrl = URL.createObjectURL(file);
+
+    await sendMessage({
+      file: {
+        url: previewUrl,
+        filename: file.name,
+        mimeType: file.type,
+        size: file.size,
+        localFile: file,
+      },
+    });
+  };
+
   // Xử lý chỉnh sửa tin nhắn
   const handleEdit = async () => {
     try {
-      if (!id) return;
       if (!content.trim()) return;
       if (content.trim() === originalContent.trim()) return;
 
@@ -57,6 +80,7 @@ const MessageInput = ({ editingMessage, setEditingMessage }) => {
       setEditingMessage({
         id: null,
         content: "",
+        originalContent: "",
       });
     } catch (error) {
       notification.error({
@@ -64,6 +88,14 @@ const MessageInput = ({ editingMessage, setEditingMessage }) => {
         description: error.message || "Có lỗi xảy ra, vui lòng thử lại",
       });
     }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingMessage({
+      id: null,
+      content: "",
+      originalContent: "",
+    });
   };
 
   const handleOnchange = (e) => {
@@ -98,52 +130,63 @@ const MessageInput = ({ editingMessage, setEditingMessage }) => {
     }, 1000);
   };
 
-  const handleUploadImage = async ({ file }) => {
-    try {
-      // 1. Tạo preview local ngay
-      const previewUrl = URL.createObjectURL(file);
-
-      // 2. Tạo id message tạm thời
-      const tempId = "temp-" + Date.now();
-
-      // 3. Tạo message image
-      await dispatch(
-        createNewMessage({
-          conversationId: currentConversation._id,
-          sender: { _id: user.id }, // Để xử lý redux thunk
-          tempId,
-          file: {
-            url: previewUrl, // preview để hiển thị ngay
-            filename: file.name,
-            mimeType: file.type,
-            size: file.size,
-            localFile: file, // dùng để upload sau
-          },
-        })
-      ).unwrap();
-    } catch (err) {
-      notification.error({
-        message: "Upload ảnh thất bại",
-        description: err.message || "Có lỗi xảy ra",
-      });
-    }
-  };
-
   return (
-    <div className="flex items-center px-4 py-4 border-t border-[var(--color-border)]">
-      {/* Input Message */}
-      <div className="flex-1 flex items-center justify-between px-4 py-1 bg-[var(--color-chat)] rounded-full">
-        {/* Micro */}
-        <button
-          className="w-9 h-9 flex justify-center items-center rounded-full hover:bg-[var(--color-icon-hover-bg)] 
-        text-[var(--color-text-secondary)] hover:text-[var(--color-icon-hover-text)]"
-        >
-          <Mic className="w-5 h-5" />
-        </button>
+    <div className="flex flex-col p-4 border-t border-[var(--color-border)]">
+      {/* ====== Editing ====== */}
+      {isEditing && (
+        <div className="p-2 pb-2 text-sm text-[var(--color-text-secondary)] flex items-center justify-between">
+          <span>Đang chỉnh sửa tin nhắn</span>
+          <button onClick={handleCancelEdit} className="text-blue-500 hover:underline">
+            Hủy
+          </button>
+        </div>
+      )}
 
-        {/* Input */}
+      <div className="flex-1 flex items-center justify-between gap-2">
+        {/* ====== Action ======= */}
+        <div className="flex items-center gap-1">
+          <Upload
+            showUploadList={false}
+            customRequest={handleUploadImage}
+            accept="image/*"
+          >
+            <button
+              className="w-9 h-9 flex justify-center items-center rounded-full hover:bg-[var(--color-icon-hover-bg)] 
+        text-[var(--color-text-secondary)] hover:text-[var(--color-icon-hover-text)]"
+            >
+              <Image className="w-5 h-5" />
+            </button>
+          </Upload>
+
+          <button
+            className="w-9 h-9 flex justify-center items-center rounded-full hover:bg-[var(--color-icon-hover-bg)] 
+        text-[var(--color-text-secondary)] hover:text-[var(--color-icon-hover-text)]"
+          >
+            <Smile className="w-5 h-5" />
+          </button>
+          <button
+            className="w-9 h-9 flex justify-center items-center rounded-full hover:bg-[var(--color-icon-hover-bg)] 
+        text-[var(--color-text-secondary)] hover:text-[var(--color-icon-hover-text)]"
+          >
+            <Navigation className="w-5 h-5" />
+          </button>
+          <button
+            className="w-9 h-9 flex justify-center items-center rounded-full hover:bg-[var(--color-icon-hover-bg)] 
+        text-[var(--color-text-secondary)] hover:text-[var(--color-icon-hover-text)]"
+          >
+            <MapPin className="w-5 h-5" />
+          </button>
+          <button
+            className="w-9 h-9 flex justify-center items-center rounded-full hover:bg-[var(--color-icon-hover-bg)] 
+        text-[var(--color-text-secondary)] hover:text-[var(--color-icon-hover-text)]"
+          >
+            <Mic className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* ====== Input ====== */}
         <input
-          value={id ? content : text}
+          value={inputValue}
           onChange={handleOnchange}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
@@ -152,40 +195,21 @@ const MessageInput = ({ editingMessage, setEditingMessage }) => {
           }}
           type="text"
           placeholder="Type a message..."
-          className="flex-1 bg-[var(--bg-chat)] rounded-full ps-3 text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)] placeholder:text-xs focus:outline-none"
+          className="flex-1 bg-[var(--color-chat)] rounded-full p-2 text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)] placeholder:text-xs focus:outline-none"
         />
 
-        {/* Action buttons */}
-        {/* Upload */}
-        <Upload showUploadList={false} customRequest={handleUploadImage} accept="image/*">
-          <button
-            className="w-9 h-9 flex justify-center items-center rounded-full hover:bg-[var(--color-icon-hover-bg)] 
-        text-[var(--color-text-secondary)] hover:text-[var(--color-icon-hover-text)]"
-          >
-            <Image className="w-5 h-5" />
-          </button>
-        </Upload>
-
-        {/* Smile */}
+        {/* ===== SEND BUTTON ===== */}
         <button
-          className="w-9 h-9 flex justify-center items-center rounded-full hover:bg-[var(--color-icon-hover-bg)] 
-        text-[var(--color-text-secondary)] hover:text-[var(--color-icon-hover-text)]"
+          onClick={id ? handleEdit : handleSend}
+          disabled={!inputValue.trim()}
+          className={`w-9 h-9 flex items-center justify-center rounded-full
+      ${
+        inputValue.trim()
+          ? "bg-blue-500 text-white hover:bg-blue-600"
+          : "bg-gray-200 text-gray-400 cursor-not-allowed"
+      }`}
         >
-          <Smile className="w-5 h-5" />
-        </button>
-        {/* Location */}
-        <button
-          className="w-9 h-9 flex justify-center items-center rounded-full hover:bg-[var(--color-icon-hover-bg)] 
-        text-[var(--color-text-secondary)] hover:text-[var(--color-icon-hover-text)]"
-        >
-          <Navigation className="w-5 h-5" />
-        </button>
-        {/* Map */}
-        <button
-          className="w-9 h-9 flex justify-center items-center rounded-full hover:bg-[var(--color-icon-hover-bg)] 
-        text-[var(--color-text-secondary)] hover:text-[var(--color-icon-hover-text)]"
-        >
-          <MapPin className="w-5 h-5" />
+          <Send className="w-5 h-5" />
         </button>
       </div>
     </div>

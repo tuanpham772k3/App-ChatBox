@@ -5,7 +5,7 @@ import { ArrowLeft, Key, Search, Trash, Users } from "lucide-react";
 const DrawerMembersInfo = ({
   open,
   onClose,
-  openModal,
+  onOpenAddMembers,
   currentUserId,
   members,
   onRemoveMember,
@@ -66,7 +66,7 @@ const DrawerMembersInfo = ({
         {/* Nút thêm thành viên */}
         <div className="p-4">
           <button
-            onClick={() => openModal("addMembers")}
+            onClick={onOpenAddMembers}
             className="w-full flex items-center justify-center gap-2 py-2 font-medium text-base text-[var(--color-text-primary)] 
         bg-[var(--color-chat)] hover:bg-[var(--color-hover-soft)] rounded"
           >
@@ -154,4 +154,4 @@ const DrawerMembersInfo = ({
   );
 };
 
-export default React.memo(DrawerMembersInfo);
+export default DrawerMembersInfo;

@@ -3,6 +3,22 @@ import { Check, CheckCheck, Clock, EllipsisVertical, Pencil, Trash } from "lucid
 import { Popover } from "antd";
 import MenuActions from "@/components/ui/popover/MenuActions";
 
+const buildMessageActions = ({ onEdit, onDelete }) => [
+  {
+    key: "edit",
+    icon: <Pencil size={18} />,
+    label: "Chỉnh sửa tin nhắn",
+    onClick: onEdit,
+  },
+  {
+    key: "delete",
+    icon: <Trash size={18} />,
+    label: "Thu hồi tin nhắn",
+    danger: true,
+    onClick: onDelete,
+  },
+];
+
 const MessageItem = ({
   msg,
   isMine,
@@ -36,33 +52,25 @@ const MessageItem = ({
   // Date tin hiện tại
   const msgTime = new Date(msg.createdAt);
 
-  // Danh sách những người đã đọc tin nhắn
-  let readers = [];
+  const getReaders = (participants, currentUserId, msgId) => {
+    if (!participants) return [];
 
-  if (isMine && isLastMessage && conversation?.participants) {
-    readers = conversation.participants.filter((p) => {
-      if (p.user._id === currentUserId) return;
-      if (!p.lastReadMessage) return;
-      return p.lastReadMessage >= msg._id;
+    return participants.filter((p) => {
+      if (p.user._id === currentUserId) return false;
+      if (!p.lastReadMessage) return false;
+      return p.lastReadMessage >= msgId;
     });
-  }
+  };
 
-  // Menu actions
-  const messageActions = [
-    {
-      key: "edit",
-      icon: <Pencil size={18} />,
-      label: "Chỉnh sửa tin nhắn",
-      onClick: handleEdit,
-    },
-    {
-      key: "delete",
-      icon: <Trash size={18} />,
-      label: "Thu hồi tin nhắn",
-      danger: true,
-      onClick: handleDelete,
-    },
-  ];
+  const readers =
+    isMine && isLastMessage
+      ? getReaders(conversation?.participants, currentUserId, msg._id)
+      : [];
+
+  const messageActions = buildMessageActions({
+    onEdit: handleEdit,
+    onDelete: handleDelete,
+  });
 
   return (
     <>
