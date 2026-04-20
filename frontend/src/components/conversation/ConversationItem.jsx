@@ -1,19 +1,10 @@
 import React from "react";
 import { Ellipsis } from "lucide-react";
-import { getTypingNames } from "../../utils/conversationHelper";
 import GroupAvatar from "@/components/ui/avatar/GroupAvatar";
 import PopoverConversationAction from "./PopoverConversationAction";
 
-const ConversationItem = ({
-  isActive,
-  display,
-  onSelect,
-  onRemoveConversationForMe,
-  typingUsers,
-  currentUserId,
-  partnerStatus,
-}) => {
-  const typingNames = getTypingNames(typingUsers, currentUserId);
+const ConversationItem = ({ isActive, display, onSelect, onRemove, partnerStatus }) => {
+  const isOnline = !display.isGroup && partnerStatus?.status === "online";
 
   return (
     <div
@@ -38,7 +29,7 @@ const ConversationItem = ({
           />
         )}
 
-        {partnerStatus?.status === "online" && (
+        {isOnline && (
           <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[var(--color-app)] rounded-full"></span>
         )}
       </div>
@@ -51,20 +42,12 @@ const ConversationItem = ({
           <div className="flex items-center text-xs text-[var(--color-text-secondary)] min-w-0">
             {/* Main Content (Last Message or Typing) */}
             <span className="flex-1 min-w-0 max-w-60 overflow-hidden truncate">
-              {typingNames.length > 0 ? (
-                <span className="text-xs italic text-green-500">
-                  {typingNames.join(", ")} đang gõ...
-                </span>
-              ) : (
+              {display.lastMsgSender && (
                 <>
-                  {display.lastMsgSender && (
-                    <>
-                      <span className="text-[var(--color-text-secondary)]">
-                        {display.lastMsgSender}:{" "}
-                      </span>
-                      <span>{display.lastMsgContent}</span>
-                    </>
-                  )}
+                  <span className="text-[var(--color-text-secondary)]">
+                    {display.lastMsgSender}:{" "}
+                  </span>
+                  <span>{display.lastMsgContent}</span>
                 </>
               )}
             </span>
@@ -78,7 +61,7 @@ const ConversationItem = ({
 
         {/* Ellipsis + Unread badge*/}
         <div className="flex items-center gap-1 ml-2 mr-2 shrink-0">
-          <PopoverConversationAction onRemove={onRemoveConversationForMe}>
+          <PopoverConversationAction onRemove={onRemove}>
             {({ open }) => (
               <button
                 type="button"

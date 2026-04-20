@@ -5,7 +5,6 @@ const messageSocket = (io, socket) => {
     if (!conversationId) return;
     socket.to(`conversation_${conversationId}`).emit("user_typing", {
       userId: socket.userId,
-      username: socket.user.username,
       conversationId,
     });
   });

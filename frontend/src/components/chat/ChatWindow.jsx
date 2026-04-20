@@ -10,7 +10,7 @@ import DrawerMediaGallery from "./DrawerMediaGallery";
 import ModalRemoveMembers from "./ModalRemoveMembers";
 import ModalAddMembers from "./ModalAddMembers";
 import { getConversationImages } from "@/store/conversationsSlice";
-import { getDisplayInfo, getTypingNames } from "@/utils/conversationHelper";
+import { getDisplayInfo } from "@/utils/conversationHelper";
 import { useMessages } from "@/hooks/useMessages";
 import { emitEvent } from "@/lib/socket";
 import ModalLeaveGroup from "./ModalLeaveGroup";
@@ -31,6 +31,7 @@ const ChatWindow = ({ activeChatId, onBack }) => {
   const dispatch = useDispatch();
   const {
     currentConversation,
+    typingUsers = {},
     statusUsers = {},
     images = [],
   } = useSelector((state) => state.conversations);
@@ -45,12 +46,18 @@ const ChatWindow = ({ activeChatId, onBack }) => {
   const [openDrawer, setOpenDrawer] = useState(null);
   const [selectedMemberId, setSelectedMemberId] = useState(null);
 
-  // typingUsers: { [conversationId]: { [userId]: username } }
-  // const currentTypingMap = typingUsers[currentConversation?._id] || {};
-  // const typingNames = getTypingNames(currentTypingMap, user.id);
-
   // Message realtime
   useMessages(activeChatId);
+
+  const typingNames = useMemo(() => {
+    if (!currentConversation) return [];
+
+    const typingMap = typingUsers[currentConversation._id] || {};
+
+    return currentConversation.participants
+      .filter((p) => typingMap[p.user._id] && p.user._id !== currentUserId)
+      .map((p) => p.user.username);
+  }, [typingUsers, currentConversation, currentUserId]);
 
   const displayInfo = useMemo(
     () => getDisplayInfo(currentConversation, currentUserId) || {},
@@ -99,6 +106,7 @@ const ChatWindow = ({ activeChatId, onBack }) => {
         onOpenAddMembers={() => setOpenModal(MODAL.ADD)}
         onOpenMembersInfo={() => setOpenDrawer(DRAWER.MEMBERS)}
         displayInfo={displayInfo}
+        typingNames={typingNames}
         partnerStatus={partnerStatus}
       />
 

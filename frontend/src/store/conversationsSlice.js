@@ -255,32 +255,35 @@ const conversationsSlice = createSlice({
     // User status
     userStatus: (state, action) => {
       const { userId, status, lastSeenAt } = action.payload;
-      if (!state.statusUsers) {
-        state.statusUsers = {};
-      }
-      state.statusUsers[userId] = { status, lastSeenAt };
+
+      state.statusUsers[userId] = {
+        status,
+        lastSeenAt,
+      };
     },
 
     // User typing
     userStartTyping: (state, action) => {
-      const { conversationId, userId, username } = action.payload;
-      if (!state.typingUsers) {
-        state.typingUsers = {};
-      }
+      const { conversationId, userId } = action.payload;
+
       if (!state.typingUsers[conversationId]) {
         state.typingUsers[conversationId] = {};
       }
-      state.typingUsers[conversationId][userId] = username;
+
+      state.typingUsers[conversationId][userId] = true;
     },
 
     // User stop typing
     userStopTyping: (state, action) => {
       const { conversationId, userId } = action.payload;
-      if (state.typingUsers[conversationId]) {
-        delete state.typingUsers[conversationId][userId];
-        if (Object.keys(state.typingUsers[conversationId]).length === 0) {
-          delete state.typingUsers[conversationId];
-        }
+
+      const users = state.typingUsers[conversationId];
+      if (!users) return;
+
+      delete users[userId];
+
+      if (Object.keys(users).length === 0) {
+        delete state.typingUsers[conversationId];
       }
     },
   },

@@ -98,18 +98,3 @@ export const getDisplayInfo = (conversation, currentUserId) => {
     lastMsgTime: lastMsg.time,
   };
 };
-
-/**
- * Lấy danh sách tên những user đang gõ (loại bỏ chính mình)
- * @param {Object|null|undefined} typingUsers - map { userId: username }
- * @param {string} currentUserId - id của chính mình
- * @returns {string[]} danh sách username đang gõ
- */
-export const getTypingNames = (typingUsers, currentUserId) => {
-  if (!typingUsers) return [];
-
-  // typingUsers: { [userId]: username }
-  return Object.entries(typingUsers)
-    .filter(([userId]) => userId !== currentUserId)
-    .map(([, username]) => username);
-};

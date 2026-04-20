@@ -8,6 +8,7 @@ const ChatHeader = ({
   onOpenAddMembers,
   onOpenMembersInfo,
   displayInfo,
+  typingNames,
   partnerStatus,
 }) => {
   return (
@@ -24,7 +25,7 @@ const ChatHeader = ({
         {/* ===== AVATAR ===== */}
         <div className="relative">
           {displayInfo.isGroup ? (
-            <GroupAvatar users={displayInfo.participants || []} size={48} />
+            <GroupAvatar users={displayInfo.participants} size={48} />
           ) : (
             <>
               <img
@@ -41,12 +42,17 @@ const ChatHeader = ({
 
         {/* ===== INFO ===== */}
         <div className="flex flex-col">
+          {/* Name */}
           <h3 className="text-[var(--color-text-primary)] font-semibold">
             {displayInfo.displayName}
           </h3>
 
-          {/* USER STATUS OR NUMBER */}
-          {displayInfo.isGroup ? (
+          {/* Typing or status */}
+          {typingNames.length > 0 ? (
+            <p className="text-xs text-green-500 italic animate-pulse truncate">
+              {typingNames.join(", ")} đang nhập...
+            </p>
+          ) : displayInfo.isGroup ? (
             <button
               onClick={onOpenMembersInfo}
               type="button"
