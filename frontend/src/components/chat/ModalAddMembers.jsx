@@ -10,6 +10,7 @@ import { addMemberToGroup } from "@/store/conversationsSlice";
 
 const ModalAddMembers = ({ isOpen, onCancel, conversationId }) => {
   const dispatch = useDispatch();
+
   const { searchResults = [], loading } = useSelector((state) => state.user);
 
   const [selectedFriends, setSelectedFriends] = useState([]);
@@ -67,12 +68,10 @@ const ModalAddMembers = ({ isOpen, onCancel, conversationId }) => {
         return;
       }
 
-      // Create conversation
       await dispatch(
         addMemberToGroup({ conversationId, memberIds: selectedFriends })
       ).unwrap();
 
-      // Reset state
       setSelectedFriends([]);
       setSearchText("");
       onCancel();

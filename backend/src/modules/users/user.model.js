@@ -43,8 +43,13 @@ const userSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: ["active", "inactive", "banned"],
-      default: "active",
+      default: "inactive",
     }, // Trạng thái tài khoản
+    presence: {
+      type: String,
+      enum: ["online", "offline"],
+      default: "offline",
+    },
     lastSeenAt: {
       type: Date,
       default: Date.now,

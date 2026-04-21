@@ -29,30 +29,34 @@ const DRAWER = {
 
 const ChatWindow = ({ activeChatId, onBack }) => {
   const dispatch = useDispatch();
+
+  const currentUserId = useSelector((state) => state.auth.user?.id);
   const {
-    currentConversation,
+    conversations = [],
+    currentConversationId = null,
     typingUsers = {},
     statusUsers = {},
     images = [],
   } = useSelector((state) => state.conversations);
-  const currentUserId = useSelector((state) => state.auth.user?.id);
 
+  const [openModal, setOpenModal] = useState(null);
+  const [openDrawer, setOpenDrawer] = useState(null);
+  const [selectedMemberId, setSelectedMemberId] = useState(null);
   const [editingMessage, setEditingMessage] = useState({
     id: null,
     content: "",
     originalContent: "",
   });
-  const [openModal, setOpenModal] = useState(null);
-  const [openDrawer, setOpenDrawer] = useState(null);
-  const [selectedMemberId, setSelectedMemberId] = useState(null);
 
   // Message realtime
-  useMessages(activeChatId);
+  useMessages(currentConversationId);
+
+  const currentConversation = conversations.find((c) => c._id === currentConversationId);
 
   const typingNames = useMemo(() => {
-    if (!currentConversation) return [];
+    if (!currentConversationId) return [];
 
-    const typingMap = typingUsers[currentConversation._id] || {};
+    const typingMap = typingUsers[currentConversationId] || {};
 
     return currentConversation.participants
       .filter((p) => typingMap[p.user._id] && p.user._id !== currentUserId)
@@ -63,34 +67,39 @@ const ChatWindow = ({ activeChatId, onBack }) => {
     () => getDisplayInfo(currentConversation, currentUserId) || {},
     [currentConversation, currentUserId]
   );
-  const partnerStatus = displayInfo.partnerId ? statusUsers[displayInfo.partnerId] : null;
+
+  const partnerStatus = displayInfo.partnerId
+    ? statusUsers[displayInfo.partnerId] || displayInfo.partner.user
+    : null;
+
+  const isOnline = partnerStatus?.presence === "online";
 
   useEffect(() => {
-    if (openDrawer === DRAWER.INFO && currentConversation?._id) {
+    if (openDrawer === DRAWER.INFO && currentConversationId) {
       dispatch(
         getConversationImages({
-          conversationId: currentConversation._id,
+          conversationId: currentConversationId,
           limit: 8,
         })
       )
         .unwrap()
         .catch(console.error);
     }
-  }, [openDrawer, currentConversation?._id, dispatch]);
+  }, [openDrawer, currentConversationId, dispatch]);
 
   useEffect(() => {
     if (!activeChatId) return;
 
     emitEvent("join_conversation", {
-      conversationId: activeChatId,
+      conversationId: currentConversationId,
     });
 
     return () => {
       emitEvent("leave_conversation", {
-        conversationId: activeChatId,
+        conversationId: currentConversationId,
       });
     };
-  }, [activeChatId]);
+  }, [currentConversationId]);
 
   if (!activeChatId) return <ChatEmptyState />;
 
@@ -107,12 +116,19 @@ const ChatWindow = ({ activeChatId, onBack }) => {
         onOpenMembersInfo={() => setOpenDrawer(DRAWER.MEMBERS)}
         displayInfo={displayInfo}
         typingNames={typingNames}
-        partnerStatus={partnerStatus}
+        isOnline={isOnline}
       />
 
-      <Messages setEditingMessage={setEditingMessage} />
+      <Messages
+        currentUserId={currentUserId}
+        currentConversationId={currentConversationId}
+        currentConversation={currentConversation}
+        setEditingMessage={setEditingMessage}
+      />
 
       <MessageInput
+        currentUserId={currentUserId}
+        currentConversationId={currentConversationId}
         editingMessage={editingMessage}
         setEditingMessage={setEditingMessage}
       />

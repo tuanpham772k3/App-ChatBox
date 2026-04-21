@@ -8,25 +8,40 @@ const userSocket = (io, socket) => {
       console.log(`User disconnected: ${socket.user?.username} (${socket.id})`);
 
       await User.findByIdAndUpdate(socket.userId, {
-        status: "inactive",
         lastSeenAt: new Date(),
       });
 
       const conversations = await Conversation.find({
         "participants.user": socket.userId,
         isActive: true,
-      }).select("_id");
+      }).select("participants.user");
+
+      const relatedUserIds = new Set();
+
+      conversations.forEach((c) => {
+        c.participants.forEach((p) => {
+          const id = p.user.toString();
+          if (id !== socket.userId) {
+            relatedUserIds.add(id);
+          }
+        });
+      });
+
+      await User.findByIdAndUpdate(socket.userId, {
+        presence: "offline",
+        lastSeenAt: new Date(),
+      });
 
       // Tạo payload trạng thái offline
       const payload = {
         userId: socket.userId,
-        status: "offline",
+        presence: "offline",
         lastSeenAt: new Date(),
       };
 
       // Offline: Cập nhật trạng thái user
-      conversations.forEach((conversation) => {
-        io.to(`conversation_${conversation._id}`).emit("user_status_changed", payload);
+      relatedUserIds.forEach((userId) => {
+        io.to(`user_${userId}`).emit("user_status_changed", payload);
       });
     } catch (err) {
       console.error("disconnect handler error:", {

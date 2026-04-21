@@ -4,6 +4,7 @@ const { authSocket } = require("./auth.socket.js");
 const { userSocket } = require("./user.socket.js");
 const { messageSocket } = require("./message.socket.js");
 const { conversationSocket } = require("./conversation.socket.js");
+const User = require("../modules/users/user.model.js");
 
 /**
  * Đăng ký middleware auth, và xử lý connection/disconnect chung ở đây.
@@ -25,18 +26,33 @@ const registerSocket = (io) => {
         const conversations = await Conversation.find({
           "participants.user": socket.userId,
           isActive: true,
-          "lastMessage.sender": { $ne: socket.userId },
-        }).select("_id lastMessage");
+        }).select("participants.user");
+
+        const relatedUserIds = new Set();
+
+        conversations.forEach((c) => {
+          c.participants.forEach((p) => {
+            const id = p.user.toString();
+            if (id !== socket.userId) {
+              relatedUserIds.add(id);
+            }
+          });
+        });
+
+        await User.findByIdAndUpdate(socket.userId, {
+          presence: "online",
+          lastSeenAt: new Date(),
+        });
 
         const payload = {
           userId: socket.userId,
-          status: "online",
+          presence: "online",
           lastSeenAt: new Date(),
         };
 
         // Broadcast trạng thái online đến các cuộc trò chuyện có tham gia
-        conversations.forEach((c) => {
-          io.to(`conversation_${c._id}`).emit("user_status_changed", payload);
+        relatedUserIds.forEach((userId) => {
+          io.to(`user_${userId}`).emit("user_status_changed", payload);
         });
 
         // Lặp qua các cuộc trò chuyện để emit delivered cho tin nhắn cuối cùng

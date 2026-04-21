@@ -179,12 +179,12 @@ const conversationsSlice = createSlice({
   name: "conversations",
   initialState: {
     conversations: [],
-    currentConversation: null,
+    currentConversationId: null,
     typingUsers: {},
     statusUsers: {},
     images: [],
-    loading: {},
-    error: {},
+    loading: null,
+    error: null,
   },
 
   reducers: {
@@ -201,10 +201,6 @@ const conversationsSlice = createSlice({
     removeConversationRealtime: (state, action) => {
       const conversationId = action.payload;
       state.conversations = state.conversations.filter((c) => c._id !== conversationId);
-
-      if (state.currentConversation?._id === conversationId) {
-        state.currentConversation = null;
-      }
     },
 
     // Realtime lastMessage
@@ -243,21 +239,14 @@ const conversationsSlice = createSlice({
       conv.participants = conv.participants.map((p) =>
         p.user._id === userId ? { ...p, unreadCount: 0, lastReadMessage } : p
       );
-
-      if (state.currentConversation?._id === conversationId) {
-        state.currentConversation.participants =
-          state.currentConversation.participants.map((p) =>
-            p.user._id === userId ? { ...p, unreadCount: 0, lastReadMessage } : p
-          );
-      }
     },
 
     // User status
     userStatus: (state, action) => {
-      const { userId, status, lastSeenAt } = action.payload;
+      const { userId, presence, lastSeenAt } = action.payload;
 
       state.statusUsers[userId] = {
-        status,
+        presence,
         lastSeenAt,
       };
     },
@@ -315,8 +304,7 @@ const conversationsSlice = createSlice({
       })
       .addCase(getConversations.fulfilled, (state, action) => {
         state.loading = false;
-        state.conversations = action.payload?.conversations || [];
-        // state.pagination = action.payload?.pagination || null;
+        state.conversations = action.payload.conversations || [];
       })
       .addCase(getConversations.rejected, (state, action) => {
         state.loading = false;
@@ -325,33 +313,27 @@ const conversationsSlice = createSlice({
 
       /** -----GET CONVERSATION BY ID----- */
       .addCase(getConversationById.fulfilled, (state, action) => {
-        state.currentConversation = action.payload;
+        state.currentConversationId = action.payload.conversation._id || null;
       })
 
       /** -----ADD MEMBER TO GROUP----- */
       .addCase(addMemberToGroup.fulfilled, (state, action) => {
         const { conversationId, conversation } = action.payload;
-        const updatedConv = conversation;
-        const idx = state.conversations.findIndex((c) => c._id === conversationId);
-        if (idx === -1 || !updatedConv) return;
 
-        state.conversations[idx] = updatedConv;
-        if (state.currentConversation?._id === conversationId) {
-          state.currentConversation = updatedConv;
-        }
+        const idx = state.conversations.findIndex((c) => c._id === conversationId);
+        if (idx === -1 || !conversation) return;
+
+        state.conversations[idx] = conversation;
       })
 
       /** -----REMOVE MEMBER FROM GROUP----- */
       .addCase(removeMemberFromGroup.fulfilled, (state, action) => {
         const { conversationId, conversation } = action.payload;
-        const updatedConv = conversation;
-        const idx = state.conversations.findIndex((c) => c._id === conversationId);
-        if (idx === -1 || !updatedConv) return;
 
-        state.conversations[idx] = updatedConv;
-        if (state.currentConversation?._id === conversationId) {
-          state.currentConversation = updatedConv;
-        }
+        const idx = state.conversations.findIndex((c) => c._id === conversationId);
+        if (idx === -1 || !conversation) return;
+
+        state.conversations[idx] = conversation;
       })
 
       // -------------------------------
@@ -359,9 +341,10 @@ const conversationsSlice = createSlice({
       // -------------------------------
       .addCase(markConversationAsRead.fulfilled, (state, action) => {
         const { conversationId, userId } = action.payload;
-        // Update trong danh sách conversations
+
         const conv = state.conversations.find((c) => c._id === conversationId);
         if (!conv) return;
+
         conv.participants = conv.participants.map((p) =>
           p.user._id === userId
             ? {
@@ -372,20 +355,6 @@ const conversationsSlice = createSlice({
               }
             : p
         );
-        // Update currentConversation nếu đang mở
-        if (state.currentConversation?._id === conversationId) {
-          state.currentConversation.participants =
-            state.currentConversation.participants.map((p) =>
-              p.user._id === userId
-                ? {
-                    ...p,
-                    unreadCount: 0,
-                    lastReadAt: new Date().toISOString(),
-                    lastReadMessage: state.currentConversation.lastMessage?._id || null,
-                  }
-                : p
-            );
-        }
       })
 
       // -------------------------------

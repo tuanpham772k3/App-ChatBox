@@ -1,22 +1,26 @@
 import React, { useRef, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { Image, MapPin, Mic, Navigation, Send, Smile } from "lucide-react";
 import { Upload } from "antd";
 import { emitEvent } from "@/lib/socket";
 import { useNotification } from "@/hooks/useNotification";
 import { createNewMessage, editMessageById } from "@/store/messagesSlice";
 
-const MessageInput = ({ editingMessage, setEditingMessage }) => {
+const MessageInput = ({
+  currentUserId,
+  currentConversationId,
+  editingMessage,
+  setEditingMessage,
+}) => {
   const dispatch = useDispatch();
-  const user = useSelector((state) => state.auth.user) || {};
-  const currentConversation =
-    useSelector((state) => state.conversations.currentConversation) || {};
 
   const [text, setText] = useState("");
+
   const typingTimeoutRef = useRef(null);
-  const { id, content, originalContent } = editingMessage;
 
   const notification = useNotification();
+
+  const { id, content, originalContent } = editingMessage;
 
   const isEditing = Boolean(id);
   const inputValue = isEditing ? content : text;
@@ -30,9 +34,9 @@ const MessageInput = ({ editingMessage, setEditingMessage }) => {
       // 2. Tạo message text
       await dispatch(
         createNewMessage({
-          conversationId: currentConversation._id,
+          conversationId: currentConversationId,
           content: text,
-          sender: { _id: user.id }, // Để xử lý redux thunk
+          sender: { _id: currentUserId }, // Để xử lý redux thunk
           tempId,
           ...payload,
         })
@@ -110,11 +114,10 @@ const MessageInput = ({ editingMessage, setEditingMessage }) => {
       setText(value);
     }
 
-    if (!currentConversation._id) return;
+    if (!currentConversationId) return;
 
-    // Emit typing_start ngay khi user gõ
     emitEvent("typing_start", {
-      conversationId: currentConversation._id,
+      conversationId: currentConversationId,
     });
 
     // Clear timeout cũ (nếu có)
@@ -125,7 +128,7 @@ const MessageInput = ({ editingMessage, setEditingMessage }) => {
     // Set timeout mới cho typing_stop
     typingTimeoutRef.current = setTimeout(() => {
       emitEvent("typing_stop", {
-        conversationId: currentConversation._id,
+        conversationId: currentConversationId,
       });
     }, 1000);
   };

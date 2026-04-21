@@ -19,36 +19,51 @@ import {
   deleteMessageById,
   fetchConversationMessages,
 } from "@/store/messagesSlice";
+import { markConversationAsRead } from "@/store/conversationsSlice";
 
-const Messages = ({ setEditingMessage }) => {
+const Messages = ({
+  currentUserId,
+  currentConversationId,
+  currentConversation,
+  setEditingMessage,
+}) => {
   const dispatch = useDispatch();
-  const containerRef = useRef(null);
-  const lastScrollTopRef = useRef(0);
-  const initialLoadRef = useRef(true);
-
-  // 👇 sentinel observer
   const { ref: topRef, inView } = useInView({
     threshold: 0,
     rootMargin: "100px",
-  });
+  }); // sentinel observer
 
-  const { currentConversation } = useSelector((state) => state.conversations);
   const {
     messages = [],
     cursor,
     hasMore,
     loading,
   } = useSelector((state) => state.messages);
-  const { user } = useSelector((state) => state.auth);
-
-  const notification = useNotification();
 
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
+  const containerRef = useRef(null);
+  const lastScrollTopRef = useRef(0);
+  const initialLoadRef = useRef(true);
+
+  const notification = useNotification();
+
+  // ===== Mark conversation as read =====
+  useEffect(() => {
+    dispatch(
+      markConversationAsRead({
+        conversationId: currentConversationId,
+        userId: currentUserId,
+      })
+    )
+      .unwrap()
+      .catch(console.error);
+  }, [messages, dispatch]);
+
   // ===== Load initial messages =====
   useEffect(() => {
-    if (!currentConversation?._id) return;
+    if (!currentConversationId) return;
 
     dispatch(clearMessages());
 
@@ -57,11 +72,11 @@ const Messages = ({ setEditingMessage }) => {
 
     dispatch(
       fetchConversationMessages({
-        conversationId: currentConversation._id,
+        conversationId: currentConversationId,
         cursor: null,
       })
     );
-  }, [currentConversation?._id, dispatch]);
+  }, [currentConversationId, dispatch]);
 
   // ===== Auto scroll =====
   useEffect(() => {
@@ -91,7 +106,7 @@ const Messages = ({ setEditingMessage }) => {
   useEffect(() => {
     if (!inView) return;
     if (!hasMore || loading) return;
-    if (!currentConversation?._id) return;
+    if (!currentConversationId) return;
 
     const el = containerRef.current;
     if (!el) return;
@@ -100,7 +115,7 @@ const Messages = ({ setEditingMessage }) => {
 
     dispatch(
       fetchConversationMessages({
-        conversationId: currentConversation._id,
+        conversationId: currentConversationId,
         cursor,
       })
     )
@@ -163,8 +178,8 @@ const Messages = ({ setEditingMessage }) => {
 
   // Build message metadata
   const messagesWithMeta = useMemo(() => {
-    return buildMessageMeta(messages, user.id);
-  }, [messages, user.id]);
+    return buildMessageMeta(messages, currentUserId);
+  }, [messages, currentUserId]);
 
   return (
     <>
@@ -192,6 +207,8 @@ const Messages = ({ setEditingMessage }) => {
             <MessageItem
               key={msg._id}
               msg={msg}
+              currentUserId={currentUserId}
+              currentConversation={currentConversation}
               isMine={msg.meta.isMine}
               showDate={msg.meta.showDate}
               showTime={msg.meta.showTime}
@@ -199,8 +216,6 @@ const Messages = ({ setEditingMessage }) => {
               showAvatar={msg.meta.showAvatar}
               isLastMessage={index === messages.length - 1}
               onPreviewImage={handlePreviewImage}
-              conversation={currentConversation}
-              currentUserId={user.id}
               onDeleteMessage={handleDeleteMessage}
               onEditClick={handleEditClick}
             />
@@ -220,4 +235,4 @@ const Messages = ({ setEditingMessage }) => {
   );
 };
 
-export default Messages;
+export default React.memo(Messages);

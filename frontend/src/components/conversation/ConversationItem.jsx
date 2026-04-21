@@ -3,9 +3,7 @@ import { Ellipsis } from "lucide-react";
 import GroupAvatar from "@/components/ui/avatar/GroupAvatar";
 import PopoverConversationAction from "./PopoverConversationAction";
 
-const ConversationItem = ({ isActive, display, onSelect, onRemove, partnerStatus }) => {
-  const isOnline = !display.isGroup && partnerStatus?.status === "online";
-
+const ConversationItem = ({ isActive, display, onSelect, onRemove, isOnline }) => {
   return (
     <div
       className={`group flex items-center gap-4 px-2 py-3 rounded-xl cursor-pointer transition w-full max-w-full
@@ -78,9 +76,11 @@ const ConversationItem = ({ isActive, display, onSelect, onRemove, partnerStatus
             )}
           </PopoverConversationAction>
 
-          {display.unreadCount > 0 && (
+          {display.currentUser.unreadCount > 0 && (
             <span className="min-w-[20px] h-5 px-1 inline-flex items-center justify-center rounded-full bg-red-600 text-[10px] font-semibold text-white">
-              {display.unreadCount > 99 ? "99+" : display.unreadCount}
+              {display.currentUser.unreadCount > 99
+                ? "99+"
+                : display.currentUser.unreadCount}
             </span>
           )}
         </div>

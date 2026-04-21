@@ -142,7 +142,7 @@ const getConversationById = async (req, res, next) => {
     return res.status(200).json({
       success: true,
       message: "Conversation retrieved successfully",
-      data: conversation,
+      data: { conversation },
     });
   } catch (error) {
     return next(error);
@@ -234,9 +234,10 @@ const markAsRead = async (req, res, next) => {
     const { userId } = req.user;
 
     if (!conversationId.match(/^[0-9a-fA-F]{24}$/)) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid conversation ID format" });
+      return res.status(400).json({
+        success: false,
+        message: "Invalid conversation ID format",
+      });
     }
 
     const result = await ConversationService.markAsRead(conversationId, userId);
@@ -285,7 +286,7 @@ const getConversationImages = async (req, res, next) => {
     return res.status(200).json({
       success: true,
       message: "Images retrieved successfully",
-      data: images,
+      data: { images },
     });
   } catch (error) {
     return next(error);

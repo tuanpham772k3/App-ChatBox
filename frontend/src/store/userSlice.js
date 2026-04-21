@@ -52,19 +52,13 @@ const userSlice = createSlice({
   name: "user",
   initialState: {
     profile: null,
-    searchResults: [],
     loading: false,
     error: null,
   },
   reducers: {
-    clearUser: (state) => {
+    clearUserState: (state) => {
       state.profile = null;
-      state.searchResults = [];
       state.error = null;
-    },
-
-    clearSearchResults: (state) => {
-      state.searchResults = [];
     },
   },
   extraReducers: (builder) => {
@@ -91,19 +85,6 @@ const userSlice = createSlice({
         state.profile = action.payload;
       })
       .addCase(editProfile.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-
-      /* ----- searchUsers ----- */
-      .addCase(searchUsers.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(searchUsers.fulfilled, (state, action) => {
-        state.loading = false;
-        state.searchResults = action.payload;
-      })
-      .addCase(searchUsers.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

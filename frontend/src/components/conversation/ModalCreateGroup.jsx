@@ -11,27 +11,32 @@ import { useNotification } from "@/hooks/useNotification";
 // Component chính
 const ModalCreateGroup = ({ isOpen, onCancel }) => {
   const dispatch = useDispatch();
-  const { searchResults = [], loading } = useSelector((state) => state.user);
 
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [selectedFriends, setSelectedFriends] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [groupName, setGroupName] = useState("");
 
   const notification = useNotification();
 
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const users = await dispatch(searchUsers("")).unwrap();
+      setResults(users);
+    } catch (error) {
+      notification.error({
+        message: "Không thể tải danh sách người dùng",
+        description: error.message || "Vui lòng thử lại sau",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Lấy danh sách user
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        await dispatch(searchUsers("")).unwrap();
-      } catch (error) {
-        notification.error({
-          message: "Không thể tải danh sách người dùng",
-          description: error.message || "Vui lòng thử lại sau",
-        });
-      }
-    };
-
     fetchUsers();
   }, [dispatch]);
 
@@ -41,7 +46,7 @@ const ModalCreateGroup = ({ isOpen, onCancel }) => {
     if (!query) return;
 
     const handler = setTimeout(() => {
-      dispatch(searchUsers(query));
+      fetchUsers(query);
     }, 400);
 
     return () => clearTimeout(handler);
@@ -159,12 +164,12 @@ const ModalCreateGroup = ({ isOpen, onCancel }) => {
               <Spin />
             </div>
           )}
-          {searchResults.length === 0 && !loading ? (
+          {results.length === 0 && !loading ? (
             <div className="text-center py-8 text-[var(--color-text-secondary)]">
               Không tìm thấy kết quả
             </div>
           ) : (
-            searchResults.map((friend) => (
+            results.map((friend) => (
               <FriendItem
                 key={friend._id}
                 friend={friend}

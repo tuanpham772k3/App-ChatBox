@@ -73,7 +73,7 @@ const ConversationService = {
     const savedConversation = await newConversation.save();
 
     const populatedConversation = await Conversation.findById(savedConversation._id)
-      .populate("participants.user", "username email avatarUrl bio status lastSeenAt")
+      .populate("participants.user", "username email avatarUrl bio presence lastSeenAt")
       .populate("lastMessage.sender", "username avatarUrl")
       .lean();
 
@@ -148,7 +148,7 @@ const ConversationService = {
     const savedConversation = await newConversation.save();
 
     const populatedConversation = await Conversation.findById(savedConversation._id)
-      .populate("participants.user", "username email avatarUrl bio status lastSeenAt")
+      .populate("participants.user", "username email avatarUrl bio presence lastSeenAt")
       .populate("lastMessage.sender", "username avatarUrl")
       .lean();
 
@@ -179,7 +179,7 @@ const ConversationService = {
         },
       },
     })
-      .populate("participants.user", "username email avatarUrl bio status lastSeenAt")
+      .populate("participants.user", "username email avatarUrl bio presence lastSeenAt")
       .populate("lastMessage.sender", "username avatarUrl")
       .sort({ "lastMessage.createdAt": -1, updatedAt: -1 }) // Sắp xếp theo tin nhắn cuối hoặc thời gian cập nhật
       .skip(skip)
@@ -288,7 +288,7 @@ const ConversationService = {
       },
       { new: true }
     )
-      .populate("participants.user", "username email avatarUrl bio status lastSeenAt")
+      .populate("participants.user", "username email avatarUrl bio presence lastSeenAt")
       .populate("lastMessage.sender", "username avatarUrl")
       .lean();
 
@@ -307,7 +307,7 @@ const ConversationService = {
       "participants.user": userId,
       isActive: true,
     })
-      .populate("participants.user", "username email avatarUrl bio status lastSeenAt")
+      .populate("participants.user", "username email avatarUrl bio presence lastSeenAt")
       .populate("lastMessage.sender", "username avatarUrl")
       .lean();
 

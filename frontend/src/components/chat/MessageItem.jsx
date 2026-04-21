@@ -21,6 +21,8 @@ const buildMessageActions = ({ onEdit, onDelete }) => [
 
 const MessageItem = ({
   msg,
+  currentUserId,
+  currentConversation,
   isMine,
   showDate,
   showTime,
@@ -28,8 +30,6 @@ const MessageItem = ({
   showAvatar,
   isLastMessage,
   onPreviewImage,
-  conversation,
-  currentUserId,
   onDeleteMessage,
   onEditClick,
 }) => {
@@ -64,7 +64,7 @@ const MessageItem = ({
 
   const readers =
     isMine && isLastMessage
-      ? getReaders(conversation?.participants, currentUserId, msg._id)
+      ? getReaders(currentConversation?.participants, currentUserId, msg._id)
       : [];
 
   const messageActions = buildMessageActions({
@@ -134,7 +134,7 @@ const MessageItem = ({
         {/* --- Content Column (Sender name + Bubble) --- */}
         <div className="flex flex-col items-start gap-2">
           {/* --- Sender name --- */}
-          {!isMine && showName && conversation?.type === "group" && (
+          {!isMine && showName && currentConversation?.type === "group" && (
             <span className="text-sm font-medium text-[var(--color-text-primary)]">
               {msg.sender?.username || "Người dùng"}
             </span>

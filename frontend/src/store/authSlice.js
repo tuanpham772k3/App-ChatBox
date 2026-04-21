@@ -48,60 +48,60 @@ const authSlice = createSlice({
   initialState: {
     user: savedUser,
     accessToken: savedToken,
-    isLoading: false,
-    isError: null,
+    loading: false,
+    error: null,
   },
   reducers: {
     clearAuthState: (state) => {
-      state.isLoading = false;
-      state.isError = null;
+      state.loading = false;
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
     builder
       //register
       .addCase(registerUser.pending, (state) => {
-        state.isLoading = true;
-        state.isError = null;
+        state.loading = true;
+        state.error = null;
       })
       .addCase(registerUser.fulfilled, (state) => {
-        state.isLoading = false;
+        state.loading = false;
       })
       .addCase(registerUser.rejected, (state, action) => {
-        state.isLoading = false;
-        state.isError = action.payload.message || "Registration failed";
+        state.loading = false;
+        state.error = action.payload.message || "Registration failed";
       })
 
       //login
       .addCase(loginUser.pending, (state) => {
-        state.isLoading = true;
-        state.isError = null;
+        state.loading = true;
+        state.error = null;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.user = action.payload.user;
         state.accessToken = action.payload.accessToken;
         localStorage.setItem("accessToken", action.payload.accessToken);
         localStorage.setItem("user", JSON.stringify(action.payload.user));
-        state.isLoading = false;
+        state.loading = false;
       })
       .addCase(loginUser.rejected, (state, action) => {
-        state.isLoading = false;
-        state.isError = action.payload.message || "Login failed";
+        state.loading = false;
+        state.error = action.payload.message || "Login failed";
       })
 
       // logout
       .addCase(logoutUser.pending, (state) => {
-        state.isLoading = true;
+        state.loading = true;
       })
       .addCase(logoutUser.fulfilled, (state) => {
         state.user = null;
         state.accessToken = null;
         localStorage.removeItem("accessToken");
         localStorage.removeItem("user");
-        state.isLoading = false;
+        state.loading = false;
       })
       .addCase(logoutUser.rejected, (state) => {
-        state.isLoading = false;
+        state.loading = false;
       });
   },
 });

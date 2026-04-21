@@ -9,7 +9,7 @@ const ChatHeader = ({
   onOpenMembersInfo,
   displayInfo,
   typingNames,
-  partnerStatus,
+  isOnline,
 }) => {
   return (
     <div className="flex items-center justify-between px-4 h-24 border-b border-[var(--color-border)]">
@@ -33,7 +33,7 @@ const ChatHeader = ({
                 alt={displayInfo.displayName}
                 className="w-13 h-13 rounded-full border-2 border-[var(--color-border)]"
               />
-              {partnerStatus?.status === "online" && (
+              {isOnline && (
                 <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[var(--color-app)] rounded-full" />
               )}
             </>
@@ -63,7 +63,7 @@ const ChatHeader = ({
             </button>
           ) : (
             <span className="text-xs text-[var(--color-text-secondary)]">
-              {partnerStatus?.status === "online" ? "Đang hoạt động" : "Ngoại tuyến"}
+              {isOnline ? "Đang hoạt động" : "Ngoại tuyến"}
             </span>
           )}
         </div>

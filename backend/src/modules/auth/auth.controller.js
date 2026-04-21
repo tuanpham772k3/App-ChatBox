@@ -199,7 +199,6 @@ const logout = async (req, res, next) => {
         {
           refreshTokenHash: null,
           refreshTokenExpiresAt: null,
-          status: "inactive",
         }
       );
     }

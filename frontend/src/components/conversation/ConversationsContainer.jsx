@@ -6,7 +6,6 @@ import {
   deleteConversationForMe,
   getConversationById,
   getConversations,
-  markConversationAsRead,
 } from "../../store/conversationsSlice";
 import ConversationHeader from "./ConversationHeader";
 import ConversationItem from "./ConversationItem";
@@ -17,7 +16,8 @@ import ModalCreatePrivate from "./ModalCreatePrivate";
 
 const ConversationContainer = ({ activeChatId, onSelectChat }) => {
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
+
+  const currentUserId = useSelector((state) => state.auth.user?.id);
   const {
     conversations = [],
     statusUsers = {},
@@ -40,25 +40,23 @@ const ConversationContainer = ({ activeChatId, onSelectChat }) => {
       });
   }, [dispatch]);
 
-  const handleSelectConversation = async (conversationId) => {
-    if (conversationId === activeChatId) return;
+  const handleSelectConversation = (conversationId) => {
+    if (activeChatId !== conversationId) {
+      onSelectChat(conversationId);
 
-    onSelectChat(conversationId); // Hiển thị chatWindow
-
-    try {
-      await dispatch(getConversationById(conversationId)).unwrap();
-
-      dispatch(markConversationAsRead({ conversationId, userId: user.id }));
-    } catch (error) {
-      notification.error({
-        message: "Không thể tải hội thoại",
-        description: error.message || "Có lỗi xảy ra",
-      });
+      dispatch(getConversationById(conversationId))
+        .unwrap()
+        .catch((err) => {
+          notification.error({
+            message: "Lấy thông tin hội thoại thất bại",
+            description: err.message || "Có lỗi xảy ra",
+          });
+        });
     }
   };
 
   // Xóa hội thoại phía tôi
-  const handleRemoveConversationForMe = (conversationId) => {
+  const removeConversationForMe = (conversationId) => {
     dispatch(deleteConversationForMe(conversationId))
       .unwrap()
       .then(() => {
@@ -84,12 +82,12 @@ const ConversationContainer = ({ activeChatId, onSelectChat }) => {
     const keyword = trimmed.toLowerCase();
 
     return conversations.filter((conversation) => {
-      const displayInfo = getDisplayInfo(conversation, user.id);
+      const displayInfo = getDisplayInfo(conversation, currentUserId);
       if (!displayInfo) return false;
 
       return displayInfo.displayName?.toLowerCase().includes(keyword);
     });
-  }, [conversations, user?.id, searchInput]);
+  }, [conversations, currentUserId, searchInput]);
 
   return (
     <>
@@ -126,15 +124,15 @@ const ConversationContainer = ({ activeChatId, onSelectChat }) => {
               ) : (
                 <>
                   {filteredConversations.map((conversation) => {
-                    const displayInfo = getDisplayInfo(conversation, user.id) || {};
+                    const displayInfo = getDisplayInfo(conversation, currentUserId) || {};
 
                     // status
                     const partnerStatus = displayInfo.partnerId
-                      ? statusUsers[displayInfo.partnerId] || {
-                          status: "offline",
-                          lastSeenAt: null,
-                        }
+                      ? statusUsers[displayInfo.partnerId] || displayInfo.partner.user
                       : null;
+
+                    const isOnline =
+                      !displayInfo.isGroup && partnerStatus?.presence === "online";
 
                     return (
                       // CONVERSATION ITEM
@@ -143,8 +141,8 @@ const ConversationContainer = ({ activeChatId, onSelectChat }) => {
                         isActive={activeChatId === conversation._id}
                         display={displayInfo}
                         onSelect={() => handleSelectConversation(conversation._id)}
-                        onRemove={() => handleRemoveConversationForMe(conversation._id)}
-                        partnerStatus={partnerStatus}
+                        onRemove={() => removeConversationForMe(conversation._id)}
+                        isOnline={isOnline}
                       />
                     );
                   })}
