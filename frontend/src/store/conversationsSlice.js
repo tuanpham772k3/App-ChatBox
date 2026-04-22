@@ -54,8 +54,8 @@ export const getConversationById = createAsyncThunk(
   "conversations/getById",
   async (conversationId, { rejectWithValue }) => {
     try {
-      const res = await conversationApi.getConversationById(conversationId);
-      return res; // conversation
+      const conversation = await conversationApi.getConversationById(conversationId);
+      return conversation;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -123,10 +123,7 @@ export const getConversationImages = createAsyncThunk(
   async ({ conversationId, limit = 8 }, { rejectWithValue }) => {
     try {
       const images = await conversationApi.getConversationImages(conversationId, limit);
-      return {
-        conversationId,
-        images,
-      };
+      return images;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -206,6 +203,7 @@ const conversationsSlice = createSlice({
     // Realtime lastMessage
     updateConversationLastMessage: (state, action) => {
       const { conversationId, lastMessage } = action.payload;
+      console.log("updateConversationLastMessage", conversationId, lastMessage);
 
       const idx = state.conversations.findIndex((c) => c._id === conversationId);
       if (idx === -1) return;
@@ -313,7 +311,7 @@ const conversationsSlice = createSlice({
 
       /** -----GET CONVERSATION BY ID----- */
       .addCase(getConversationById.fulfilled, (state, action) => {
-        state.currentConversationId = action.payload.conversation._id || null;
+        state.currentConversationId = action.payload._id || null;
       })
 
       /** -----ADD MEMBER TO GROUP----- */
@@ -361,7 +359,7 @@ const conversationsSlice = createSlice({
       // GET CONVERSATION IMAGES
       // -------------------------------
       .addCase(getConversationImages.fulfilled, (state, action) => {
-        state.images = action.payload.images || [];
+        state.images = action.payload || [];
       });
   },
 });

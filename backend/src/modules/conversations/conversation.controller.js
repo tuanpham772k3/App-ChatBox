@@ -142,7 +142,7 @@ const getConversationById = async (req, res, next) => {
     return res.status(200).json({
       success: true,
       message: "Conversation retrieved successfully",
-      data: { conversation },
+      data: conversation,
     });
   } catch (error) {
     return next(error);
@@ -286,7 +286,7 @@ const getConversationImages = async (req, res, next) => {
     return res.status(200).json({
       success: true,
       message: "Images retrieved successfully",
-      data: { images },
+      data: images,
     });
   } catch (error) {
     return next(error);
