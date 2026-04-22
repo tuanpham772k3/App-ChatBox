@@ -135,7 +135,6 @@ const MessageService = {
 
     const query = {
       conversation: conversationId,
-      isDeleted: false,
       createdAt: { $gte: fromTime },
     };
 
@@ -170,12 +169,16 @@ const MessageService = {
    * @returns {object} - Kết quả xóa tin nhắn
    */
   deleteMessageById: async (messageId, userId) => {
-    const message = await Message.findById(messageId);
+    const message = await Message.findById(messageId).populate(
+      "sender",
+      "username email avatarUrl"
+    );
+
     if (!message) {
       throw new AppError("Message not found", 404);
     }
 
-    if (message.sender.toString() !== userId) {
+    if (message.sender._id.toString() !== userId) {
       throw new AppError("You can only delete your own messages", 403);
     }
 
@@ -183,43 +186,35 @@ const MessageService = {
       return message;
     }
 
+    // ===== Soft delete =====
     message.isDeleted = true;
     message.content = "This message has been deleted.";
     message.file = null;
 
-    const updatedMessage = await message.save();
+    await message.save();
 
-    // 6. Nếu là lastMessage thì update lại
-    const conversation = await Conversation.findById(message.conversation);
-
-    const isLastMessage = conversation?.lastMessage?._id.toString() === messageId;
-
-    if (isLastMessage) {
-      const prevMessage = await Message.findOne({
-        conversation: message.conversation,
-        isDeleted: false,
-      })
-        .sort({ createdAt: -1 })
-        .lean();
-
-      if (prevMessage) {
-        conversation.lastMessage = {
-          _id: prevMessage._id,
-          sender: prevMessage.sender,
-          type: prevMessage.type,
-          content: prevMessage.type === "text" ? prevMessage.content : "File",
-          file: prevMessage.file || null,
-          isDeleted: false,
-          createdAt: prevMessage.createdAt,
-        };
-      } else {
-        conversation.lastMessage = null;
+    // ===== Update lastMessage nếu cần =====
+    const conversation = await Conversation.findOneAndUpdate(
+      {
+        _id: message.conversation,
+        "lastMessage._id": message._id,
+      },
+      {
+        $set: {
+          "lastMessage.content": "This message has been deleted.",
+          "lastMessage.file": null,
+          "lastMessage.isDeleted": true,
+        },
+      },
+      {
+        new: true,
+        select: "participants",
       }
-      await conversation.save();
-    }
+    ).lean();
 
     return {
-      message: updatedMessage,
+      message,
+      conversation,
       conversationId: message.conversation,
     };
   },

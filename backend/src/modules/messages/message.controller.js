@@ -16,7 +16,12 @@ const createNewMessage = async (req, res, next) => {
       });
     }
 
-    const result = await MessageService.createMessage(conversationId, userId, content, file);
+    const result = await MessageService.createMessage(
+      conversationId,
+      userId,
+      content,
+      file
+    );
 
     const { message, participants } = result;
 
@@ -92,7 +97,12 @@ const getConversationMessages = async (req, res, next) => {
       });
     }
 
-    const result = await MessageService.getConversationMessages(conversationId, userId, before, limit);
+    const result = await MessageService.getConversationMessages(
+      conversationId,
+      userId,
+      before,
+      limit
+    );
 
     return res.status(200).json({
       success: true,
@@ -119,11 +129,39 @@ const deleteMessageById = async (req, res, next) => {
       });
     }
 
-    const { message, conversationId } = await MessageService.deleteMessageById(messageId, userId);
+    const { message, conversation, conversationId } =
+      await MessageService.deleteMessageById(messageId, userId);
 
     let io = getSocket();
 
+    // emit socket message_delete
     io.to(`conversation_${conversationId}`).emit("message_delete", messageId);
+
+    const lastMessagePayload = {
+      conversationId,
+      lastMessage: {
+        _id: message._id,
+        sender: {
+          _id: message.sender._id,
+          username: message.sender.username,
+          avatarUrl: message.sender.avatarUrl,
+        },
+        type: message.type,
+        content:
+          message.type === "text"
+            ? message.content
+            : message.file?.filename || message.type,
+        file: message.file || null,
+        createdAt: message.createdAt,
+      },
+    };
+
+    if (conversation) {
+      // emit socket conversation:lastMessage
+      conversation.participants.forEach((p) => {
+        io.to(`user_${p.user}`).emit("conversation:lastMessage", lastMessagePayload);
+      });
+    }
 
     return res.status(200).json({
       success: true,
@@ -158,7 +196,11 @@ const editMessageById = async (req, res, next) => {
       });
     }
 
-    const { message, conversationId } = await MessageService.editMessageById(messageId, userId, newContent);
+    const { message, conversationId } = await MessageService.editMessageById(
+      messageId,
+      userId,
+      newContent
+    );
 
     const io = getSocket();
 
