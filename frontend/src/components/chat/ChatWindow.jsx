@@ -31,13 +31,8 @@ const ChatWindow = ({ activeChatId, onBack }) => {
   const dispatch = useDispatch();
 
   const currentUserId = useSelector((state) => state.auth.user?.id);
-  const {
-    conversations = [],
-    currentConversationId = null,
-    typingUsers = {},
-    statusUsers = {},
-    images = [],
-  } = useSelector((state) => state.conversations);
+  const { conversations, currentConversationId, typingUsers, statusUsers, images } =
+    useSelector((state) => state.conversations);
 
   const [openModal, setOpenModal] = useState(null);
   const [openDrawer, setOpenDrawer] = useState(null);
