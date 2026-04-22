@@ -19,8 +19,8 @@ const ConversationContainer = ({ activeChatId, onSelectChat }) => {
 
   const currentUserId = useSelector((state) => state.auth.user?.id);
   const {
-    conversations = [],
-    statusUsers = {},
+    conversations,
+    statusUsers,
     loading,
   } = useSelector((state) => state.conversations);
 
@@ -41,18 +41,15 @@ const ConversationContainer = ({ activeChatId, onSelectChat }) => {
   }, [dispatch]);
 
   const handleSelectConversation = (conversationId) => {
-    if (activeChatId !== conversationId) {
-      onSelectChat(conversationId);
+    if (activeChatId === conversationId) return;
 
-      dispatch(getConversationById(conversationId))
-        .unwrap()
-        .catch((err) => {
-          notification.error({
-            message: "Lấy thông tin hội thoại thất bại",
-            description: err.message || "Có lỗi xảy ra",
-          });
-        });
-    }
+    onSelectChat(conversationId);
+
+    dispatch(getConversationById(conversationId))
+      .unwrap()
+      .catch((err) => {
+        console.log("Error fetching conversation:", err);
+      });
   };
 
   // Xóa hội thoại phía tôi

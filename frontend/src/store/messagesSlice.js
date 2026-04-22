@@ -86,7 +86,7 @@ const messagesSlice = createSlice({
   },
 
   reducers: {
-    // Thêm tin nhắn đến từ socket
+    // Thêm tin nhắn mới real-time
     addIncomingMessage: (state, action) => {
       const newMsg = action.payload;
       const exists = state.messages.some((m) => m._id === newMsg._id);
@@ -95,14 +95,14 @@ const messagesSlice = createSlice({
       }
     },
 
-    // Cập nhật tin nhắn đến từ socket
+    // Cập nhật tin nhắn real-time
     updateMessage: (state, action) => {
       const updatedMessage = action.payload;
       const index = state.messages.findIndex((m) => m._id === updatedMessage._id);
       if (index !== -1) state.messages[index] = updatedMessage;
     },
 
-    // Xóa tin nhắn đến từ socket
+    // Xóa tin nhắn real-time
     removeMessage: (state, action) => {
       const messageId = action.payload;
       const msg = state.messages.find((m) => m._id === messageId);
@@ -113,7 +113,7 @@ const messagesSlice = createSlice({
       }
     },
 
-    // Cập nhật trạng thái tin nhắn đến từ socket
+    // Cập nhật trạng thái tin nhắn real-time
     updateStatusMessage: (state, action) => {
       const { messageId, status } = action.payload;
       const msg = state.messages.find((m) => m._id === messageId);
