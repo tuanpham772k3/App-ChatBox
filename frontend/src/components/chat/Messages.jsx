@@ -33,12 +33,7 @@ const Messages = ({
     rootMargin: "100px",
   }); // sentinel observer
 
-  const {
-    messages = [],
-    cursor,
-    hasMore,
-    loading,
-  } = useSelector((state) => state.messages);
+  const { messages, cursor, hasMore, loading } = useSelector((state) => state.messages);
 
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
@@ -51,6 +46,8 @@ const Messages = ({
 
   // ===== Mark conversation as read =====
   useEffect(() => {
+    if (!currentConversationId) return;
+
     dispatch(
       markConversationAsRead({
         conversationId: currentConversationId,
@@ -58,8 +55,10 @@ const Messages = ({
       })
     )
       .unwrap()
-      .catch(console.error);
-  }, [messages, dispatch]);
+      .catch((error) => {
+        console.log("Error marking conversation as read:", error);
+      });
+  }, [messages, currentConversationId, dispatch]);
 
   // ===== Load initial messages =====
   useEffect(() => {
