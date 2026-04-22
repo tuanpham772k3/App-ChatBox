@@ -28,19 +28,19 @@ router.put("/:conversationId/members", verifyToken, addMemberToGroup);
 // Xóa thành viên khỏi group
 router.delete("/:conversationId/members/:memberId", verifyToken, removeMemberFromGroup);
 
-// Lấy danh sách conversation của user hiện tại
+// Lấy danh sách hội thoại
 router.get("/", verifyToken, getConversations);
 
-// Lấy thông tin chi tiết một conversation
+// Lấy thông tin chi tiết một hội thoại
 router.get("/:conversationId", verifyToken, getConversationById);
 
-// Đánh dấu tin nhắn cuối người dùng đã đọc
+// Đánh dấu đã đọc
 router.put("/:conversationId/read", verifyToken, markAsRead);
 
 // Lấy danh sách ảnh trong hội thoại
 router.get("/:conversationId/images", verifyToken, getConversationImages);
 
-// Rời khỏi group conversation
+// Rời khỏi group
 router.delete("/:conversationId/leave", verifyToken, leaveGroup);
 
 // Nhượng quyền owner cho thành viên khác (chỉ dành cho owner)
