@@ -49,33 +49,24 @@ const authSlice = createSlice({
     user: savedUser,
     accessToken: savedToken,
     loading: false,
-    error: null,
   },
-  reducers: {
-    clearAuthState: (state) => {
-      state.loading = false;
-      state.error = null;
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
       //register
       .addCase(registerUser.pending, (state) => {
         state.loading = true;
-        state.error = null;
       })
       .addCase(registerUser.fulfilled, (state) => {
         state.loading = false;
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload.message || "Registration failed";
       })
 
       //login
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
-        state.error = null;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.user = action.payload.user;
@@ -86,7 +77,6 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload.message || "Login failed";
       })
 
       // logout

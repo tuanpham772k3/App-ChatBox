@@ -53,7 +53,7 @@ instance.interceptors.response.use(
       const { status, data } = error.response;
 
       // ====== HANDLE 401 (token expired) ======
-      if (status === 401 && !originalRequest._retry) {
+      if (status === 401 && !originalRequest._retry && !originalRequest.skipAuthRefresh) {
         originalRequest._retry = true;
 
         // Nếu đang refresh → queue lại

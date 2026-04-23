@@ -3,16 +3,20 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { registerUser, clearAuthState } from "@/store/authSlice";
 import { useNotification } from "@/hooks/useNotification";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const { Text, Title } = Typography;
 
 const RegisterPage = () => {
   const [form] = Form.useForm();
   const dispatch = useDispatch();
-  const { isLoading, isError } = useSelector((state) => state.auth);
-  const notification = useNotification();
   const navigate = useNavigate();
+
+  const { loading } = useSelector((state) => state.auth);
+
+  const [error, setError] = useState(null);
+
+  const notification = useNotification();
 
   const onFinish = async (values) => {
     const { confirmPassword, ...info } = values;
@@ -36,6 +40,8 @@ const RegisterPage = () => {
       form.resetFields();
       navigate("/login");
     } catch (err) {
+      setError(err.message || "Có lỗi xảy ra");
+
       notification.error({
         message: "Đăng ký thất bại",
         description: err.message || "Có lỗi xảy ra",
@@ -43,127 +49,119 @@ const RegisterPage = () => {
     }
   };
 
-  // Reset state khi component unmount
-  useEffect(() => {
-    return () => {
-      dispatch(clearAuthState());
-    };
-  }, [dispatch]);
-
   return (
-    <div className="flex justify-center items-center h-screen">
-      <Card className="w-[400px] shadow-lg">
-        {/* Title */}
-        <Title level={3} className="text-center mb-4">
-          Đăng ký
-        </Title>
+    <section id="register">
+      <div className="container mx-auto min-h-screen flex items-center justify-center">
+        <Card className="w-[400px] shadow-lg">
+          {/* Title */}
+          <Title level={3} className="text-center mb-4">
+            Đăng ký
+          </Title>
 
-        {/* Form AntD (layout vertical) */}
-        <Form
-          onValuesChange={() => {
-            if (isError) dispatch(clearAuthState());
-          }}
-          form={form}
-          name="login"
-          layout="vertical"
-          initialValues={{ remember: true }}
-          onFinish={onFinish}
-          autoComplete="off"
-        >
-          {/* Username */}
-          <Form.Item
-            label="Tên hiển thị"
-            name="username"
-            rules={[
-              {
-                required: true,
-                message: "Vui lòng nhập tên người dùng!",
-              },
-            ]}
+          {/* Form AntD (layout vertical) */}
+          <Form
+            form={form}
+            name="login"
+            layout="vertical"
+            initialValues={{ remember: true }}
+            onFinish={onFinish}
+            autoComplete="off"
           >
-            <Input placeholder="nguyen_van_a" disabled={isLoading} />
-          </Form.Item>
-
-          {/* Email */}
-          <Form.Item
-            label="Email"
-            name="email"
-            rules={[{ required: true, message: "Vui lòng nhập email!" }]}
-          >
-            <Input placeholder="abc123@gmail.com" disabled={isLoading} />
-          </Form.Item>
-
-          {/* Password */}
-          <Form.Item
-            label="Mật khẩu"
-            name="password"
-            rules={[
-              {
-                required: true,
-                message: "Vui lòng nhập mật khẩu!",
-              },
-              {
-                min: 6,
-                message: "Mật khẩu phải có tối thiểu 6 ký tự",
-              },
-              //có thể thêm pattern để yêu cầu ký tự đặc biệt / số / hoa thường
-            ]}
-          >
-            <Input.Password
-              placeholder="Mật khẩu chưa ít nhất 6 ký tự"
-              disabled={isLoading}
-            />
-          </Form.Item>
-
-          {/* Confirm Password  */}
-          <Form.Item
-            label="Xác nhận mật khẩu"
-            name="confirmPassword"
-            dependencies={["password"]}
-            rules={[
-              {
-                required: true,
-                message: "Vui lòng xác nhận mật khẩu!",
-              },
-            ]}
-          >
-            <Input.Password placeholder="Nhập lại mật khẩu" disabled={isLoading} />
-          </Form.Item>
-
-          <Form.Item name="remember" valuePropName="checked">
-            <Checkbox disabled={isLoading}>Chấp nhận điều khoản & điều kiện</Checkbox>
-          </Form.Item>
-
-          {/* Hiển thị lỗi */}
-          <div className="mb-2">
-            {isError && (
-              <Text type="danger" className="text-sm italic">
-                * {isError}
-              </Text>
-            )}
-          </div>
-
-          <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              block
-              disabled={isLoading}
-              loading={isLoading}
+            {/* Username */}
+            <Form.Item
+              label="Tên hiển thị"
+              name="username"
+              rules={[
+                {
+                  required: true,
+                  message: "Vui lòng nhập tên người dùng!",
+                },
+              ]}
             >
-              {isLoading ? "Đang xử lý..." : "Đăng ký"}
-            </Button>
-          </Form.Item>
-        </Form>
+              <Input placeholder="nguyen_van_a" disabled={loading} />
+            </Form.Item>
 
-        <div className="text-center mt-2">
-          Đã có tài khoản?{" "}
-          <Link to="/login" className="text-blue-600 hover:text-blue-800 font-medium">
-            Đăng nhập
-          </Link>
-        </div>
-      </Card>
-    </div>
+            {/* Email */}
+            <Form.Item
+              label="Email"
+              name="email"
+              rules={[{ required: true, message: "Vui lòng nhập email!" }]}
+            >
+              <Input placeholder="abc123@gmail.com" disabled={loading} />
+            </Form.Item>
+
+            {/* Password */}
+            <Form.Item
+              label="Mật khẩu"
+              name="password"
+              rules={[
+                {
+                  required: true,
+                  message: "Vui lòng nhập mật khẩu!",
+                },
+                {
+                  min: 6,
+                  message: "Mật khẩu phải có tối thiểu 6 ký tự",
+                },
+                //có thể thêm pattern để yêu cầu ký tự đặc biệt / số / hoa thường
+              ]}
+            >
+              <Input.Password
+                placeholder="Mật khẩu chưa ít nhất 6 ký tự"
+                disabled={loading}
+              />
+            </Form.Item>
+
+            {/* Confirm Password  */}
+            <Form.Item
+              label="Xác nhận mật khẩu"
+              name="confirmPassword"
+              dependencies={["password"]}
+              rules={[
+                {
+                  required: true,
+                  message: "Vui lòng xác nhận mật khẩu!",
+                },
+              ]}
+            >
+              <Input.Password placeholder="Nhập lại mật khẩu" disabled={loading} />
+            </Form.Item>
+
+            <Form.Item name="remember" valuePropName="checked">
+              <Checkbox disabled={loading}>Chấp nhận điều khoản & điều kiện</Checkbox>
+            </Form.Item>
+
+            {/* Hiển thị lỗi */}
+            <div className="mb-2">
+              {error && (
+                <Text type="danger" className="text-sm italic">
+                  * {error}
+                </Text>
+              )}
+            </div>
+
+            <Form.Item>
+              <Button
+                type="primary"
+                htmlType="submit"
+                block
+                disabled={loading}
+                loading={loading}
+              >
+                {loading ? "Đang xử lý..." : "Đăng ký"}
+              </Button>
+            </Form.Item>
+          </Form>
+
+          <div className="text-center mt-2">
+            Đã có tài khoản?{" "}
+            <Link to="/login" className="text-blue-600 hover:text-blue-800 font-medium">
+              Đăng nhập
+            </Link>
+          </div>
+        </Card>
+      </div>
+    </section>
   );
 };
 
