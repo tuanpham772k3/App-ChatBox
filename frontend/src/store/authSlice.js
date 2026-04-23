@@ -48,26 +48,9 @@ const authSlice = createSlice({
   initialState: {
     user: savedUser,
     accessToken: savedToken,
-    loading: false,
   },
-  reducers: {},
   extraReducers: (builder) => {
     builder
-      //register
-      .addCase(registerUser.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(registerUser.fulfilled, (state) => {
-        state.loading = false;
-      })
-      .addCase(registerUser.rejected, (state, action) => {
-        state.loading = false;
-      })
-
-      //login
-      .addCase(loginUser.pending, (state) => {
-        state.loading = true;
-      })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.user = action.payload.user;
         state.accessToken = action.payload.accessToken;
@@ -75,26 +58,15 @@ const authSlice = createSlice({
         localStorage.setItem("user", JSON.stringify(action.payload.user));
         state.loading = false;
       })
-      .addCase(loginUser.rejected, (state, action) => {
-        state.loading = false;
-      })
 
       // logout
-      .addCase(logoutUser.pending, (state) => {
-        state.loading = true;
-      })
       .addCase(logoutUser.fulfilled, (state) => {
         state.user = null;
         state.accessToken = null;
         localStorage.removeItem("accessToken");
         localStorage.removeItem("user");
-        state.loading = false;
-      })
-      .addCase(logoutUser.rejected, (state) => {
-        state.loading = false;
       });
   },
 });
 
-export const { clearAuthState } = authSlice.actions;
 export default authSlice.reducer;

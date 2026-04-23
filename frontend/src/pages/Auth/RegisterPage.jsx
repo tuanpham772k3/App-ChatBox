@@ -1,9 +1,9 @@
 import { Button, Card, Checkbox, Form, Input, Typography } from "antd";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { registerUser, clearAuthState } from "@/store/authSlice";
+import { registerUser } from "@/store/authSlice";
 import { useNotification } from "@/hooks/useNotification";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const { Text, Title } = Typography;
 
@@ -12,8 +12,7 @@ const RegisterPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { loading } = useSelector((state) => state.auth);
-
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const notification = useNotification();
@@ -28,6 +27,8 @@ const RegisterPage = () => {
       });
       return;
     }
+
+    setLoading(true);
 
     try {
       await dispatch(registerUser(info)).unwrap();
@@ -46,6 +47,8 @@ const RegisterPage = () => {
         message: "Đăng ký thất bại",
         description: err.message || "Có lỗi xảy ra",
       });
+    } finally {
+      setLoading(false);
     }
   };
 

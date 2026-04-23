@@ -1,25 +1,27 @@
+import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { clearAuthState, loginUser } from "@/store/authSlice";
+import { Button, Card, Form, Input, Typography } from "antd";
+import { loginUser } from "@/store/authSlice";
 import { useNotification } from "@/hooks/useNotification";
-import { useEffect, useState } from "react";
-import { Button, Card, Checkbox, Form, Input, Typography } from "antd";
 
-const { Text, Title } = Typography;
+const { Title } = Typography;
 
 const LoginPage = () => {
   const [form] = Form.useForm();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { loading } = useSelector((state) => state.auth);
-
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const notification = useNotification();
 
   const onFinish = async (values) => {
     const { email, password } = values;
+
+    setLoading(true);
+
     try {
       await dispatch(loginUser({ email, password })).unwrap();
 
@@ -36,6 +38,8 @@ const LoginPage = () => {
         message: "Đăng nhập thất bại",
         description: error.message || "Có lỗi xảy ra",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -94,17 +98,18 @@ const LoginPage = () => {
               <Input.Password disabled={loading} autoComplete="current-password" />
             </Form.Item>
 
-            <Form.Item name="remember" valuePropName="checked">
-              <Checkbox disabled={loading}>Ghi nhớ đăng nhập</Checkbox>
-            </Form.Item>
+            <div>
+              <Link
+                to={"/forgot-password"}
+                className="block w-fit ml-auto font-bold hover:!underline"
+              >
+                Quên mật khẩu?
+              </Link>
+            </div>
 
             {/* Hiển thị lỗi */}
             <div className="mb-2">
-              {error && (
-                <Text type="danger" className="text-sm italic">
-                  * {error}
-                </Text>
-              )}
+              {error && <p className="text-sm italic text-red-500">* {error}</p>}
             </div>
 
             <Form.Item>
@@ -118,13 +123,19 @@ const LoginPage = () => {
                 {loading ? "Đang xử lý..." : "Đăng nhập"}
               </Button>
             </Form.Item>
+
+            <Form.Item>
+              <Button block disabled={loading}>
+                Bạn chưa xác thực tài khoản?
+              </Button>
+            </Form.Item>
           </Form>
 
-          <div className="text-center mt-2">
+          <div className="text-center">
             Chưa có tài khoản?{" "}
             <Link
               to="/register"
-              className="text-blue-600 hover:text-blue-800 font-medium"
+              className="text-blue-600 hover:text-blue-800 font-bold hover:!underline"
             >
               Đăng ký
             </Link>
