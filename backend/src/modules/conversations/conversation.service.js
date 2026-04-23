@@ -209,10 +209,18 @@ const ConversationService = {
    * @param {string} conversationId - ID group
    * @param {string} memberId - ID user cần thêm
    */
-  addMemberToGroup: async (conversationId, memberIds) => {
+  addMemberToGroup: async (conversationId, memberIds, userId) => {
     const conversation = await Conversation.findById(conversationId);
     if (!conversation || !conversation.isActive || conversation.type !== "group") {
       throw new AppError("Group conversation not found", 404);
+    }
+
+    const currentUser = conversation.participants.find(
+      (p) => p.user.toString() === userId
+    );
+
+    if (!currentUser || currentUser.role !== "owner") {
+      throw new AppError("Only owner can add members", 403);
     }
 
     const users = await User.find({ _id: { $in: memberIds } });

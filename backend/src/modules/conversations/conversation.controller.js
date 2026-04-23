@@ -156,7 +156,7 @@ const addMemberToGroup = async (req, res, next) => {
   try {
     const { userId } = req.user;
     const { conversationId } = req.params;
-    const { memberIds = [] } = req.body;
+    const { memberIds } = req.body;
 
     if (!conversationId.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({
@@ -174,8 +174,8 @@ const addMemberToGroup = async (req, res, next) => {
 
     const conversation = await ConversationService.addMemberToGroup(
       conversationId,
-      userId,
-      memberIds
+      memberIds,
+      userId
     );
 
     return res.status(200).json({
