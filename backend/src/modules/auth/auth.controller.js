@@ -10,7 +10,7 @@ const setRefreshCookie = (res, refreshToken) => {
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true, // client JS không thể truy cập cookie này, giảm nguy cơ bị XSS đánh cắp token
     secure: process.env.NODE_ENV === "production", // Nếu false gửi cả http và https, true chỉ gửi https
-    sameSite: "lax", // ngăn chặn tấn công CSRF
+    sameSite: "none", // ngăn chặn tấn công CSRF
     maxAge: REFRESH_TTL_MS,
     path: "/", // gửi cookie trong mọi request đến backend
   });
@@ -21,7 +21,7 @@ const clearRefreshCookie = (res) => {
   res.clearCookie("refreshToken", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    sameSite: "none",
     path: "/",
   });
 };
