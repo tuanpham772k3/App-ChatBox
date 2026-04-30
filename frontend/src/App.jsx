@@ -1,13 +1,16 @@
 import { createContext, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { notification } from "antd";
 import { useSelector } from "react-redux";
+import { notification } from "antd";
+
 import LoginPage from "@/pages/Auth/LoginPage";
 import RegisterPage from "@/pages/Auth/RegisterPage";
 import ProfilePage from "@/pages/ProfilePage";
 import ChatPage from "@/pages/ChatPage";
+
 import { useSocket } from "@/hooks/useSocket";
 import { useConversations } from "@/hooks/useConversations";
+
 import { connectSocket, disconnectSocket, initSocket } from "./lib/socket";
 
 export const NotificationContext = createContext(null);
@@ -26,7 +29,6 @@ function App() {
   const { accessToken } = useSelector((state) => state.auth);
   const [api, contextHolder] = notification.useNotification();
 
-  // Khởi tạo và kết nối socket khi có accessToken
   useEffect(() => {
     if (!accessToken) {
       disconnectSocket();
@@ -39,7 +41,7 @@ function App() {
     return () => disconnectSocket();
   }, [accessToken]);
 
-  useSocket(); // Kết nối socket và lắng nghe sự kiện global
+  useSocket();
   useConversations();
 
   return (

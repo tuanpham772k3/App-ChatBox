@@ -102,7 +102,7 @@ const MessageService = {
 
     return {
       message: populatedMessage,
-      participants: updatedConv.participants,
+      conversation: updatedConv,
     };
   },
 

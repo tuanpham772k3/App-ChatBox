@@ -203,7 +203,6 @@ const conversationsSlice = createSlice({
     // Realtime lastMessage
     updateConversationLastMessage: (state, action) => {
       const { conversationId, lastMessage } = action.payload;
-      console.log("updateConversationLastMessage", conversationId, lastMessage);
 
       const idx = state.conversations.findIndex((c) => c._id === conversationId);
       if (idx === -1) return;
@@ -360,6 +359,14 @@ const conversationsSlice = createSlice({
       // -------------------------------
       .addCase(getConversationImages.fulfilled, (state, action) => {
         state.images = action.payload || [];
+      })
+
+      // -------------------------------
+      // DELETE CONVERSATION FOR ME
+      // -------------------------------
+      .addCase(deleteConversationForMe.fulfilled, (state, action) => {
+        const { conversationId } = action.payload;
+        state.conversations = state.conversations.filter((c) => c._id !== conversationId);
       });
   },
 });

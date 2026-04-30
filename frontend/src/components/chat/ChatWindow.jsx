@@ -50,6 +50,7 @@ const ChatWindow = ({ activeChatId, onBack }) => {
 
   const typingNames = useMemo(() => {
     if (!currentConversationId) return [];
+    if (!currentConversation) return [];
 
     const typingMap = typingUsers[currentConversationId] || {};
 
@@ -96,7 +97,7 @@ const ChatWindow = ({ activeChatId, onBack }) => {
     };
   }, [currentConversationId]);
 
-  if (!activeChatId) return <ChatEmptyState />;
+  if (!activeChatId || !currentConversation) return <ChatEmptyState />;
 
   return (
     <div

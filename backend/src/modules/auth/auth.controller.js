@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const User = require("../users/user.model.js");
+const { AppError } = require("../../utils/AppError.js");
 
 const REFRESH_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -10,7 +11,7 @@ const setRefreshCookie = (res, refreshToken) => {
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true, // client JS không thể truy cập cookie này, giảm nguy cơ bị XSS đánh cắp token
     secure: process.env.NODE_ENV === "production", // Nếu false gửi cả http và https, true chỉ gửi https
-    sameSite: "none", // ngăn chặn tấn công CSRF
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     maxAge: REFRESH_TTL_MS,
     path: "/", // gửi cookie trong mọi request đến backend
   });
@@ -21,7 +22,7 @@ const clearRefreshCookie = (res) => {
   res.clearCookie("refreshToken", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "none",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     path: "/",
   });
 };
@@ -46,14 +47,12 @@ const register = async (req, res, next) => {
     const { username, email, password } = req.body;
 
     if (!username || !email || !password) {
-      return res.status(400).json({
-        message: "username, email, password are required",
-      });
+      throw new AppError("username, email, password are required", 400);
     }
 
     const user = await User.findOne({ email });
     if (user) {
-      return res.status(409).json({ message: "email already exists" });
+      throw new AppError("email already exists", 409);
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -88,23 +87,17 @@ const login = async (req, res, next) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({
-        message: "Email, password are required",
-      });
+      throw new AppError("Email, password are required", 400);
     }
 
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(401).json({
-        message: "Invalid email or password",
-      });
+      throw new AppError("Invalid email or password", 401);
     }
 
     const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) {
-      return res.status(401).json({
-        message: "Invalid email or password",
-      });
+      throw new AppError("Invalid email or password", 401);
     }
 
     const accessToken = signAccessToken({
@@ -147,7 +140,7 @@ const refreshToken = async (req, res, next) => {
     const token = req.cookies?.refreshToken;
 
     if (!token) {
-      return res.status(401).json({ message: "No token provided" });
+      throw new AppError("No token provided", 400);
     }
 
     const hashed = hashToken(token);
@@ -158,7 +151,7 @@ const refreshToken = async (req, res, next) => {
     });
 
     if (!user) {
-      return res.status(401).json({ message: "Invalid token" });
+      throw new AppError("Invalid token", 400);
     }
 
     const newAccessToken = signAccessToken({

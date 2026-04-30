@@ -23,7 +23,9 @@ const createNewMessage = async (req, res, next) => {
       file
     );
 
-    const { message, participants } = result;
+    const { message, conversation } = result;
+
+    const participants = conversation.participants;
 
     const io = getSocket();
 

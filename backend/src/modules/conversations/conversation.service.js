@@ -169,7 +169,7 @@ const ConversationService = {
   getConversations: async (userId, page = 1, limit = 20) => {
     const skip = (page - 1) * limit;
 
-    // Tìm tất cả conversation mà user tham gia và chưa xóa phía mình(deletedAt: null)
+    // Tìm tất cả conversation mà user tham gia chưa xóa phía mình(deletedAt: null)
     const conversations = await Conversation.find({
       isActive: true,
       participants: {
