@@ -18,11 +18,9 @@ const ConversationContainer = ({ activeChatId, onSelectChat }) => {
   const dispatch = useDispatch();
 
   const currentUserId = useSelector((state) => state.auth.user?.id);
-  const {
-    conversations,
-    statusUsers,
-    loading,
-  } = useSelector((state) => state.conversations);
+  const { conversations, statusUsers, loading } = useSelector(
+    (state) => state.conversations
+  );
 
   const [searchInput, setSearchInput] = useState("");
   const [modal, setModal] = useState(null); // "group" | "private" | null
@@ -58,7 +56,7 @@ const ConversationContainer = ({ activeChatId, onSelectChat }) => {
       .unwrap()
       .then(() => {
         notification.success({
-          message: "Xóa hội thoại phía tôi thành công",
+          message: "Đã xóa hội thoại",
         });
       })
       .catch((err) => {

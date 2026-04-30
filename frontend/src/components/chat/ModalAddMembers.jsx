@@ -14,8 +14,6 @@ const ModalAddMembers = ({ isOpen, onCancel, conversationId }) => {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedFriends, setSelectedFriends] = useState([]);
-  console.log("Selected friends:", selectedFriends);
-
   const [searchText, setSearchText] = useState("");
 
   const notification = useNotification();

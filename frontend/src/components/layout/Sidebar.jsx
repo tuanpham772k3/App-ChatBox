@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   Archive,
@@ -7,9 +7,7 @@ import {
   Menu,
   MessageCircle,
   MessageCircleMore,
-  Pencil,
   Phone,
-  Trash,
   Users,
 } from "lucide-react";
 import { logoutUser } from "@/store/authSlice";
