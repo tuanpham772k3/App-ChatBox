@@ -17,7 +17,6 @@ const verifyToken = (req, res, next) => {
 
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
     if (err) {
-      console.error("Token verification error:", err.message);
       return res.status(401).json({
         message: "Token không hợp lệ hoặc đã hết hạn",
       });
