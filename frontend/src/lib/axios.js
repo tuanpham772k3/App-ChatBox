@@ -16,6 +16,15 @@ const refreshClient = axios.create({
 let isRefreshing = false;
 let refreshQueue = [];
 
+const syncAuthAfterRefresh = async (token) => {
+  const [{ store }, { syncAccessToken }] = await Promise.all([
+    import("@/store/store"),
+    import("@/store/authSlice"),
+  ]);
+
+  store.dispatch(syncAccessToken(token));
+};
+
 // xử lý queue
 const processQueue = (error, token = null) => {
   refreshQueue.forEach((prom) => {
@@ -83,6 +92,7 @@ instance.interceptors.response.use(
 
           // lưu token mới
           localStorage.setItem("accessToken", newAccessToken);
+          await syncAuthAfterRefresh(newAccessToken);
 
           // chạy lại các request đang chờ
           processQueue(null, newAccessToken);
@@ -95,8 +105,8 @@ instance.interceptors.response.use(
           processQueue(refreshError, null);
 
           localStorage.removeItem("accessToken");
-
-          window.location.href = "/login";
+          localStorage.removeItem("user");
+          await syncAuthAfterRefresh(null);
 
           return Promise.reject({
             status: 401,

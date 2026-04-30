@@ -49,6 +49,18 @@ const authSlice = createSlice({
     user: savedUser,
     accessToken: savedToken,
   },
+  reducers: {
+    syncAccessToken: (state, action) => {
+      state.accessToken = action.payload || null;
+
+      if (action.payload) {
+        localStorage.setItem("accessToken", action.payload);
+      } else {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("user");
+      }
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(loginUser.fulfilled, (state, action) => {
@@ -69,4 +81,5 @@ const authSlice = createSlice({
   },
 });
 
+export const { syncAccessToken } = authSlice.actions;
 export default authSlice.reducer;
