@@ -73,7 +73,7 @@ const MessageItem = ({
   });
 
   return (
-    <>
+    <li>
       {/* --- Display date --- */}
       {showDate && (
         <div className="flex justify-center m-2">
@@ -229,7 +229,7 @@ const MessageItem = ({
           )}
         </div>
       )}
-    </>
+    </li>
   );
 };
 

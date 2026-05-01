@@ -184,23 +184,23 @@ const Messages = ({
 
   return (
     <>
-      <div
+      <ul
         ref={containerRef}
         className="flex-1 overflow-y-auto px-4 py-4 space-y-0.5 bg-[var(--color-chat)] custom-scrollbar"
       >
         {/* 👇 Sentinel */}
         <div ref={topRef} />
 
-        {loading && (
+        {loading ? (
           <div className="flex justify-center">
             <Spin />
           </div>
-        )}
-
-        {messages.length === 0 && !loading && (
-          <p className="text-center text-sm text-[var(--color-text-secondary)]">
-            Chưa có tin nhắn nào
-          </p>
+        ) : (
+          messages.length === 0 && (
+            <p className="text-center text-sm text-[var(--color-text-secondary)]">
+              Chưa có tin nhắn nào
+            </p>
+          )
         )}
 
         {messagesWithMeta.map((msg, index) => {
@@ -222,7 +222,7 @@ const Messages = ({
             />
           );
         })}
-      </div>
+      </ul>
 
       {/* Lightbox */}
       <Lightbox

@@ -1,6 +1,7 @@
 import React from "react";
 import { Drawer } from "antd";
-import { ArrowLeft, Key, Search, Trash, UserPlus, Users } from "lucide-react";
+import { ArrowLeft, Key, Trash, UserPlus } from "lucide-react";
+import SearchBar from "../ui/search/SearchBar";
 
 const DrawerMembersInfo = ({
   open,
@@ -57,7 +58,7 @@ const DrawerMembersInfo = ({
           >
             <ArrowLeft size={22} />
           </button>
-          <span className="text-xl font-semibold">Thông tin thành viên</span>
+          <h2 className="text-xl font-semibold">Thông tin thành viên</h2>
         </div>
       }
       styles={{ body: { padding: 0 } }}
@@ -75,32 +76,20 @@ const DrawerMembersInfo = ({
           </button>
         </div>
 
-        {/* Danh sách thành viên */}
-        <div>
+        {/* Body */}
+        <div className="p-4 flex flex-col gap-4 ">
           {/* Title */}
-          <h3 className="px-4 font-medium text-base text-[var(--color-text-primary)]">{`Danh sách thành viên (${members?.length})`}</h3>
+          <h3 className="font-medium text-base text-[var(--color-text-primary)]">{`Danh sách thành viên (${members?.length})`}</h3>
 
           {/* Search */}
-          <div className="px-4 py-3">
-            <div
-              className="flex items-center gap-2 p-2 bg-[var(--color-chat)] 
-        hover:bg-[var(--color-hover-soft)] border border-[var(--color-border)] focus-within:border-[var(--color-primary)] rounded-full"
-            >
-              <Search size={20} color="var(--color-text-secondary)" />
-              <input
-                type="text"
-                placeholder="Tìm kiếm thành viên"
-                className="w-full h-5 me-4 text-[var(--color-text-primary)]"
-              />
-            </div>
-          </div>
+          <SearchBar placeholder="Tìm kiếm thành viên..." />
 
           {/* Members List */}
-          <ul className="flex flex-col overflow-y-auto">
+          <ul className="flex flex-col gap-1">
             {sortedMembers.map((member) => (
               <li
                 key={member.id}
-                className="flex items-center px-4 py-3 hover:bg-[var(--color-hover-surface)] rounded group"
+                className="flex items-center px-2 py-3 hover:bg-[var(--color-hover-surface)] rounded group"
               >
                 <div className="flex-1 flex items-center gap-2">
                   {/* Avatar */}
@@ -125,13 +114,15 @@ const DrawerMembersInfo = ({
                     </h3>
 
                     {member.role === "owner" && (
-                      <h3 className="text-[var(--color-text-secondary)]">Người tạo</h3>
+                      <span className="text-xs text-[var(--color-text-secondary)]">
+                        Người tạo
+                      </span>
                     )}
 
                     {member.role === "admin" && (
-                      <h3 className="text-[var(--color-text-secondary)]">
+                      <span className="text-xs text-[var(--color-text-secondary)]">
                         Quản trị viên
-                      </h3>
+                      </span>
                     )}
                   </div>
                 </div>

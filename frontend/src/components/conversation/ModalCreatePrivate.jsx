@@ -7,6 +7,7 @@ import FriendItem from "@/components/ui/member/FriendItem";
 import { searchUsers } from "@/store/userSlice";
 import { createConversation } from "../../store/conversationsSlice";
 import { useNotification } from "@/hooks/useNotification";
+import SearchBar from "../ui/search/SearchBar";
 
 const ModalCreatePrivate = ({ isOpen, onCancel }) => {
   const dispatch = useDispatch();
@@ -103,45 +104,33 @@ const ModalCreatePrivate = ({ isOpen, onCancel }) => {
         </h2>
       </div>
       {/* Body */}
-      <div className="flex flex-col px-4">
-        {/* Ô tìm kiếm */}
-        <div className="py-4 border-b border-[var(--color-border)]">
-          <div className="relative flex items-center">
-            <Search className="absolute w-4 h-4 left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)] z-10" />
-            <div className="flex-1 text-[var(--color-text-primary)]">
-              <input
-                placeholder="Nhập tên"
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                className="w-full bg-[var(--color-chat)] hover:bg-[var(--color-hover-soft)] px-10 py-2 rounded-3xl
-                placeholder-[var(--color-text-secondary)] border-2 border-[var(--color-border)] focus-within:border-blue-500"
-              />
-            </div>
-          </div>
-        </div>
+      <div className="flex flex-col gap-2 p-4">
+        {/* Search */}
+        <SearchBar placeholder="Tìm kiếm thành viên..." />
 
-        {/* Danh sách bạn bè */}
-        <div className="h-[400px] overflow-y-auto custom-scrollbar">
-          {loading && (
+        {/* ====== Friends List ====== */}
+        <ul className="h-full max-h-[400px] flex flex-col gap-1 overflow-y-auto custom-scrollbar">
+          {loading ? (
             <div className="w-full text-center mt-8">
               <Spin />
             </div>
-          )}
-          {results.length === 0 && !loading ? (
-            <div className="text-center mt-8 text-[var(--color-text-secondary)]">
-              Không tìm thấy kết quả
-            </div>
           ) : (
-            results.map((friend) => (
-              <FriendItem
-                key={friend._id}
-                friend={friend}
-                isSelected={selectedFriend === friend._id}
-                onToggle={() => toggleFriend(friend._id)}
-              />
-            ))
+            results.length === 0 && (
+              <div className="text-center mt-8 text-[var(--color-text-secondary)]">
+                Không có người dùng nào
+              </div>
+            )
           )}
-        </div>
+
+          {results.map((friend) => (
+            <FriendItem
+              key={friend._id}
+              friend={friend}
+              isSelected={selectedFriend === friend._id}
+              onToggle={() => toggleFriend(friend._id)}
+            />
+          ))}
+        </ul>
       </div>
       {/* Footer */}
       <div className="p-4 flex justify-end gap-3 border-t border-[var(--color-border)]">

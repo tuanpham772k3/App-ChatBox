@@ -17,7 +17,7 @@ const ConversationItem = ({
   const unreadCount = display.currentUser?.unreadCount || 0;
 
   return (
-    <li className="w-full">
+    <li>
       <div
         className={`group w-full max-w-full flex items-center gap-2 p-2 rounded-xl cursor-pointer transition
         ${

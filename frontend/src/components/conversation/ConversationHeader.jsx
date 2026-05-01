@@ -15,6 +15,7 @@ const ConversationHeader = ({ searchValue, onSearchChange, onOpenModal }) => {
             setIsSearchOpen(false);
             onSearchChange("");
           }}
+          placeholder="Tìm kiếm hội thoại..."
         />
       ) : (
         <>
