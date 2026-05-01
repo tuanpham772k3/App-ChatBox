@@ -38,6 +38,10 @@ const conversationSchema = new mongoose.Schema(
         }, // tin nhắn cuối mà người dùng đã đọc
         lastReadAt: { type: Date }, // mốc thời gian đã đọc tin nhắn cuối
         unreadCount: { type: Number, default: 0 }, // số lượng tin nhắn chưa đọc
+        pinnedAt: {
+          type: Date,
+          default: null,
+        }, // mốc thời gian ghim hội thoại (null = chưa ghim)
       },
     ], // Danh sách người tham gia cuộc trò chuyện (tối thiểu 2 người)
 

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Search, User, Users } from "lucide-react";
+import { Search, User, UserRound, Users, UsersRound } from "lucide-react";
 import SearchBar from "@/components/ui/search/SearchBar";
 
 const ConversationHeader = ({ searchValue, onSearchChange, onOpenModal }) => {
@@ -24,21 +24,21 @@ const ConversationHeader = ({ searchValue, onSearchChange, onOpenModal }) => {
               onClick={() => onOpenModal("private")}
               className="flex items-center p-2 rounded-full bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)] transition-colors"
             >
-              <User className="w-5 h-5" />
+              <UserRound size={20} />
             </button>
 
             <button
               onClick={() => onOpenModal("group")}
               className="flex items-center p-2 rounded-full bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)] transition-colors"
             >
-              <Users className="w-5 h-5" />
+              <UsersRound size={20} />
             </button>
 
             <button
               onClick={() => setIsSearchOpen(true)}
               className="flex items-center p-2 rounded-full bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)] transition-colors"
             >
-              <Search className="w-5 h-5" />
+              <Search size={20} />
             </button>
           </div>
         </>

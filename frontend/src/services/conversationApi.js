@@ -108,6 +108,18 @@ const conversationApi = {
   deleteConversationForMe: (conversationId) => {
     return instance.delete(`/conversations/${conversationId}/for-me`);
   },
+
+  togglePinConversation: (conversationId) => {
+    return instance.put(`/conversations/${conversationId}/pin`);
+  },
+
+  markAsUnread: (conversationId) => {
+    return instance.put(`/conversations/${conversationId}/unread`);
+  },
+
+  clearConversationHistory: (conversationId) => {
+    return instance.put(`/conversations/${conversationId}/clear-history`);
+  },
 };
 
 export default conversationApi;

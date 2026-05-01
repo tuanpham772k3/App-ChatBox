@@ -11,6 +11,9 @@ const {
   leaveGroup,
   transferGroupOwnership,
   deleteConversationForMe,
+  togglePinConversation,
+  markAsUnread,
+  clearConversationHistory,
 } = require("./conversation.controller.js");
 const { verifyToken } = require("../../middlewares/authMiddleware.js");
 
@@ -36,6 +39,15 @@ router.get("/:conversationId", verifyToken, getConversationById);
 
 // Đánh dấu đã đọc
 router.put("/:conversationId/read", verifyToken, markAsRead);
+
+// Đánh dấu chưa đọc
+router.put("/:conversationId/unread", verifyToken, markAsUnread);
+
+// Ghim/bỏ ghim hội thoại
+router.put("/:conversationId/pin", verifyToken, togglePinConversation);
+
+// Xóa lịch sử trò chuyện
+router.put("/:conversationId/clear-history", verifyToken, clearConversationHistory);
 
 // Lấy danh sách ảnh trong hội thoại
 router.get("/:conversationId/images", verifyToken, getConversationImages);

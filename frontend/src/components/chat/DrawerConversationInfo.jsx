@@ -10,7 +10,8 @@ import {
   Pin,
   Settings,
   TriangleAlert,
-  Users,
+  UserPlus,
+  UsersRound,
 } from "lucide-react";
 import GroupAvatar from "@/components/ui/avatar/GroupAvatar";
 
@@ -18,6 +19,9 @@ const DrawerConversationInfo = ({
   open,
   onClose,
   displayInfo,
+  onTogglePin,
+  onClearHistory,
+  onOpenLeaveGroup,
   onOpenMembersInfo,
   onOpenMediaGallery,
   images,
@@ -25,7 +29,7 @@ const DrawerConversationInfo = ({
   const headerActions = [
     { icon: <Bell size={20} />, label: "Tắt thông báo" },
     { icon: <Pin size={20} />, label: "Ghim hội thoại" },
-    { icon: <Users size={20} />, label: "Thêm thành viên" },
+    { icon: <UserPlus size={20} />, label: "Thêm thành viên" },
     { icon: <Settings size={20} />, label: "Quản lý nhóm" },
   ];
 
@@ -76,6 +80,7 @@ const DrawerConversationInfo = ({
                 <div key={index} className="flex flex-col items-center gap-2">
                   <button
                     aria-label={action.label}
+                    onClick={action.label === "Ghim hội thoại" ? onTogglePin : undefined}
                     className="p-2 bg-[var(--color-chat)] hover:bg-[var(--color-hover-soft)] rounded-full"
                   >
                     {action.icon}
@@ -93,9 +98,9 @@ const DrawerConversationInfo = ({
             </h3>
             <button
               onClick={onOpenMembersInfo}
-              className="w-full flex items-center gap-2 px-4 py-3 text-sm text-[var(--color-text-primary)] hover:bg-[var(--color-hover-soft)] rounded"
+              className="w-full flex items-center gap-2 px-4 py-3 text-base text-[var(--color-text-primary)] hover:bg-[var(--color-hover-soft)] rounded"
             >
-              <Users size={18} />
+              <UsersRound size={20} />
               <span>{`${displayInfo?.participants?.length} thành viên`}</span>
             </button>
           </div>
@@ -154,13 +159,16 @@ const DrawerConversationInfo = ({
               <span>Báo xấu</span>
             </button>
 
-            <button className="w-full flex items-center gap-2 p-4 text-base hover:bg-[var(--color-hover-soft)] rounded text-red-500">
+            <button
+              onClick={onClearHistory}
+              className="w-full flex items-center gap-2 p-4 text-base hover:bg-[var(--color-hover-soft)] rounded text-red-500"
+            >
               <BrushCleaning />
               <span>Xóa lịch sử trò chuyện</span>
             </button>
 
             <button
-              onClick={() => setOpenLeaveModal(true)}
+              onClick={onOpenLeaveGroup}
               className="w-full flex items-center gap-2 p-4 text-base hover:bg-[var(--color-hover-soft)] rounded text-red-500"
             >
               <LogOut />

@@ -1,5 +1,5 @@
 import React from "react";
-import { ArrowLeft, PanelRight, Phone, UserRound, Users, Video } from "lucide-react";
+import { ArrowLeft, PanelRight, Phone, UserPlus, UsersRound, Video } from "lucide-react";
 import GroupAvatar from "@/components/ui/avatar/GroupAvatar";
 
 const ChatHeader = ({
@@ -56,13 +56,13 @@ const ChatHeader = ({
             <button
               onClick={onOpenMembersInfo}
               type="button"
-              className="flex items-center gap-1 text-[var(--color-text-secondary)]"
+              className="flex items-center gap-1 text-sm text-[var(--color-text-secondary)]"
             >
-              <UserRound size={18} />
-              <span className="text-sm">{`${displayInfo.participants.length} thành viên`}</span>
+              <UsersRound size={20} />
+              <span>{`${displayInfo.participants.length} thành viên`}</span>
             </button>
           ) : (
-            <span className="text-xs text-[var(--color-text-secondary)]">
+            <span className="text-sm text-[var(--color-text-secondary)]">
               {isOnline ? "Đang hoạt động" : "Ngoại tuyến"}
             </span>
           )}
@@ -78,7 +78,7 @@ const ChatHeader = ({
             size={20}
             className="p-2 rounded-full hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)]"
           >
-            <Users />
+            <UserPlus size={20} />
           </button>
         )}
         <button className="p-2 rounded-full hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)]">

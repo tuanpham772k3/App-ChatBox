@@ -177,6 +177,42 @@ export const deleteConversationForMe = createAsyncThunk(
   }
 );
 
+export const togglePinConversation = createAsyncThunk(
+  "conversations/togglePin",
+  async ({ conversationId, userId }, { rejectWithValue }) => {
+    try {
+      const res = await conversationApi.togglePinConversation(conversationId);
+      return { ...res, userId }; // { conversationId, pinnedAt, userId }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const markConversationAsUnread = createAsyncThunk(
+  "conversations/markUnread",
+  async ({ conversationId, userId }, { rejectWithValue }) => {
+    try {
+      const res = await conversationApi.markAsUnread(conversationId);
+      return { ...res, userId }; // { conversationId, unreadCount, userId }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const clearConversationHistory = createAsyncThunk(
+  "conversations/clearHistory",
+  async ({ conversationId, userId }, { rejectWithValue }) => {
+    try {
+      await conversationApi.clearConversationHistory(conversationId);
+      return { conversationId, userId };
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
 /* =============================
  *  Slice setup
  * ============================= */
@@ -375,6 +411,46 @@ const conversationsSlice = createSlice({
       .addCase(deleteConversationForMe.fulfilled, (state, action) => {
         const { conversationId } = action.payload;
         state.conversations = state.conversations.filter((c) => c._id !== conversationId);
+      })
+      .addCase(togglePinConversation.fulfilled, (state, action) => {
+        const { conversationId, pinnedAt, userId } = action.payload;
+        const conv = state.conversations.find((c) => c._id === conversationId);
+        if (!conv) return;
+
+        conv.participants = conv.participants.map((p) =>
+          p.user._id === userId ? { ...p, pinnedAt } : p
+        );
+      })
+      .addCase(markConversationAsUnread.fulfilled, (state, action) => {
+        const { conversationId, unreadCount, userId } = action.payload;
+        const conv = state.conversations.find((c) => c._id === conversationId);
+        if (!conv) return;
+
+        conv.participants = conv.participants.map((p) =>
+          p.user._id === userId
+            ? { ...p, unreadCount, lastReadAt: null, lastReadMessage: null }
+            : p
+        );
+      })
+      .addCase(clearConversationHistory.fulfilled, (state, action) => {
+        const { conversationId, userId } = action.payload;
+        const conv = state.conversations.find((c) => c._id === conversationId);
+        if (conv) {
+          conv.participants = conv.participants.map((p) =>
+            p.user._id === userId
+              ? {
+                  ...p,
+                  unreadCount: 0,
+                  lastReadAt: null,
+                  lastReadMessage: null,
+                  clearedMessagesHistoryAt: new Date().toISOString(),
+                }
+              : p
+          );
+        }
+        if (state.currentConversationId === conversationId) {
+          state.currentConversationId = null;
+        }
       });
   },
 });

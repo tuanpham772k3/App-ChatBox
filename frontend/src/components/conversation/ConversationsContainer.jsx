@@ -3,9 +3,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { MessageSquareText } from "lucide-react";
 import { Spin } from "antd";
 import {
+  clearConversationHistory,
   deleteConversationForMe,
   getConversationById,
   getConversations,
+  markConversationAsUnread,
+  togglePinConversation,
 } from "../../store/conversationsSlice";
 import ConversationHeader from "./ConversationHeader";
 import ConversationItem from "./ConversationItem";
@@ -55,6 +58,9 @@ const ConversationContainer = ({ activeChatId, onSelectChat }) => {
     dispatch(deleteConversationForMe(conversationId))
       .unwrap()
       .then(() => {
+        if (activeChatId === conversationId) {
+          onSelectChat(null);
+        }
         notification.success({
           message: "Đã xóa hội thoại",
         });
@@ -67,21 +73,75 @@ const ConversationContainer = ({ activeChatId, onSelectChat }) => {
       });
   };
 
+  const handleTogglePinConversation = (conversationId) => {
+    dispatch(togglePinConversation({ conversationId, userId: currentUserId }))
+      .unwrap()
+      .catch((err) => {
+        notification.error({
+          message: "Cập nhật ghim hội thoại thất bại",
+          description: err.message || "Có lỗi xảy ra",
+        });
+      });
+  };
+
+  const handleMarkConversationUnread = (conversationId) => {
+    dispatch(markConversationAsUnread({ conversationId, userId: currentUserId }))
+      .unwrap()
+      .catch((err) => {
+        notification.error({
+          message: "Đánh dấu chưa đọc thất bại",
+          description: err.message || "Có lỗi xảy ra",
+        });
+      });
+  };
+
+  const handleClearConversationHistory = (conversationId) => {
+    dispatch(clearConversationHistory({ conversationId, userId: currentUserId }))
+      .unwrap()
+      .then(() => {
+        if (activeChatId === conversationId) {
+          onSelectChat(null);
+        }
+        notification.success({ message: "Đã xóa lịch sử trò chuyện" });
+      })
+      .catch((err) => {
+        notification.error({
+          message: "Xóa lịch sử trò chuyện thất bại",
+          description: err.message || "Có lỗi xảy ra",
+        });
+      });
+  };
+
   // Lọc hội thoại
   const filteredConversations = useMemo(() => {
+    const sortByPinned = (list) =>
+      [...list].sort((a, b) => {
+        const aPinned = a.participants.find(
+          (p) => p.user._id === currentUserId
+        )?.pinnedAt;
+        const bPinned = b.participants.find(
+          (p) => p.user._id === currentUserId
+        )?.pinnedAt;
+        if (aPinned && bPinned) return new Date(bPinned) - new Date(aPinned);
+        if (aPinned) return -1;
+        if (bPinned) return 1;
+        return 0;
+      });
+
     const trimmed = searchInput.trim();
     if (!trimmed) {
-      return conversations;
+      return sortByPinned(conversations);
     }
 
     const keyword = trimmed.toLowerCase();
 
-    return conversations.filter((conversation) => {
+    const results = conversations.filter((conversation) => {
       const displayInfo = getDisplayInfo(conversation, currentUserId);
       if (!displayInfo) return false;
 
       return displayInfo.displayName?.toLowerCase().includes(keyword);
     });
+    return sortByPinned(results);
   }, [conversations, currentUserId, searchInput]);
 
   return (
@@ -105,16 +165,16 @@ const ConversationContainer = ({ activeChatId, onSelectChat }) => {
         ) : (
           <div className="px-4 py-8">
             {/* Title */}
-            <div className="flex items-center gap-2 px-2 mb-2 text-xs text-[var(--color-text-secondary)]">
-              <MessageSquareText className="w-3 h-3" />
-              <p>Tất cả tin nhắn</p>
+            <div className="flex items-center gap-2 px-2 mb-2 text-sm text-[var(--color-text-secondary)]">
+              <MessageSquareText size={14} />
+              <span>Tất cả tin nhắn</span>
             </div>
 
-            {/* Body */}
-            <div className="flex flex-col gap-2 overflow-y-auto scrollbar-thin scrollbar-thumb-[var(--color-border)] scrollbar-track-transparent">
+            {/* List conversations */}
+            <ul className="flex flex-col gap-2 overflow-y-auto scrollbar-thin scrollbar-thumb-[var(--color-border)] scrollbar-track-transparent">
               {filteredConversations.length === 0 ? (
                 <div className="text-center text-[var(--color-text-secondary)] mt-8">
-                  Không có cuộc trò chuyện nào
+                  Chưa có cuộc trò chuyện nào
                 </div>
               ) : (
                 <>
@@ -137,13 +197,20 @@ const ConversationContainer = ({ activeChatId, onSelectChat }) => {
                         display={displayInfo}
                         onSelect={() => handleSelectConversation(conversation._id)}
                         onRemove={() => removeConversationForMe(conversation._id)}
+                        onTogglePin={() => handleTogglePinConversation(conversation._id)}
+                        onMarkUnread={() =>
+                          handleMarkConversationUnread(conversation._id)
+                        }
+                        onClearHistory={() =>
+                          handleClearConversationHistory(conversation._id)
+                        }
                         isOnline={isOnline}
                       />
                     );
                   })}
                 </>
               )}
-            </div>
+            </ul>
           </div>
         )}
       </section>

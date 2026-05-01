@@ -537,6 +537,86 @@ const ConversationService = {
 
     return true;
   },
+
+  togglePinConversation: async (conversationId, userId) => {
+    const conversation = await Conversation.findOne({
+      _id: conversationId,
+      "participants.user": userId,
+      isActive: true,
+    });
+
+    if (!conversation) {
+      throw new AppError("Conversation not found or access denied", 404);
+    }
+
+    const participant = conversation.participants.find((p) => p.user.toString() === userId);
+    if (!participant) {
+      throw new AppError("Participant not found", 404);
+    }
+
+    participant.pinnedAt = participant.pinnedAt ? null : new Date();
+    await conversation.save();
+
+    return {
+      conversationId,
+      pinnedAt: participant.pinnedAt,
+    };
+  },
+
+  markAsUnread: async (conversationId, userId) => {
+    const conversation = await Conversation.findOne({
+      _id: conversationId,
+      "participants.user": userId,
+      isActive: true,
+    });
+
+    if (!conversation) {
+      throw new AppError("Conversation not found or access denied", 404);
+    }
+
+    const participant = conversation.participants.find((p) => p.user.toString() === userId);
+    if (!participant) {
+      throw new AppError("Participant not found", 404);
+    }
+
+    participant.unreadCount = Math.max(participant.unreadCount || 0, 1);
+    participant.lastReadAt = null;
+    participant.lastReadMessage = null;
+
+    await conversation.save();
+
+    return {
+      conversationId,
+      unreadCount: participant.unreadCount,
+    };
+  },
+
+  clearConversationHistory: async (conversationId, userId) => {
+    const conversation = await Conversation.findOne({
+      _id: conversationId,
+      "participants.user": userId,
+      isActive: true,
+    });
+
+    if (!conversation) {
+      throw new AppError("Conversation not found or access denied", 404);
+    }
+
+    const participant = conversation.participants.find((p) => p.user.toString() === userId);
+    if (!participant) {
+      throw new AppError("Participant not found", 404);
+    }
+
+    participant.clearedMessagesHistoryAt = new Date();
+    participant.unreadCount = 0;
+    participant.lastReadAt = null;
+    participant.lastReadMessage = null;
+    participant.deletedAt = null;
+
+    await conversation.save();
+
+    return { conversationId };
+  },
 };
 
 module.exports = ConversationService;

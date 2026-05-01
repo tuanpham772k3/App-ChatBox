@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { Modal, Select } from "antd";
 import { useDispatch } from "react-redux";
-import { leaveGroup, transferGroupOwnership } from "@/store/conversationsSlice";
+import { transferGroupOwnership } from "@/store/conversationsSlice";
 
 const ModalLeaveGroup = ({
-  open,
+  isOpen,
   onClose,
+  onLeave,
   conversationId,
   currentUser,
   members = [],
@@ -27,8 +28,9 @@ const ModalLeaveGroup = ({
         await dispatch(transferGroupOwnership({ conversationId, newOwnerId })).unwrap();
       }
 
-      // Sau đó mới leave
-      await dispatch(leaveGroup(conversationId)).unwrap();
+      if (onLeave) {
+        await onLeave();
+      }
 
       onClose();
     } catch (err) {
@@ -43,7 +45,7 @@ const ModalLeaveGroup = ({
 
   return (
     <Modal
-      open={open}
+      open={isOpen}
       onCancel={onClose}
       onOk={handleLeave}
       confirmLoading={loading}

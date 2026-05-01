@@ -1,6 +1,6 @@
 import React from "react";
 import { Drawer } from "antd";
-import { ArrowLeft, Key, Search, Trash, Users } from "lucide-react";
+import { ArrowLeft, Key, Search, Trash, UserPlus, Users } from "lucide-react";
 
 const DrawerMembersInfo = ({
   open,
@@ -70,7 +70,7 @@ const DrawerMembersInfo = ({
             className="w-full flex items-center justify-center gap-2 py-2 font-medium text-base text-[var(--color-text-primary)] 
         bg-[var(--color-chat)] hover:bg-[var(--color-hover-soft)] rounded"
           >
-            <Users size={16} />
+            <UserPlus size={20} />
             <p>Thêm thành viên</p>
           </button>
         </div>
@@ -78,19 +78,19 @@ const DrawerMembersInfo = ({
         {/* Danh sách thành viên */}
         <div>
           {/* Title */}
-          <h3 className="px-4 font-medium text-sm text-[var(--color-text-primary)]">{`Danh sách thành viên (${members?.length})`}</h3>
+          <h3 className="px-4 font-medium text-base text-[var(--color-text-primary)]">{`Danh sách thành viên (${members?.length})`}</h3>
 
           {/* Search */}
           <div className="px-4 py-3">
             <div
-              className="flex items-center gap-2 p-1 bg-[var(--color-chat)] 
+              className="flex items-center gap-2 p-2 bg-[var(--color-chat)] 
         hover:bg-[var(--color-hover-soft)] border border-[var(--color-border)] focus-within:border-[var(--color-primary)] rounded-full"
             >
-              <Search size={18} color="var(--color-text-secondary)" />
+              <Search size={20} color="var(--color-text-secondary)" />
               <input
                 type="text"
                 placeholder="Tìm kiếm thành viên"
-                className="flex-1 pe-2 text-[var(--color-text-primary)]"
+                className="w-full h-5 me-4 text-[var(--color-text-primary)]"
               />
             </div>
           </div>

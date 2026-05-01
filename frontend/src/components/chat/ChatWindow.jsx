@@ -9,10 +9,16 @@ import DrawerMembersInfo from "./DrawerMembersInfo";
 import DrawerMediaGallery from "./DrawerMediaGallery";
 import ModalRemoveMembers from "./ModalRemoveMembers";
 import ModalAddMembers from "./ModalAddMembers";
-import { getConversationImages } from "@/store/conversationsSlice";
+import {
+  clearConversationHistory,
+  getConversationImages,
+  leaveGroup,
+  togglePinConversation,
+} from "@/store/conversationsSlice";
 import { getDisplayInfo } from "@/utils/conversationHelper";
 import { emitEvent } from "@/lib/socket";
 import ModalLeaveGroup from "./ModalLeaveGroup";
+import { useNotification } from "@/hooks/useNotification";
 
 const MODAL = {
   ADD: "addMembers",
@@ -41,6 +47,7 @@ const ChatWindow = ({ activeChatId, onBack }) => {
     content: "",
     originalContent: "",
   });
+  const notification = useNotification();
 
   const currentConversation = conversations.find((c) => c._id === currentConversationId);
 
@@ -65,6 +72,62 @@ const ChatWindow = ({ activeChatId, onBack }) => {
     : null;
 
   const isOnline = partnerStatus?.presence === "online";
+
+  const handleTogglePinConversation = () => {
+    if (!currentConversationId || !currentUserId) return;
+    dispatch(
+      togglePinConversation({
+        conversationId: currentConversationId,
+        userId: currentUserId,
+      })
+    )
+      .unwrap()
+      .catch((err) => {
+        notification.error({
+          message: "Cập nhật ghim hội thoại thất bại",
+          description: err.message || "Có lỗi xảy ra",
+        });
+      });
+  };
+
+  const handleClearHistory = () => {
+    if (!currentConversationId || !currentUserId) return;
+    dispatch(
+      clearConversationHistory({
+        conversationId: currentConversationId,
+        userId: currentUserId,
+      })
+    )
+      .unwrap()
+      .then(() => {
+        notification.success({ message: "Đã xóa lịch sử trò chuyện" });
+      })
+      .catch((err) => {
+        notification.error({
+          message: "Xóa lịch sử trò chuyện thất bại",
+          description: err.message || "Có lỗi xảy ra",
+        });
+      });
+
+    setOpenDrawer(null);
+  };
+
+  const handleLeaveGroup = () => {
+    if (!currentConversationId) return;
+    dispatch(leaveGroup(currentConversationId))
+      .unwrap()
+      .then(() => {
+        notification.success({ message: "Rời nhóm thành công" });
+        setOpenModal(null);
+        onBack?.();
+      })
+      .catch((err) => {
+        notification.error({
+          message: "Rời nhóm thất bại",
+          description: err.message || "Có lỗi xảy ra",
+        });
+      });
+  };
 
   useEffect(() => {
     if (openDrawer === DRAWER.INFO && currentConversationId) {
@@ -129,6 +192,9 @@ const ChatWindow = ({ activeChatId, onBack }) => {
         open={openDrawer === DRAWER.INFO}
         onClose={() => setOpenDrawer(null)}
         displayInfo={displayInfo}
+        onTogglePin={handleTogglePinConversation}
+        onClearHistory={handleClearHistory}
+        onOpenLeaveGroup={() => setOpenModal(MODAL.LEAVE)}
         onOpenMembersInfo={() => setOpenDrawer(DRAWER.MEMBERS)}
         onOpenMediaGallery={() => setOpenDrawer(DRAWER.MEDIA)}
         images={images}
@@ -168,6 +234,7 @@ const ChatWindow = ({ activeChatId, onBack }) => {
       <ModalLeaveGroup
         isOpen={openModal === MODAL.LEAVE}
         onClose={() => setOpenModal(null)}
+        onLeave={handleLeaveGroup}
         conversationId={currentConversation?._id}
         currentUser={displayInfo?.currentUser}
         members={displayInfo?.participants}

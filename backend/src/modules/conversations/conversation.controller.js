@@ -369,6 +369,78 @@ const deleteConversationForMe = async (req, res, next) => {
   }
 };
 
+const togglePinConversation = async (req, res, next) => {
+  try {
+    const { conversationId } = req.params;
+    const { userId } = req.user;
+
+    if (!conversationId.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid conversation ID format",
+      });
+    }
+
+    const result = await ConversationService.togglePinConversation(conversationId, userId);
+
+    return res.status(200).json({
+      success: true,
+      message: "Toggle pin conversation successfully",
+      data: result,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+const markAsUnread = async (req, res, next) => {
+  try {
+    const { conversationId } = req.params;
+    const { userId } = req.user;
+
+    if (!conversationId.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid conversation ID format",
+      });
+    }
+
+    const result = await ConversationService.markAsUnread(conversationId, userId);
+
+    return res.status(200).json({
+      success: true,
+      message: "Conversation marked as unread",
+      data: result,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+const clearConversationHistory = async (req, res, next) => {
+  try {
+    const { conversationId } = req.params;
+    const { userId } = req.user;
+
+    if (!conversationId.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid conversation ID format",
+      });
+    }
+
+    const result = await ConversationService.clearConversationHistory(conversationId, userId);
+
+    return res.status(200).json({
+      success: true,
+      message: "Conversation history cleared successfully",
+      data: result,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 module.exports = {
   createPrivateConversation,
   getConversations,
@@ -381,4 +453,7 @@ module.exports = {
   leaveGroup,
   transferGroupOwnership,
   deleteConversationForMe,
+  togglePinConversation,
+  markAsUnread,
+  clearConversationHistory,
 };
