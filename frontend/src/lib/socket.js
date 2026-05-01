@@ -7,7 +7,6 @@ let socket = null;
 export const initSocket = (token) => {
   if (socket) {
     socket.disconnect();
-    socket = null;
   }
 
   socket = io(SOCKET_URL, {

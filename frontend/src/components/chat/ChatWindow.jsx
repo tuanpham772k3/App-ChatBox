@@ -84,7 +84,7 @@ const ChatWindow = ({ activeChatId, onBack }) => {
   }, [openDrawer, currentConversationId, dispatch]);
 
   useEffect(() => {
-    if (!activeChatId) return;
+    if (!activeChatId || !currentConversationId) return;
 
     emitEvent("join_conversation", {
       conversationId: currentConversationId,
@@ -95,7 +95,7 @@ const ChatWindow = ({ activeChatId, onBack }) => {
         conversationId: currentConversationId,
       });
     };
-  }, [currentConversationId]);
+  }, [activeChatId, currentConversationId]);
 
   if (!activeChatId || !currentConversation) return <ChatEmptyState />;
 
