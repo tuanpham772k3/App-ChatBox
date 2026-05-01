@@ -20,6 +20,7 @@ import {
   fetchConversationMessages,
 } from "@/store/messagesSlice";
 import { markConversationAsRead } from "@/store/conversationsSlice";
+import { emitEvent } from "@/lib/socket";
 
 const Messages = ({
   currentUserId,
@@ -137,6 +138,7 @@ const Messages = ({
   const handleDeleteMessage = async (messageId) => {
     try {
       await dispatch(deleteMessageById(messageId)).unwrap();
+      emitEvent("message_deleted", { messageId });
     } catch (error) {
       notification.error({
         message: "Gỡ tin nhắn thất bại",

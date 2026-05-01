@@ -1,5 +1,4 @@
 const ConversationService = require("./conversation.service.js");
-const { getSocket } = require("../../socket.js");
 
 /**
  * Tạo conversation 1-1
@@ -240,15 +239,7 @@ const markAsRead = async (req, res, next) => {
       });
     }
 
-    const result = await ConversationService.markAsRead(conversationId, userId);
-
-    // read
-    let io = getSocket();
-    io.to(`conversation_${conversationId}`).emit("conversation:read", {
-      conversationId,
-      userId,
-      lastReadMessage: result.lastReadMessage,
-    });
+    await ConversationService.markAsRead(conversationId, userId);
 
     return res.status(200).json({
       success: true,

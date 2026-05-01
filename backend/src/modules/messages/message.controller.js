@@ -1,5 +1,4 @@
 const MessageService = require("./message.service.js");
-const { getSocket } = require("../../socket.js");
 
 /**
  * Tạo tin nhắn mới
@@ -23,53 +22,7 @@ const createNewMessage = async (req, res, next) => {
       file
     );
 
-    const { message, conversation } = result;
-
-    const participants = conversation.participants;
-
-    const io = getSocket();
-
-    // 1. message_new
-    participants.forEach((p) => {
-      if (p.user.toString() !== userId) {
-        io.to(`user_${p.user}`).emit("message_new", message);
-      }
-    });
-
-    // 2. lastMessage
-    const lastMessagePayload = {
-      conversationId,
-      lastMessage: {
-        _id: message._id,
-        sender: {
-          _id: message.sender._id,
-          username: message.sender.username,
-          avatarUrl: message.sender.avatarUrl,
-        },
-        type: message.type,
-        content:
-          message.type === "text"
-            ? message.content
-            : message.file?.filename || message.type,
-        file: message.file || null,
-        createdAt: message.createdAt,
-      },
-    };
-
-    participants.forEach((p) => {
-      io.to(`user_${p.user}`).emit("conversation:lastMessage", lastMessagePayload);
-    });
-
-    // 3. unread
-    participants.forEach((p) => {
-      if (p.user.toString() !== userId) {
-        io.to(`user_${p.user}`).emit("conversation:unread", {
-          conversationId,
-          unreadCount: p.unreadCount,
-          userId: p.user.toString(),
-        });
-      }
-    });
+    const { message } = result;
 
     return res.status(201).json({
       success: true,
@@ -131,39 +84,7 @@ const deleteMessageById = async (req, res, next) => {
       });
     }
 
-    const { message, conversation, conversationId } =
-      await MessageService.deleteMessageById(messageId, userId);
-
-    let io = getSocket();
-
-    // emit socket message_delete
-    io.to(`conversation_${conversationId}`).emit("message_delete", messageId);
-
-    const lastMessagePayload = {
-      conversationId,
-      lastMessage: {
-        _id: message._id,
-        sender: {
-          _id: message.sender._id,
-          username: message.sender.username,
-          avatarUrl: message.sender.avatarUrl,
-        },
-        type: message.type,
-        content:
-          message.type === "text"
-            ? message.content
-            : message.file?.filename || message.type,
-        file: message.file || null,
-        createdAt: message.createdAt,
-      },
-    };
-
-    if (conversation) {
-      // emit socket conversation:lastMessage
-      conversation.participants.forEach((p) => {
-        io.to(`user_${p.user}`).emit("conversation:lastMessage", lastMessagePayload);
-      });
-    }
+    const { message } = await MessageService.deleteMessageById(messageId, userId);
 
     return res.status(200).json({
       success: true,
@@ -198,15 +119,7 @@ const editMessageById = async (req, res, next) => {
       });
     }
 
-    const { message, conversationId } = await MessageService.editMessageById(
-      messageId,
-      userId,
-      newContent
-    );
-
-    const io = getSocket();
-
-    io.to(`conversation_${conversationId}`).emit("message_edit", message);
+    const { message } = await MessageService.editMessageById(messageId, userId, newContent);
 
     return res.status(200).json({
       success: true,

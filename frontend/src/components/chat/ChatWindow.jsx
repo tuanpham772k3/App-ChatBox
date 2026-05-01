@@ -11,7 +11,6 @@ import ModalRemoveMembers from "./ModalRemoveMembers";
 import ModalAddMembers from "./ModalAddMembers";
 import { getConversationImages } from "@/store/conversationsSlice";
 import { getDisplayInfo } from "@/utils/conversationHelper";
-import { useMessages } from "@/hooks/useMessages";
 import { emitEvent } from "@/lib/socket";
 import ModalLeaveGroup from "./ModalLeaveGroup";
 
@@ -42,9 +41,6 @@ const ChatWindow = ({ activeChatId, onBack }) => {
     content: "",
     originalContent: "",
   });
-
-  // Message realtime
-  useMessages(currentConversationId);
 
   const currentConversation = conversations.find((c) => c._id === currentConversationId);
 

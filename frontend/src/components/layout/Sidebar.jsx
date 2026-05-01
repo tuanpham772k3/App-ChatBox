@@ -24,7 +24,7 @@ const Sidebar = () => {
 
   const handleLogout = async () => {
     conversations.forEach((conversation) => {
-      emitEvent("leave_conversation", conversation._id);
+      emitEvent("leave_conversation", { conversationId: conversation._id });
     });
 
     try {

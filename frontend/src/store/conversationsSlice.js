@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import conversationApi from "@/services/conversationApi";
+import { emitEvent } from "@/lib/socket";
 
 /* =============================
  *  Thunk actions
@@ -11,6 +12,9 @@ export const createConversation = createAsyncThunk(
   async (participantId, { rejectWithValue }) => {
     try {
       const res = await conversationApi.createConversation(participantId);
+      if (res?.isNew && res?.conversation?._id) {
+        emitEvent("conversation_created", { conversationId: res.conversation._id });
+      }
       return res; // backend trả về: { conversation, isNew }
     } catch (err) {
       return rejectWithValue(err);
@@ -27,6 +31,9 @@ export const createGroupConversation = createAsyncThunk(
   async (payload, { rejectWithValue }) => {
     try {
       const res = await conversationApi.createGroupConversation(payload);
+      if (res?.isNew && res?.conversation?._id) {
+        emitEvent("conversation_created", { conversationId: res.conversation._id });
+      }
       return res; // backend trả về: { conversation, isNew }
     } catch (err) {
       return rejectWithValue(err);
@@ -110,6 +117,7 @@ export const markConversationAsRead = createAsyncThunk(
   async ({ conversationId, userId }, { rejectWithValue }) => {
     try {
       await conversationApi.markAsRead(conversationId);
+      emitEvent("conversation_mark_read", { conversationId });
       return { conversationId, userId };
     } catch (err) {
       return rejectWithValue(err);

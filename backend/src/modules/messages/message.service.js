@@ -270,6 +270,48 @@ const MessageService = {
       conversationId: updatedMessage.conversation,
     };
   },
+
+  getMessageRealtimeData: async (messageId) => {
+    const message = await Message.findById(messageId)
+      .populate("sender", "username email avatarUrl")
+      .lean();
+    if (!message) {
+      throw new AppError("Message not found", 404);
+    }
+
+    const conversation = await Conversation.findById(message.conversation)
+      .select("participants lastMessage")
+      .lean();
+    if (!conversation) {
+      throw new AppError("Conversation not found", 404);
+    }
+
+    return { message, conversation };
+  },
+
+  getMessageDeleteRealtimeData: async (messageId) => {
+    const message = await Message.findById(messageId)
+      .populate("sender", "username email avatarUrl")
+      .lean();
+    if (!message) {
+      throw new AppError("Message not found", 404);
+    }
+
+    const conversation = await Conversation.findById(message.conversation)
+      .select("participants lastMessage")
+      .populate("lastMessage.sender", "username avatarUrl")
+      .lean();
+    if (!conversation) {
+      throw new AppError("Conversation not found", 404);
+    }
+
+    return {
+      messageId: message._id,
+      conversationId: message.conversation,
+      conversation,
+      lastMessage: conversation.lastMessage || null,
+    };
+  },
 };
 
 module.exports = MessageService;

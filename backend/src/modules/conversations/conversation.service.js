@@ -354,6 +354,39 @@ const ConversationService = {
     return { lastReadMessage };
   },
 
+  getReadStatus: async (conversationId, userId) => {
+    const conversation = await Conversation.findOne({
+      _id: conversationId,
+      "participants.user": userId,
+      isActive: true,
+    }).select("participants");
+
+    if (!conversation) {
+      throw new AppError("Conversation not found", 404);
+    }
+
+    const participant = conversation.participants.find((p) => p.user.toString() === userId);
+
+    return {
+      conversationId,
+      userId,
+      lastReadMessage: participant?.lastReadMessage || null,
+    };
+  },
+
+  getConversationRealtimeData: async (conversationId) => {
+    const conversation = await Conversation.findById(conversationId)
+      .populate("participants.user", "username email avatarUrl bio presence lastSeenAt")
+      .populate("lastMessage.sender", "username avatarUrl")
+      .lean();
+
+    if (!conversation) {
+      throw new AppError("Conversation not found", 404);
+    }
+
+    return conversation;
+  },
+
   /**
    * Lấy danh sách ảnh trong conversation
    * @param {string} conversationId - ID của conversation

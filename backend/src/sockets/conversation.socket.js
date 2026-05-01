@@ -1,4 +1,9 @@
 const Conversation = require("../modules/conversations/conversation.model.js");
+const ConversationService = require("../modules/conversations/conversation.service.js");
+const {
+  emitConversationCreated,
+  emitConversationRead,
+} = require("./realtime.emitter.js");
 
 const conversationSocket = (io, socket) => {
   socket.on("join_conversation", async ({ conversationId }) => {
@@ -51,6 +56,38 @@ const conversationSocket = (io, socket) => {
     console.log(
       `[SOCKET] User ${socket.userId} leave room conversation_${conversationId}`
     );
+  });
+
+  socket.on("conversation_mark_read", async ({ conversationId }) => {
+    if (!conversationId) return;
+
+    try {
+      const readStatus = await ConversationService.getReadStatus(
+        conversationId,
+        socket.userId
+      );
+      emitConversationRead({
+        io,
+        conversationId: String(readStatus.conversationId),
+        userId: String(readStatus.userId),
+        lastReadMessage: readStatus.lastReadMessage,
+      });
+    } catch (err) {
+      console.error("conversation_mark_read error:", err);
+    }
+  });
+
+  socket.on("conversation_created", async ({ conversationId }) => {
+    if (!conversationId) return;
+
+    try {
+      const conversation = await ConversationService.getConversationRealtimeData(
+        conversationId
+      );
+      emitConversationCreated({ io, conversation });
+    } catch (err) {
+      console.error("conversation_created error:", err);
+    }
   });
 };
 

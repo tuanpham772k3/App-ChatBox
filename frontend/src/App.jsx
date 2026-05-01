@@ -9,7 +9,6 @@ import ProfilePage from "@/pages/ProfilePage";
 import ChatPage from "@/pages/ChatPage";
 
 import { useSocket } from "@/hooks/useSocket";
-import { useConversations } from "@/hooks/useConversations";
 
 import { connectSocket, disconnectSocket, initSocket } from "./lib/socket";
 
@@ -42,7 +41,6 @@ function App() {
   }, [accessToken]);
 
   useSocket();
-  useConversations();
 
   return (
     <NotificationContext.Provider value={api}>
