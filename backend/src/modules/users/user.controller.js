@@ -7,7 +7,9 @@ const getProfile = async (req, res, next) => {
   try {
     const userId = req.user.userId;
 
-    const user = await User.findById(userId).select("-passwordHash");
+    const user = await User.findById(userId).select(
+      "-passwordHash -refreshTokenHash -refreshTokenExpiresAt"
+    );
     if (!user) {
       return res.status(401).json({
         message: "User not found",

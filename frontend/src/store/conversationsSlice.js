@@ -412,6 +412,10 @@ const conversationsSlice = createSlice({
         const { conversationId } = action.payload;
         state.conversations = state.conversations.filter((c) => c._id !== conversationId);
       })
+
+      // -------------------------------
+      // Toggle Pin Conversation
+      // -------------------------------
       .addCase(togglePinConversation.fulfilled, (state, action) => {
         const { conversationId, pinnedAt, userId } = action.payload;
         const conv = state.conversations.find((c) => c._id === conversationId);
@@ -421,6 +425,10 @@ const conversationsSlice = createSlice({
           p.user._id === userId ? { ...p, pinnedAt } : p
         );
       })
+
+      // -------------------------------
+      // Mark Conversation As Unread
+      // -------------------------------
       .addCase(markConversationAsUnread.fulfilled, (state, action) => {
         const { conversationId, unreadCount, userId } = action.payload;
         const conv = state.conversations.find((c) => c._id === conversationId);
@@ -432,6 +440,10 @@ const conversationsSlice = createSlice({
             : p
         );
       })
+
+      // -------------------------------
+      // Clear Conversation History
+      // -------------------------------
       .addCase(clearConversationHistory.fulfilled, (state, action) => {
         const { conversationId, userId } = action.payload;
         const conv = state.conversations.find((c) => c._id === conversationId);
