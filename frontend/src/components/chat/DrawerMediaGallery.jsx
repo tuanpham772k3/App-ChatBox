@@ -37,9 +37,10 @@ const DrawerMediaGallery = ({ open, onClose, images }) => {
                 className="w-full aspect-square object-cover rounded"
               />
 
-              {/* overlay */}
-              <div className="absolute inset-0 rounded hover:bg-black/5" />
-              {/* action */}
+              {/* Overlay */}
+              <div className="absolute inset-0 rounded hover:bg-black/20" />
+
+              {/* Action */}
               <div
                 className="absolute top-1 right-1 flex items-center p-0.5 text-center rounded bg-[var(--color-chat)] 
                 opacity-0 group-hover:opacity-100 transition"

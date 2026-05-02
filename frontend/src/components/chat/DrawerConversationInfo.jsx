@@ -8,6 +8,7 @@ import {
   Forward,
   LogOut,
   Pin,
+  PinOff,
   Settings,
   TriangleAlert,
   UserPlus,
@@ -26,12 +27,7 @@ const DrawerConversationInfo = ({
   onOpenMediaGallery,
   images,
 }) => {
-  const headerActions = [
-    { icon: <Bell size={20} />, label: "Tắt thông báo" },
-    { icon: <Pin size={20} />, label: "Ghim hội thoại" },
-    { icon: <UserPlus size={20} />, label: "Thêm thành viên" },
-    { icon: <Settings size={20} />, label: "Quản lý nhóm" },
-  ];
+  const isPinned = Boolean(displayInfo.currentUser?.pinnedAt);
 
   return (
     <>
@@ -55,9 +51,9 @@ const DrawerConversationInfo = ({
         styles={{ body: { padding: 0 } }}
       >
         <div className="h-full overflow-y-auto custom-scrollbar">
-          {/* Header */}
+          {/* ====== Header ====== */}
           <div className="flex flex-col items-center gap-2 p-4 border-b-4 border-[var(--color-border)]">
-            {/* Group Avatar */}
+            {/* Avatar || Group avatar */}
             {displayInfo.isGroup ? (
               <GroupAvatar users={displayInfo.participants || []} size={60} />
             ) : (
@@ -68,30 +64,60 @@ const DrawerConversationInfo = ({
               />
             )}
 
-            {/* Name conversation */}
+            {/* ====== Name Conversation ====== */}
             <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
               {displayInfo?.displayName}
             </h2>
 
-            {/* Actions-header */}
-            <div className="flex justify-around gap-2">
-              {/* Item action */}
-              {headerActions.map((action, index) => (
-                <div key={index} className="flex flex-col items-center gap-2">
-                  <button
-                    aria-label={action.label}
-                    onClick={action.label === "Ghim hội thoại" ? onTogglePin : undefined}
-                    className="p-2 bg-[var(--color-chat)] hover:bg-[var(--color-hover-soft)] rounded-full"
-                  >
-                    {action.icon}
-                  </button>
-                  <span className="text-center text-xs">{action.label}</span>
-                </div>
-              ))}
+            {/* ====== Actions-Header ====== */}
+            <div className="flex justify-around gap-1">
+              {/* Action Item */}
+              <div className="w-full max-w-[75px] flex flex-col items-center gap-2">
+                <button
+                  aria-label="Tắt thông báo"
+                  className="p-2 bg-[var(--color-chat)] hover:bg-[var(--color-hover-soft)] rounded-full"
+                >
+                  <Bell size={20} />
+                </button>
+                <span className="text-center text-xs">Tắt thông báo</span>
+              </div>
+              {/* Action Item */}
+              <div className="w-full max-w-[75px] flex flex-col items-center gap-2">
+                <button
+                  aria-label={isPinned ? "Bỏ ghim hội thoại" : "Ghim hội thoại"}
+                  onClick={onTogglePin}
+                  className="p-2 bg-[var(--color-chat)] hover:bg-[var(--color-hover-soft)] rounded-full"
+                >
+                  {isPinned ? <PinOff size={20} /> : <Pin size={20} />}
+                </button>
+                <span className="text-center text-xs">
+                  {isPinned ? "Bỏ ghim hội thoại" : "Ghim hội thoại"}
+                </span>
+              </div>
+              {/* Action Item */}
+              <div className="w-full max-w-[75px] flex flex-col items-center gap-2">
+                <button
+                  aria-label="Thêm thành viên"
+                  className="p-2 bg-[var(--color-chat)] hover:bg-[var(--color-hover-soft)] rounded-full"
+                >
+                  <UserPlus size={20} />
+                </button>
+                <span className="text-center text-xs">Thêm thành viên</span>
+              </div>
+              {/* Action Item */}
+              <div className="w-full max-w-[75px] flex flex-col items-center gap-2">
+                <button
+                  aria-label="Quản lý nhóm"
+                  className="p-2 bg-[var(--color-chat)] hover:bg-[var(--color-hover-soft)] rounded-full"
+                >
+                  <Settings size={20} />
+                </button>
+                <span className="text-center text-xs">Quản lý nhóm</span>
+              </div>
             </div>
           </div>
 
-          {/* Members */}
+          {/* ====== Members Info ====== */}
           <div className="border-b-4 border-[var(--color-border)]">
             <h3 className="px-4 pt-3 pb-2 text-base font-semibold text-[var(--color-text-primary)]">
               Thành viên nhóm
@@ -105,7 +131,7 @@ const DrawerConversationInfo = ({
             </button>
           </div>
 
-          {/* Ảnh & Video */}
+          {/* ====== Gallery ====== */}
           <div className="px-4 py-3 border-b-4 border-[var(--color-border)]">
             <h3 className="text-base font-semibold text-[var(--color-text-primary)]">
               Ảnh/Video
@@ -118,8 +144,9 @@ const DrawerConversationInfo = ({
                     alt={img.file.filename}
                     className="w-full h-full aspect-square object-cover rounded"
                   />
-                  {/* overlay */}
-                  <div className="absolute inset-0 rounded hover:bg-black/5" />
+                  {/* Overlay */}
+                  <div className="absolute inset-0 rounded hover:bg-black/20" />
+
                   <div
                     className="absolute top-1 right-1 flex items-center p-0.5 text-center rounded bg-[var(--color-chat)] 
                 opacity-0 group-hover:opacity-100 transition"
@@ -142,7 +169,7 @@ const DrawerConversationInfo = ({
             </button>
           </div>
 
-          {/* Files & Links */}
+          {/* ====== Files & Links ====== */}
           <div className="px-4 py-3 border-b-4 border-[var(--color-border)]">
             <h3 className="text-base font-semibold text-[var(--color-text-primary)]">
               Tệp & Liên kết
@@ -152,10 +179,10 @@ const DrawerConversationInfo = ({
             </p>
           </div>
 
-          {/* Actions */}
+          {/* ====== Actions ====== */}
           <div className="flex flex-col">
             <button className="w-full flex items-center gap-2 p-4 text-base hover:bg-[var(--color-hover-soft)] rounded text-[var(--color-text-primary)]">
-              <TriangleAlert />
+              <TriangleAlert size={20} />
               <span>Báo xấu</span>
             </button>
 
@@ -163,7 +190,7 @@ const DrawerConversationInfo = ({
               onClick={onClearHistory}
               className="w-full flex items-center gap-2 p-4 text-base hover:bg-[var(--color-hover-soft)] rounded text-red-500"
             >
-              <BrushCleaning />
+              <BrushCleaning size={20} />
               <span>Xóa lịch sử trò chuyện</span>
             </button>
 
@@ -171,7 +198,7 @@ const DrawerConversationInfo = ({
               onClick={onOpenLeaveGroup}
               className="w-full flex items-center gap-2 p-4 text-base hover:bg-[var(--color-hover-soft)] rounded text-red-500"
             >
-              <LogOut />
+              <LogOut size={20} />
               <span>Rời nhóm</span>
             </button>
           </div>
