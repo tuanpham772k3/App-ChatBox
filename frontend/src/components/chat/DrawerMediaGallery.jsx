@@ -8,7 +8,7 @@ const DrawerMediaGallery = ({ open, onClose, images }) => {
       open={open}
       onClose={onClose}
       closable={false}
-      width={360}
+      width="min(100vw, 26.875rem)"
       placement="right"
       title={
         <div className="relative flex items-center justify-center">
@@ -43,7 +43,7 @@ const DrawerMediaGallery = ({ open, onClose, images }) => {
               {/* Action */}
               <div
                 className="absolute top-1 right-1 flex items-center p-0.5 text-center rounded bg-[var(--color-chat)] 
-                opacity-0 group-hover:opacity-100 transition"
+                opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition"
               >
                 <button className="p-1 rounded hover:bg-[var(--color-hover-soft)]">
                   <Forward size={18} color="var(--color-text-primary)" />

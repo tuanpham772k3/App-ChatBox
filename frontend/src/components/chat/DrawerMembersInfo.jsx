@@ -48,7 +48,7 @@ const DrawerMembersInfo = ({
       open={open}
       onClose={onClose}
       closable={false}
-      width={360}
+      width="min(100vw, 26.875rem)"
       placement="right"
       title={
         <div className="relative flex items-center justify-center">
@@ -89,9 +89,9 @@ const DrawerMembersInfo = ({
             {sortedMembers.map((member) => (
               <li
                 key={member.id}
-                className="flex items-center px-2 py-3 hover:bg-[var(--color-hover-surface)] rounded group"
-              >
-                <div className="flex-1 flex items-center gap-2">
+              className="flex items-center px-2 py-3 hover:bg-[var(--color-hover-surface)] rounded group"
+            >
+                <div className="min-w-0 flex-1 flex items-center gap-2">
                   {/* Avatar */}
                   <div className="relative">
                     <img
@@ -108,8 +108,8 @@ const DrawerMembersInfo = ({
                     )}
                   </div>
                   {/* Tên & vai trò */}
-                  <div className="flex flex-col justify-center">
-                    <h3 className="text-sm font-medium text-[var(--color-text-primary)]">
+                  <div className="min-w-0 flex flex-col justify-center">
+                    <h3 className="truncate text-sm font-medium text-[var(--color-text-primary)]">
                       {member.name}
                     </h3>
 
@@ -131,7 +131,7 @@ const DrawerMembersInfo = ({
                 {canShowDeleteIcon(member) && (
                   <button
                     onClick={() => onRemoveMember(member.id)}
-                    className="p-2 opacity-0 group-hover:opacity-100 transition rounded hover:bg-[var(--color-hover-soft)]"
+                    className="p-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition rounded hover:bg-[var(--color-hover-soft)]"
                   >
                     <Trash size={18} color="red" />
                   </button>

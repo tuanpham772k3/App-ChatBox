@@ -35,7 +35,7 @@ const DrawerConversationInfo = ({
         open={open}
         onClose={onClose}
         closable={false}
-        width={360}
+        width="min(100vw, 26.875rem)"
         placement="right"
         title={
           <div className="relative flex items-center justify-center">
@@ -65,12 +65,12 @@ const DrawerConversationInfo = ({
             )}
 
             {/* ====== Name Conversation ====== */}
-            <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
+            <h2 className="max-w-full truncate text-lg font-semibold text-[var(--color-text-primary)]">
               {displayInfo?.displayName}
             </h2>
 
             {/* ====== Actions-Header ====== */}
-            <div className="flex justify-around gap-1">
+            <div className="w-full grid grid-cols-4 place-items-center gap-1">
               {/* Action Item */}
               <div className="w-full max-w-[75px] flex flex-col items-center gap-2">
                 <button
@@ -138,7 +138,10 @@ const DrawerConversationInfo = ({
             </h3>
             <div className="grid grid-cols-4 gap-2 py-2">
               {images.map((img, index) => (
-                <div key={index} className="relative w-20 h-20 cursor-pointer group">
+                <div
+                  key={index}
+                  className="relative group aspect-square min-w-0 cursor-pointer"
+                >
                   <img
                     src={img.file.url}
                     alt={img.file.filename}
@@ -149,7 +152,7 @@ const DrawerConversationInfo = ({
 
                   <div
                     className="absolute top-1 right-1 flex items-center p-0.5 text-center rounded bg-[var(--color-chat)] 
-                opacity-0 group-hover:opacity-100 transition"
+                    opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition"
                   >
                     <button className="p-1 rounded hover:bg-[var(--color-hover-soft)]">
                       <Forward size={18} color="var(--color-text-primary)" />
