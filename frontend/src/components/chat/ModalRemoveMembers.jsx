@@ -27,7 +27,7 @@ const ModalRemoveMembers = ({ isOpen, onCancel, memberId, conversationId }) => {
       open={isOpen}
       onCancel={onCancel}
       footer={null}
-      width={400}
+      width="min(calc(100vw - 2rem), 25rem)"
       centered
       closeIcon={<CloseOutlined style={{ color: "var(--color-text-secondary)" }} />}
       styles={{

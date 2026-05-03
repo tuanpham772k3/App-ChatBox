@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Button, Modal, Spin } from "antd";
-import { Search } from "lucide-react";
 import { CloseOutlined } from "@ant-design/icons";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import FriendItem from "@/components/ui/member/FriendItem";
 import { searchUsers } from "@/store/userSlice";
 import { useNotification } from "@/hooks/useNotification";
 import { addMemberToGroup } from "@/store/conversationsSlice";
+import SearchBar from "../ui/search/SearchBar";
 
 const ModalAddMembers = ({ isOpen, onCancel, conversationId }) => {
   const dispatch = useDispatch();
@@ -18,10 +18,10 @@ const ModalAddMembers = ({ isOpen, onCancel, conversationId }) => {
 
   const notification = useNotification();
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (query = "") => {
     try {
       setLoading(true);
-      const users = await dispatch(searchUsers("")).unwrap();
+      const users = await dispatch(searchUsers(query)).unwrap();
       setResults(users);
     } catch (error) {
       notification.error({
@@ -91,7 +91,7 @@ const ModalAddMembers = ({ isOpen, onCancel, conversationId }) => {
       open={isOpen}
       onCancel={onCancel}
       footer={null}
-      width={400}
+      width="min(calc(100vw - 2rem), 25rem)"
       centered
       closeIcon={<CloseOutlined style={{ color: "var(--color-text-secondary)" }} />}
       styles={{
@@ -101,38 +101,28 @@ const ModalAddMembers = ({ isOpen, onCancel, conversationId }) => {
         },
       }}
     >
-      {/* Header */}
+      {/* ====== Header ====== */}
       <div className="p-4 border-b border-[var(--color-border)]">
         <h2 className="text-[var(--color-text-primary)] text-lg font-semibold">
           Thêm thành viên
         </h2>
       </div>
-      {/* Body */}
-      <div className="flex flex-col px-4">
-        {/* Ô tìm kiếm */}
-        <div className="py-4 border-b border-[var(--color-border)]">
-          <div className="relative flex items-center">
-            <Search className="absolute w-4 h-4 left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)] z-10" />
-            <div className="flex-1 text-[var(--color-text-primary)]">
-              <input
-                placeholder="Nhập tên"
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                className="w-full bg-[var(--color-chat)] hover:bg-[var(--color-hover-soft)] focus:bg-[var(--color-hover-soft)] 
-              px-10 py-2 rounded-3xl placeholder-[var(--color-text-secondary)] border border-[var(--color-border)] focus-within:border-blue-500"
-              />
-            </div>
-          </div>
-        </div>
+      {/* ====== Body ====== */}
+      <div className="flex flex-col gap-2 p-4">
+        {/* Search */}
+        <SearchBar
+          value={searchText}
+          onChange={setSearchText}
+          placeholder={"Tìm kiếm thành viên..."}
+        />
 
-        {/* Danh sách bạn bè */}
-        <div className="h-[400px] overflow-y-auto custom-scrollbar">
-          {loading && (
+        {/* Friends List */}
+        <div className="max-h-[min(60vh,25rem)] overflow-y-auto custom-scrollbar">
+          {loading ? (
             <div className="w-full text-center mt-8">
               <Spin />
             </div>
-          )}
-          {results.length === 0 && !loading ? (
+          ) : results.length === 0 ? (
             <div className="text-center py-8 text-[var(--color-text-secondary)]">
               Không tìm thấy kết quả
             </div>
@@ -148,7 +138,7 @@ const ModalAddMembers = ({ isOpen, onCancel, conversationId }) => {
           )}
         </div>
       </div>
-      {/* Footer */}
+      {/* ====== Footer ====== */}
       <div className="p-4 flex justify-end gap-3 border-t border-[var(--color-border)]">
         <Button onClick={onCancel}>Hủy</Button>
         <Button onClick={handleAddMembersToGroup} type="primary">

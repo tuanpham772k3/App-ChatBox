@@ -49,6 +49,7 @@ const ModalLeaveGroup = ({
       onCancel={onClose}
       onOk={handleLeave}
       confirmLoading={loading}
+      width="min(calc(100vw - 2rem), 25rem)"
       okText="Xác nhận"
       cancelText="Hủy"
       title="Rời nhóm"

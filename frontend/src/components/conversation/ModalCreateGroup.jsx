@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Button, Modal, Spin } from "antd";
-import { Camera, Search } from "lucide-react";
+import { Camera } from "lucide-react";
 import { CloseOutlined } from "@ant-design/icons";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { searchUsers } from "@/store/userSlice";
 import { createGroupConversation } from "@/store/conversationsSlice";
 import FriendItem from "@/components/ui/member/FriendItem";
@@ -21,10 +21,10 @@ const ModalCreateGroup = ({ isOpen, onCancel }) => {
 
   const notification = useNotification();
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (query = "") => {
     try {
       setLoading(true);
-      const users = await dispatch(searchUsers("")).unwrap();
+      const users = await dispatch(searchUsers(query)).unwrap();
       setResults(users);
     } catch (error) {
       notification.error({
@@ -44,7 +44,6 @@ const ModalCreateGroup = ({ isOpen, onCancel }) => {
   // Tìm kiếm bạn bè khi searchText thay đổi
   useEffect(() => {
     const query = searchText.trim();
-    if (!query) return;
 
     const handler = setTimeout(() => {
       fetchUsers(query);
@@ -108,7 +107,7 @@ const ModalCreateGroup = ({ isOpen, onCancel }) => {
       open={isOpen}
       onCancel={onCancel}
       footer={null}
-      width={500}
+      width="min(calc(100vw - 2rem), 31.25rem)"
       centered
       closeIcon={<CloseOutlined style={{ color: "var(--color-text-secondary)" }} />}
       styles={{
@@ -132,7 +131,7 @@ const ModalCreateGroup = ({ isOpen, onCancel }) => {
             <div className="w-14 h-14 flex items-center justify-center border border-[var(--color-border)] rounded-full cursor-pointer">
               <Camera className="text-[var(--color-text-secondary)] text-xl" />
             </div>
-            <div className="flex-1 pe-20 p-2 text-[var(--color-text-primary)] border-b-2 border-[var(--color-border)] focus-within:border-blue-500">
+            <div className="min-w-0 flex-1 sm:pe-20 p-2 text-[var(--color-text-primary)] border-b-2 border-[var(--color-border)] focus-within:border-blue-500">
               <input
                 placeholder="Nhập tên nhóm..."
                 value={groupName}
@@ -143,11 +142,15 @@ const ModalCreateGroup = ({ isOpen, onCancel }) => {
           </div>
 
           {/* Search */}
-          <SearchBar placeholder={"Tìm kiếm thành viên..."} />
+          <SearchBar
+            value={searchText}
+            onChange={setSearchText}
+            placeholder={"Tìm kiếm thành viên..."}
+          />
         </div>
 
         {/* ====== Friends List ====== */}
-        <ul className="h-full max-h-[400px] flex flex-col gap-1 overflow-y-auto custom-scrollbar">
+        <ul className="max-h-[min(60vh,25rem)] flex flex-col gap-1 overflow-y-auto custom-scrollbar">
           {loading ? (
             <div className="w-full text-center mt-8">
               <Spin />

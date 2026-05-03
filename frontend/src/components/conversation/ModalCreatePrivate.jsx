@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Button, Modal, Spin } from "antd";
-import { Search } from "lucide-react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { CloseOutlined } from "@ant-design/icons";
 import FriendItem from "@/components/ui/member/FriendItem";
 import { searchUsers } from "@/store/userSlice";
@@ -19,10 +18,10 @@ const ModalCreatePrivate = ({ isOpen, onCancel }) => {
 
   const notification = useNotification();
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (query = "") => {
     try {
       setLoading(true);
-      const users = await dispatch(searchUsers("")).unwrap();
+      const users = await dispatch(searchUsers(query)).unwrap();
       setResults(users);
     } catch (error) {
       notification.error({
@@ -87,7 +86,7 @@ const ModalCreatePrivate = ({ isOpen, onCancel }) => {
       open={isOpen}
       onCancel={onCancel}
       footer={null}
-      width={400}
+      width="min(calc(100vw - 2rem), 25rem)"
       centered
       closeIcon={<CloseOutlined style={{ color: "var(--color-text-secondary)" }} />}
       styles={{
@@ -106,10 +105,14 @@ const ModalCreatePrivate = ({ isOpen, onCancel }) => {
       {/* Body */}
       <div className="flex flex-col gap-2 p-4">
         {/* Search */}
-        <SearchBar placeholder="Tìm kiếm thành viên..." />
+        <SearchBar
+          value={searchText}
+          onChange={setSearchText}
+          placeholder="Tìm kiếm thành viên..."
+        />
 
         {/* ====== Friends List ====== */}
-        <ul className="h-full max-h-[400px] flex flex-col gap-1 overflow-y-auto custom-scrollbar">
+        <ul className="max-h-[min(60vh,25rem)] flex flex-col gap-1 overflow-y-auto custom-scrollbar">
           {loading ? (
             <div className="w-full text-center mt-8">
               <Spin />
