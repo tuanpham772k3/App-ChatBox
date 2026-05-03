@@ -45,8 +45,8 @@ const LoginPage = () => {
 
   return (
     <section id="login">
-      <div className="container mx-auto min-h-screen flex items-center justify-center">
-        <Card className="w-[400px] shadow-lg">
+      <div className="container mx-auto min-h-screen flex items-center justify-center px-4 py-6">
+        <Card className="w-full max-w-[25rem] shadow-lg">
           <Title level={3} className="text-center mb-4">
             Đăng nhập
           </Title>

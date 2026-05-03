@@ -54,8 +54,8 @@ const RegisterPage = () => {
 
   return (
     <section id="register">
-      <div className="container mx-auto min-h-screen flex items-center justify-center">
-        <Card className="w-[400px] shadow-lg">
+      <div className="container mx-auto min-h-screen flex items-center justify-center px-4 py-6">
+        <Card className="w-full max-w-[25rem] shadow-lg">
           {/* Title */}
           <Title level={3} className="text-center mb-4">
             Đăng ký
@@ -88,7 +88,17 @@ const RegisterPage = () => {
             <Form.Item
               label="Email"
               name="email"
-              rules={[{ required: true, message: "Vui lòng nhập email!" }]}
+              rules={[
+                { required: true, message: "Vui lòng nhập email!" },
+                {
+                  type: "email",
+                  message: "Email không hợp lệ",
+                },
+                {
+                  max: 254,
+                  message: "Email quá dài",
+                },
+              ]}
             >
               <Input placeholder="abc123@gmail.com" disabled={loading} />
             </Form.Item>
