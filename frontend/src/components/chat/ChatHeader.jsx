@@ -1,5 +1,6 @@
 import React from "react";
-import { ArrowLeft, PanelRight, Phone, UserPlus, UsersRound, Video } from "lucide-react";
+import { PanelRight, Search, UserPlus, UsersRound, Video } from "lucide-react";
+import { SlArrowLeft } from "react-icons/sl";
 import GroupAvatar from "@/components/ui/avatar/GroupAvatar";
 
 const ChatHeader = ({
@@ -11,19 +12,24 @@ const ChatHeader = ({
   typingNames,
   isOnline,
 }) => {
+  const typingText =
+    typingNames.length > 2
+      ? `${typingNames.slice(0, 2).join(", ")} +${typingNames.length - 2}`
+      : typingNames.join(", ");
+
   return (
-    <div className="flex items-center justify-between px-4 h-24 border-b border-[var(--color-border)]">
-      <div className="flex items-center gap-3">
+    <div className="h-16 sm:h-20 transition-all flex items-center justify-between gap-2 px-3 sm:px-4 border-b border-[var(--color-border)]">
+      <div className="min-w-0 flex-1 flex items-center gap-4 sm:gap-3">
         {/* Back button (only visible on mobile) */}
         <button
           onClick={onBack}
-          className="md:hidden mr-2 text-[var(--color-text-primary)]"
+          className="md:hidden shrink-0 p-2 rounded-full text-[var(--color-text-primary)] hover:bg-gray-100"
         >
-          <ArrowLeft size={20} />
+          <SlArrowLeft size={18} />
         </button>
 
         {/* ===== AVATAR ===== */}
-        <div className="relative">
+        <div className="relative hidden sm:flex">
           {displayInfo.isGroup ? (
             <GroupAvatar users={displayInfo.participants} size={48} />
           ) : (
@@ -31,7 +37,7 @@ const ChatHeader = ({
               <img
                 src={displayInfo.displayAvatar}
                 alt={displayInfo.displayName}
-                className="w-13 h-13 rounded-full border-2 border-[var(--color-border)]"
+                className="w-12 h-12 shrink-0 rounded-full border-2 border-[var(--color-border)]"
               />
               {isOnline && (
                 <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[var(--color-app)] rounded-full" />
@@ -41,24 +47,24 @@ const ChatHeader = ({
         </div>
 
         {/* ===== INFO ===== */}
-        <div className="flex flex-col">
+        <div className="flex flex-col min-w-0">
           {/* Name */}
-          <h3 className="text-[var(--color-text-primary)] font-semibold">
+          <h2 className="truncate text-sm md:text-lg font-medium text-[var(--color-text-primary)]">
             {displayInfo.displayName}
-          </h3>
+          </h2>
 
           {/* Typing or status */}
-          {typingNames.length > 0 ? (
-            <p className="text-xs text-green-500 italic animate-pulse truncate">
-              {typingNames.join(", ")} đang nhập...
-            </p>
+          {typingText ? (
+            <span className="text-sm text-green-500 italic animate-pulse truncate">
+              {typingText} đang nhập
+            </span>
           ) : displayInfo.isGroup ? (
             <button
               onClick={onOpenMembersInfo}
               type="button"
-              className="flex items-center gap-1 text-sm text-[var(--color-text-secondary)]"
+              className="min-w-0 truncate flex items-center gap-1 text-sm text-[var(--color-text-secondary)]"
             >
-              <UsersRound size={20} />
+              <UsersRound size={20} className="shrink-0" />
               <span>{`${displayInfo.participants.length} thành viên`}</span>
             </button>
           ) : (
@@ -70,25 +76,28 @@ const ChatHeader = ({
       </div>
 
       {/* ============ ACTION ========== */}
-      <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
+      <div className="shrink-0 flex items-center gap-1 sm:gap-2 text-[var(--color-text-secondary)]">
         {/* --- Add members (GROUP) --- */}
         {displayInfo.isGroup && (
           <button
             onClick={onOpenAddMembers}
             size={20}
-            className="p-2 rounded-full hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)]"
+            className="hidden lg:flex p-2 rounded-full hover:bg-black/10"
           >
             <UserPlus size={20} />
           </button>
         )}
-        <button className="p-2 rounded-full hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)]">
-          <Phone size={20} />
-        </button>
-        <button className="p-2 rounded-full hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)]">
+        <button className="p-2 rounded-full hover:bg-black/10">
           <Video size={20} />
         </button>
-        <button className="p-2 rounded-full hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)]">
-          <PanelRight onClick={onOpenConversationInfo} size={20} />
+        <button className="p-2 rounded-full hover:bg-black/10">
+          <Search size={20} />
+        </button>
+        <button
+          onClick={onOpenConversationInfo}
+          className="p-2 rounded-full hover:bg-black/10"
+        >
+          <PanelRight size={20} />
         </button>
       </div>
     </div>

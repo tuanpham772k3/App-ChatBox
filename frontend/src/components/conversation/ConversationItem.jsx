@@ -19,24 +19,20 @@ const ConversationItem = ({
   return (
     <li>
       <div
-        className={`group w-full max-w-full flex items-center gap-2 p-2 rounded-xl cursor-pointer transition
-        ${
-          isActive
-            ? "bg-[var(--color-primary)]/5"
-            : "hover:bg-[var(--color-hover-surface)]"
-        }
+        className={`relative group w-full max-w-full flex items-center gap-2 p-2 pr-10 sm:pr-14 rounded-xl cursor-pointer transition
+        ${isActive ? "bg-[var(--color-primary)]/10" : "hover:bg-gray-100 focus:bg-gray-100"}
       `}
         onClick={onSelect}
       >
         {/* Avatar */}
-        <div className="relative">
+        <div className="relative shrink-0">
           {display.isGroup ? (
-            <GroupAvatar users={display.participants} size={48} />
+            <GroupAvatar users={display.participants} size={50} />
           ) : (
             <img
               src={display.displayAvatar}
               alt={display.displayName}
-              className="w-13 h-13 rounded-full object-cover border-2 border-[var(--color-border)]"
+              className="w-12 h-12 rounded-full object-cover border-1 border-[var(--color-border)]"
             />
           )}
 
@@ -45,29 +41,28 @@ const ConversationItem = ({
           )}
         </div>
 
-        {/* Content */}
-        <div className="flex flex-1 justify-between items-center min-w-0">
-          <div className="flex flex-col min-w-0">
-            <h3 className="text-sm font-medium truncate">{display.displayName}</h3>
+        {/* Name + LastMessage */}
+        <div className="flex-1 flex flex-col min-w-0">
+          <h3 className="truncate text-base">{display.displayName}</h3>
 
-            <div className="flex items-center text-xs text-[var(--color-text-secondary)] min-w-0">
-              {/* Main Content (Last Message or Typing) */}
-              <span className="flex-1 min-w-0 max-w-60 overflow-hidden truncate">
-                {display.lastMsgSender && (
-                  <>
-                    <span className="text-[var(--color-text-secondary)]">
-                      {display.lastMsgSender}:{" "}
-                    </span>
-                    <span>{display.lastMsgContent}</span>
-                  </>
-                )}
+          <div className="truncate text-sm text-[var(--color-text-secondary)]">
+            {display.lastMsgSender && (
+              <span className="text-[var(--color-text-secondary)]">
+                {display.lastMsgSender}: <span>{display.lastMsgContent}</span>
               </span>
-            </div>
+            )}
           </div>
+        </div>
 
-          {/* Ellipsis + Unread badge*/}
-          <div className="flex items-center gap-1 ml-2 mr-2 shrink-0">
-            <div className="grid">
+        {/* Popover + Time + UnreadCount + Pin */}
+        <div className="absolute right-2 top-2 flex flex-col items-end gap-2 shrink-0">
+          {/* Row 1: Time (default) ↔ Popover (on hover) */}
+          <div className="relative h-5 flex items-center justify-end">
+            <time className="text-xs text-[var(--color-text-secondary)] whitespace-nowrap group-hover:opacity-0 transition-opacity duration-150">
+              {display.lastMsgTime}
+            </time>
+
+            <div className="absolute inset-0 flex items-center justify-end opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-150">
               <PopoverConversationAction
                 isPinned={isPinned}
                 onTogglePin={onTogglePin}
@@ -75,39 +70,30 @@ const ConversationItem = ({
                 onClearHistory={onClearHistory}
                 onRemove={onRemove}
               >
-                {({ open }) => (
-                  <button
-                    type="button"
-                    onClick={(e) => e.stopPropagation()}
-                    className={`p-1 rounded-full bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)] transition 
-              ${
-                open
-                  ? "opacity-100 focus:bg-[var(--color-icon-hover-bg)] focus:text-[var(--color-icon-hover-text)]"
-                  : "opacity-0 group-hover:opacity-100"
-              } `}
-                  >
-                    <Ellipsis size={20} />
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={(e) => e.stopPropagation()}
+                  className="p-1 rounded-full hover:bg-slate-200 transition"
+                >
+                  <Ellipsis size={20} />
+                </button>
               </PopoverConversationAction>
-
-              {unreadCount > 0 && (
-                <span className="min-w-5 h-5 flex items-center justify-center rounded-full bg-red-600 text-[12px] text-white">
-                  {unreadCount > 99 ? "99+" : unreadCount}
-                </span>
-              )}
             </div>
+          </div>
 
+          {/* Row 2: Pin icon + Unread badge */}
+          <div className="flex items-center gap-1">
             {isPinned && (
               <span className="text-[var(--color-primary)]" title="Đã ghim">
-                <Pin size={16} />
+                <Pin size={14} className="rotate-45" />
               </span>
             )}
 
-            {/* Time */}
-            <time className="ml-2 text-[var(--color-text-secondary)] whitespace-nowrap">
-              {display.lastMsgTime}
-            </time>
+            {unreadCount > 0 && (
+              <span className="w-4 h-4 flex items-center justify-center rounded-full bg-red-600 text-[10px] text-white">
+                {unreadCount > 99 ? "99+" : unreadCount}
+              </span>
+            )}
           </div>
         </div>
       </div>

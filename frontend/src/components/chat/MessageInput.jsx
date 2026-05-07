@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 import { Image, MapPin, Mic, Navigation, Send, Smile } from "lucide-react";
-import { Upload } from "antd";
+import { Input, Upload } from "antd";
 import { emitEvent } from "@/lib/socket";
 import { useNotification } from "@/hooks/useNotification";
 import { createNewMessage, editMessageById } from "@/store/messagesSlice";
@@ -144,7 +144,7 @@ const MessageInput = ({
   };
 
   return (
-    <div className="flex flex-col p-4 border-t border-[var(--color-border)]">
+    <div className="flex flex-col p-2 sm:p-4 border-t border-[var(--color-border)]">
       {/* ====== Editing ====== */}
       {isEditing && (
         <div className="p-2 pb-2 text-sm text-[var(--color-text-secondary)] flex items-center justify-between">
@@ -155,50 +155,35 @@ const MessageInput = ({
         </div>
       )}
 
-      <div className="flex-1 flex items-center justify-between gap-2">
+      <div className="flex-1 flex items-center justify-between gap-2 min-w-0">
         {/* ====== Action ======= */}
-        <div className="flex items-center gap-1">
+        <div className="shrink-0 flex items-center gap-1 overflow-x-auto">
           <Upload
             showUploadList={false}
             customRequest={handleUploadImage}
             accept="image/*"
           >
-            <button
-              className="w-9 h-9 flex justify-center items-center rounded-full hover:bg-[var(--color-icon-hover-bg)] 
-        text-[var(--color-text-secondary)] hover:text-[var(--color-icon-hover-text)]"
-            >
-              <Image className="w-5 h-5" />
+            <button className="flex h-10 w-10 shrink-0 justify-center items-center rounded-full hover:bg-black/10 text-[var(--color-text-secondary)]">
+              <Image size={20} />
             </button>
           </Upload>
 
-          <button
-            className="w-9 h-9 flex justify-center items-center rounded-full hover:bg-[var(--color-icon-hover-bg)] 
-        text-[var(--color-text-secondary)] hover:text-[var(--color-icon-hover-text)]"
-          >
-            <Smile className="w-5 h-5" />
+          <button className="flex h-10 w-10 shrink-0 justify-center items-center rounded-full hover:bg-black/10 text-[var(--color-text-secondary)]">
+            <Smile size={20} />
           </button>
-          <button
-            className="w-9 h-9 flex justify-center items-center rounded-full hover:bg-[var(--color-icon-hover-bg)] 
-        text-[var(--color-text-secondary)] hover:text-[var(--color-icon-hover-text)]"
-          >
-            <Navigation className="w-5 h-5" />
+          <button className="hidden h-10 w-10 shrink-0 justify-center items-center rounded-full hover:bg-black/10 text-[var(--color-text-secondary)] sm:flex">
+            <Navigation size={20} />
           </button>
-          <button
-            className="w-9 h-9 flex justify-center items-center rounded-full hover:bg-[var(--color-icon-hover-bg)] 
-        text-[var(--color-text-secondary)] hover:text-[var(--color-icon-hover-text)]"
-          >
-            <MapPin className="w-5 h-5" />
+          <button className="hidden h-10 w-10 shrink-0 justify-center items-center rounded-full hover:bg-black/10 text-[var(--color-text-secondary)] sm:flex">
+            <MapPin size={20} />
           </button>
-          <button
-            className="w-9 h-9 flex justify-center items-center rounded-full hover:bg-[var(--color-icon-hover-bg)] 
-        text-[var(--color-text-secondary)] hover:text-[var(--color-icon-hover-text)]"
-          >
-            <Mic className="w-5 h-5" />
+          <button className="hidden h-10 w-10 shrink-0 justify-center items-center rounded-full hover:bg-black/10 text-[var(--color-text-secondary)] md:flex">
+            <Mic size={20} />
           </button>
         </div>
 
         {/* ====== Input ====== */}
-        <input
+        <Input
           value={inputValue}
           onChange={handleOnchange}
           onKeyDown={(e) => {
@@ -208,21 +193,21 @@ const MessageInput = ({
           }}
           type="text"
           placeholder="Type a message..."
-          className="flex-1 bg-[var(--color-chat)] rounded-full p-2 text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)] placeholder:text-xs focus:outline-none"
+          className="min-w-0 flex-1 bg-[var(--color-app)] rounded-full p-2 text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)] placeholder:text-xs focus:outline-none"
         />
 
         {/* ===== SEND BUTTON ===== */}
         <button
           onClick={id ? handleEdit : handleSend}
           disabled={!inputValue.trim()}
-          className={`w-9 h-9 flex items-center justify-center rounded-full
+          className={`w-10 h-10 flex items-center justify-center rounded-full shrink-0
       ${
         inputValue.trim()
           ? "bg-blue-500 text-white hover:bg-blue-600"
           : "bg-gray-200 text-gray-400 cursor-not-allowed"
       }`}
         >
-          <Send className="w-5 h-5" />
+          <Send size={20} />
         </button>
       </div>
     </div>

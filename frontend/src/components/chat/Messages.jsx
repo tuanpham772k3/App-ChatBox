@@ -186,7 +186,7 @@ const Messages = ({
     <>
       <ul
         ref={containerRef}
-        className="flex-1 overflow-y-auto px-4 py-4 space-y-0.5 bg-[var(--color-chat)] custom-scrollbar"
+        className="flex-1 px-4 py-4 space-y-0.5 bg-[var(--color-chat)] overflow-y-auto custom-scrollbar"
       >
         {/* 👇 Sentinel */}
         <div ref={topRef} />

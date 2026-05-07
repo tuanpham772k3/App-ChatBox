@@ -17,7 +17,7 @@ import { useNotification } from "@/hooks/useNotification";
 import ModalCreateGroup from "./ModalCreateGroup";
 import ModalCreatePrivate from "./ModalCreatePrivate";
 
-const ConversationContainer = ({ activeChatId, onSelectChat }) => {
+const ConversationContainer = ({ activeChatId, onSelectChat, onOpenSidebar }) => {
   const dispatch = useDispatch();
 
   const currentUserId = useSelector((state) => state.auth.user?.id);
@@ -146,32 +146,30 @@ const ConversationContainer = ({ activeChatId, onSelectChat }) => {
 
   return (
     <>
-      <section
-        className={`flex-1 flex flex-col bg-[var(--color-app)] border-r border-[var(--color-border)]
-      ${activeChatId ? "hidden" : "flex"} md:flex`}
-      >
+      <section className="flex flex-col w-full bg-[var(--color-app)] border-r border-[var(--color-border)] overflow-hidden">
         {/* --- HEADER --- */}
         <ConversationHeader
           searchValue={searchInput}
           onSearchChange={setSearchInput}
           onOpenModal={setModal}
+          onOpenSidebar={onOpenSidebar}
         />
 
         {/* ---LIST CONVERSATIONS--- */}
         {loading ? (
-          <div className="flex-1 flex justify-center items-center">
+          <div className="w-full h-full grid place-items-center">
             <Spin />
           </div>
         ) : (
-          <div className="px-4 py-8">
+          <div className="flex-1 p-6 overflow-y-auto scrollbar-thin scrollbar-thumb-[var(--color-border)] scrollbar-track-transparent">
             {/* Title */}
             <div className="flex items-center gap-2 px-2 mb-2 text-sm text-[var(--color-text-secondary)]">
               <MessageSquareText size={14} />
-              <span>Tất cả tin nhắn</span>
+              <span>All Message</span>
             </div>
 
             {/* List conversations */}
-            <ul className="flex flex-col gap-2 overflow-y-auto scrollbar-thin scrollbar-thumb-[var(--color-border)] scrollbar-track-transparent">
+            <ul className="flex flex-col gap-2 min-w-0">
               {filteredConversations.length === 0 ? (
                 <div className="text-center text-[var(--color-text-secondary)] mt-8">
                   Chưa có cuộc trò chuyện nào

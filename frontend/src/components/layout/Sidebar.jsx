@@ -1,26 +1,27 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  Archive,
-  BarChart2,
-  FileText,
-  Menu,
-  MessageCircle,
+  ChartNoAxesCombined,
+  Files,
+  LayoutDashboard,
+  X,
   MessageCircleMore,
   Phone,
-  Users,
+  Settings,
 } from "lucide-react";
+import { HiOutlineUserGroup } from "react-icons/hi2";
 import { logoutUser } from "@/store/authSlice";
 import { clearMessages } from "@/store/messagesSlice";
 import { disconnectSocket, emitEvent } from "@/lib/socket";
 import { useNotification } from "@/hooks/useNotification";
 import PopoverUserActions from "@/components/user/PopoverUserActions";
 
-const Sidebar = () => {
+const Sidebar = ({ mode = "desktop", onClose }) => {
   const dispatch = useDispatch();
   const conversations = useSelector((state) => state.conversations.conversations) || [];
   const user = useSelector((state) => state.auth.user) || {};
   const notification = useNotification();
+  const isMobile = mode === "mobile";
 
   const handleLogout = async () => {
     conversations.forEach((conversation) => {
@@ -46,96 +47,76 @@ const Sidebar = () => {
     }
   };
 
+  const navItems = [
+    { label: "Dashboard", icon: LayoutDashboard },
+    { label: "Analytics", icon: ChartNoAxesCombined },
+    { label: "Files", icon: Files },
+    { label: "Call", icon: Phone },
+    { label: "Messages", icon: MessageCircleMore, active: true },
+    { label: "Community", icon: HiOutlineUserGroup },
+    { label: "Settings", icon: Settings },
+  ];
+
   return (
     <aside
-      className="flex flex-col bg-[var(--color-app)] transition-all duration-300 w-60 px-4 border-r
-    border-[var(--color-border)]"
+      className={`group/sidebar h-full w-56 flex-col bg-[var(--color-app)] transition-all duration-300 border-r border-[var(--color-border)] overflow-hidden ${
+        isMobile ? "flex shadow-2xl" : "hidden lg:flex"
+      }`}
     >
-      {/* TOP: Logo + workspace */}
-      <div className="flex items-center gap-2 px-3 h-24 border-b border-[var(--color-border)]">
-        <div className="w-9 h-9 rounded-2xl bg-[var(--color-primary)] flex items-center justify-center text-white font-semibold">
-          <MessageCircle className="w-5 h-5" />
-        </div>
-        <span className="text-2xl font-bold text-[var(--color-text-primary)]">
-          Chatbox
-        </span>
+      {/* ====== Logo ====== */}
+      <div className="h-16 sm:h-20 flex items-center gap-3 px-6 border-b border-[var(--color-border)] transition-all">
+        <img src={"/message.svg.png"} alt="logo" className="w-8 h-8 shrink-0" />
+        <h1 className="text-2xl font-bold">Chatbox</h1>
       </div>
 
-      {/* MIDDLE: Navigation */}
-      <nav className="flex-1 flex flex-col gap-5 py-6 text-sm">
-        <button
-          className="flex items-center gap-6 px-3 py-2 rounded-xl text-[var(--color-text-primary)]
-        hover:bg-[var(--color-primary)] hover:text-white transition-colors duration-200 ease-out"
-        >
-          <BarChart2 className="w-4 h-4" />
-          <span>Dashboard</span>
-        </button>
-        <button
-          className="flex items-center gap-6 px-3 py-2 rounded-xl text-[var(--color-text-primary)]
-        hover:bg-[var(--color-primary)] hover:text-white transition-colors duration-200 ease-out"
-        >
-          <Users className="w-4 h-4" />
-          <span>Analytics</span>
-        </button>
-        <button
-          className="flex items-center gap-6 px-3 py-2 rounded-xl text-[var(--color-text-primary)]
-        hover:bg-[var(--color-primary)] hover:text-white transition-colors duration-200 ease-out"
-        >
-          <FileText className="w-4 h-4" />
-          <span>Files</span>
-        </button>
-        <button
-          className="flex items-center gap-6 px-3 py-2 rounded-xl text-[var(--color-text-primary)]
-        hover:bg-[var(--color-primary)] hover:text-white transition-colors duration-200 ease-out"
-        >
-          <Phone className="w-4 h-4" />
-          <span>Call</span>
-        </button>
-        <button
-          className="flex items-center gap-6 px-3 py-2 rounded-xl bg-[var(--color-primary)] text-white
-        shadow-sm"
-        >
-          <MessageCircleMore className="w-4 h-4" />
-          <span>Messages</span>
-        </button>
-        <button
-          className="flex items-center gap-6 px-3 py-2 rounded-xl text-[var(--color-text-primary)]
-        hover:bg-[var(--color-primary)] hover:text-white transition-colors duration-200 ease-out"
-        >
-          <Archive className="w-4 h-4" />
-          <span>Community</span>
-        </button>
-        <button
-          className="flex items-center gap-6 px-3 py-2 rounded-xl text-[var(--color-text-primary)]
-        hover:bg-[var(--color-primary)] hover:text-white transition-colors duration-200 ease-out"
-        >
-          <Menu className="w-4 h-4" />
-          <span>Settings</span>
-        </button>
+      {/* ====== Options Navigation ====== */}
+      <nav className="flex-1 flex flex-col gap-4 p-6 text-base">
+        {navItems.map(({ label, icon: Icon, active }) => (
+          <button
+            key={label}
+            type="button"
+            aria-label={label}
+            title={label}
+            onClick={onClose}
+            className={`group flex items-center gap-6 p-2 rounded-xl text-left transition-colors text-[var(--color-text-primary)] ${
+              active
+                ? "bg-[var(--color-primary-focus)] text-white shadow-xl"
+                : "hover:bg-[var(--color-primary)] hover:text-white hover:shadow-xl"
+            }`}
+          >
+            <Icon
+              size={20}
+              className={`shrink-0 transition-colors ${
+                active
+                  ? "text-white"
+                  : "text-[var(--color-text-secondary)] group-hover:text-white"
+              }`}
+            />
+            <span className="min-w-0 whitespace-nowrap">{label}</span>
+          </button>
+        ))}
       </nav>
 
-      {/* BOTTOM: User summary + logout */}
-      <div className="flex items-center justify-between gap-3 py-4">
-        <div className="flex items-center gap-3">
-          <PopoverUserActions userInfo={user}>
-            <img
-              src={user?.avatar || "/avatarA.jpg"}
-              alt="user"
-              className="w-11 h-11 border-2 border-[var(--color-border)] rounded-full object-cover cursor-pointer"
-            />
-          </PopoverUserActions>
+      {/* User Info */}
+      <div className="flex items-center gap-3 p-6 transition-all">
+        <PopoverUserActions userInfo={user}>
+          <img
+            src={user?.avatar || "/avatarA.jpg"}
+            alt={user?.username}
+            className="w-12 h-12 shrink-0 rounded-full border border-[var(--color-border)] object-cover cursor-pointer"
+          />
+        </PopoverUserActions>
 
-          <div className="flex flex-col items-start">
-            <span className="text-xs font-semibold text-[var(--color-text-primary)]">
-              {user?.username || "User"}
-            </span>
-            <button
-              onClick={handleLogout}
-              className="text-[11px] font-medium text-[var(--color-text-secondary)] hover:underline hover:text-[var(--color-primary)]"
-            >
-              Logout
-            </button>
-          </div>
+        <div className="flex-col items-start truncate ">
+          <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">
+            {user?.username || "User"}
+          </h3>
+          <button
+            onClick={handleLogout}
+            className="text-xs font-medium text-[var(--color-text-secondary)] hover:underline hover:text-red-400"
+          >
+            Logout
+          </button>
         </div>
       </div>
     </aside>

@@ -159,10 +159,7 @@ const ChatWindow = ({ activeChatId, onBack }) => {
   if (!activeChatId || !currentConversation) return <ChatEmptyState />;
 
   return (
-    <div
-      className={`flex-2 bg-[var(--color-app)] flex flex-col overflow-hidden
-      ${activeChatId ? "flex" : "hidden"} md:flex`}
-    >
+    <div className="flex flex-col flex-1 bg-[var(--color-app)] overflow-hidden">
       {/* --- Header --- */}
       <ChatHeader
         onBack={onBack}

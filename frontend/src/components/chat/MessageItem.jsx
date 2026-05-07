@@ -77,11 +77,12 @@ const MessageItem = ({
       {/* --- Display date --- */}
       {showDate && (
         <div className="flex justify-center m-2">
-          <span className="p-1 bg-[var(--color-surface)] rounded-lg text-xs text-[var(--color-text-primary)]">
+          <span className="py-1 px-4 bg-gray-400 rounded-xl text-xs text-white">
             {msgTime.toLocaleDateString([], {
               weekday: "short",
               day: "2-digit",
               month: "2-digit",
+              year: "numeric",
             })}
           </span>
         </div>
@@ -89,74 +90,71 @@ const MessageItem = ({
 
       {/* --- Item Message --- */}
       <div
-        className={`flex items-start gap-2 ${
+        className={`group flex items-start gap-2 ${
           isMine ? "justify-end" : "items-end gap-2"
-        } group`}
+        }`}
       >
         {/* --- Avatar ---*/}
-        {!isMine &&
-          (showAvatar ? (
-            <img
-              src={avatar}
-              alt={msg.sender?.username}
-              className="w-11 h-11 rounded-full object-cover cursor-pointer border border-[var(--color-border)]"
-            />
-          ) : (
-            <div className="w-11 h-11" />
-          ))}
+        {showAvatar ? (
+          <img
+            src={avatar}
+            alt={msg.sender?.username}
+            className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full object-cover cursor-pointer border border-[var(--color-border)]"
+          />
+        ) : (
+          <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12" />
+        )}
 
         {/* Ellipsis + Menu */}
         {isMine && !msg.isDeleted && (
-          <Popover
-            trigger="click"
-            placement="bottom"
-            open={open}
-            onOpenChange={setOpen}
-            content={<MenuActions actions={messageActions} minWidth={160} />}
-            className="self-center"
-          >
-            {/* Ellipsis */}
-            <button
-              type="button"
-              className={`p-1 rounded-full bg-[var(--color-surface)] text-[var(--color-text-secondary)]
-                hover:bg-[var(--color-icon-hover-bg)] hover:text-[var(--color-icon-hover-text)]
-                transition-opacity ${
-                  open
-                    ? "opacity-100 focus:bg-[var(--color-icon-hover-bg)] focus:text-[var(--color-icon-hover-text)]"
-                    : "opacity-0 group-hover:opacity-100"
-                }`}
+          <div className="self-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-150">
+            <Popover
+              trigger="click"
+              placement="bottom"
+              open={open}
+              onOpenChange={setOpen}
+              content={<MenuActions actions={messageActions} minWidth={160} />}
             >
-              <EllipsisVertical className="w-5 h-5" />
-            </button>
-          </Popover>
+              {/* Ellipsis */}
+              <button
+                type="button"
+                className="p-1 bg-[var(--color-app)] text-[var(--color-text-primary)] rounded-full border border-[var(--color-border)] shadow-xl hover:bg-black/10"
+              >
+                <EllipsisVertical size={18} />
+              </button>
+            </Popover>
+          </div>
         )}
 
-        {/* --- Content Column (Sender name + Bubble) --- */}
-        <div className="flex flex-col items-start gap-2">
-          {/* --- Sender name --- */}
-          {!isMine && showName && currentConversation?.type === "group" && (
-            <span className="text-sm font-medium text-[var(--color-text-primary)]">
+        {/* --- Section --- */}
+        <div className="min-w-0 max-w-[min(75vw,42rem)] sm:max-w-[70%] flex flex-col items-start gap-1">
+          {/* --- Name Sender --- */}
+          {showName && currentConversation?.type === "group" && (
+            <span className="bg-[var(--color-app)] p-1 rounded-xl text-xs font-medium text-[var(--color-text-secondary)]">
               {msg.sender?.username || "Người dùng"}
             </span>
           )}
 
-          {/* --- Bubble wrapper --- */}
+          {/* --- Bubble --- */}
           <div
-            className={`relative rounded-xl min-w-[60px] max-w-prose break-words text-white
+            className={`relative min-w-[3.75rem] max-w-full rounded-xl break-words border shadow-xs text-[var(--color-text-primary)]
               ${msg.type !== "image" && "py-3 px-3"}
-              ${isMine ? "bg-[var(--color-primary)]" : "bg-gray-400 "}`}
+              ${
+                isMine
+                  ? "bg-[var(--color-primary)]/5 border-[var(--color-primary)]"
+                  : "bg-[var(--color-app)] border-black/15"
+              }`}
           >
             {/* Content */}
-            <span className={msg.isDeleted ? "opacity-70" : ""}>{msg.content}</span>
-
-            {/* Image */}
-            {msg.type === "image" && (
+            {msg.type === "image" ? (
               <img
                 src={msg.file?.url}
                 alt="image"
-                className="max-h-[350px] rounded-xl cursor-pointer"
+                className="max-w-full max-h-[min(45vh,21.875rem)] rounded-xl object-contain cursor-pointer"
                 onClick={() => onPreviewImage(msg)}
               />
+            ) : (
+              <span className={msg.isDeleted ? "opacity-70" : ""}>{msg.content}</span>
             )}
 
             {/* Edited */}
@@ -164,7 +162,7 @@ const MessageItem = ({
 
             {/* Time */}
             {showTime && msg.type !== "image" && (
-              <div className={`mt-1 text-xs text-white `}>
+              <div className={`mt-1 text-xs text-[var(--color-text-secondary)] `}>
                 {msgTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
               </div>
             )}
@@ -190,38 +188,35 @@ const MessageItem = ({
             <div className="flex items-center gap-1">
               {/* Time ảnh */}
               {showTime && msg.type === "image" && (
-                <div
-                  className={`p-1 bg-[var(--color-surface)] rounded-lg text-xs text-[var(--color-text-primary)] ${
-                    isMine ? " text-black" : "text-[var(--color-text-secondary)]"
-                  } `}
-                >
+                <div className="py-1 px-2 bg-gray-400 rounded-lg text-xs text-white">
                   {msgTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                 </div>
               )}
 
               {/* Trạng thái */}
-              <span className="p-1 bg-[var(--color-surface)] rounded-lg text-xs text-[var(--color-text-primary)] ">
-                {msg.status === "sending" && (
+              <span className="p-1 bg-gray-400 rounded-lg text-xs font-medium text-white ">
+                {/* {msg.status === "sending" && (
                   <div className="flex items-center gap-1">
                     <Clock size={14} />
-                    <span className="font-medium">Đang gửi</span>
+                    <span>Đang gửi</span>
                   </div>
                 )}
                 {msg.status === "sent" && (
                   <div className="flex items-center gap-1">
                     <Check size={14} />
-                    <span className="font-medium">Đã gửi</span>
+                    <span>Đã gửi</span>
                   </div>
                 )}
                 {msg.status === "delivered" && (
                   <div className="flex items-center gap-1">
                     <CheckCheck size={14} />
-                    <span className="text-xs">Đã nhận</span>
+                    <span>Đã nhận</span>
                   </div>
-                )}
+                )} */}
+                <span>{msg.status}</span>
                 {msg.status === "failed" && (
                   <div className="flex items-center gap-1">
-                    <span className="text-xs">Lỗi</span>
+                    <span>Lỗi</span>
                   </div>
                 )}
               </span>
