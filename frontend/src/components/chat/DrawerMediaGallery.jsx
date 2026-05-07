@@ -1,6 +1,7 @@
 import React from "react";
 import { Drawer } from "antd";
-import { ArrowLeft, Ellipsis, Forward } from "lucide-react";
+import { SlArrowLeft } from "react-icons/sl";
+import { Ellipsis, Forward } from "lucide-react";
 
 const DrawerMediaGallery = ({ open, onClose, images }) => {
   return (
@@ -14,11 +15,11 @@ const DrawerMediaGallery = ({ open, onClose, images }) => {
         <div className="relative flex items-center justify-center">
           <button
             onClick={onClose}
-            className="absolute left-0 p-1.5 rounded-full hover:bg-[var(--color-hover-surface)]"
+            className="lg:hidden absolute left-0 p-2 rounded-full hover:bg-gray-100"
           >
-            <ArrowLeft size={22} />
+            <SlArrowLeft size={18} />
           </button>
-          <span className="text-xl font-semibold">Ảnh/Video</span>
+          <span className="text-lg font-semibold">Ảnh/Video</span>
         </div>
       }
       styles={{ body: { padding: 12 } }}
@@ -42,13 +43,13 @@ const DrawerMediaGallery = ({ open, onClose, images }) => {
 
               {/* Action */}
               <div
-                className="absolute top-1 right-1 flex items-center p-0.5 text-center rounded bg-[var(--color-chat)] 
+                className="absolute top-1 right-1 flex items-center p-0.5 text-center rounded bg-[var(--color-chat)]
                 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition"
               >
-                <button className="p-1 rounded hover:bg-[var(--color-hover-soft)]">
+                <button className="p-1 rounded hover:bg-black/10">
                   <Forward size={18} color="var(--color-text-primary)" />
                 </button>
-                <button className="p-1 rounded hover:bg-[var(--color-hover-soft)]">
+                <button className="p-1 rounded hover:bg-black/10">
                   <Ellipsis size={18} color="var(--color-text-primary)" />
                 </button>
               </div>

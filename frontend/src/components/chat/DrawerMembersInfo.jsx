@@ -1,7 +1,7 @@
 import React from "react";
 import { Drawer } from "antd";
-import { ArrowLeft, Key, Trash, UserPlus } from "lucide-react";
-import SearchBar from "../ui/search/SearchBar";
+import { Key, Trash, UserPlus } from "lucide-react";
+import { SlArrowLeft } from "react-icons/sl";
 
 const DrawerMembersInfo = ({
   open,
@@ -54,11 +54,11 @@ const DrawerMembersInfo = ({
         <div className="relative flex items-center justify-center">
           <button
             onClick={onClose}
-            className="absolute left-0 p-1.5 rounded-full hover:bg-[var(--color-hover-surface)]"
+            className="absolute left-0 p-2 rounded-full lg:hidden hover:bg-gray-100"
           >
-            <ArrowLeft size={22} />
+            <SlArrowLeft size={18} />
           </button>
-          <h2 className="text-xl font-semibold">Thông tin thành viên</h2>
+          <h2 className="text-lg font-semibold">Thành viên</h2>
         </div>
       }
       styles={{ body: { padding: 0 } }}
@@ -68,36 +68,33 @@ const DrawerMembersInfo = ({
         <div className="p-4">
           <button
             onClick={onOpenAddMembers}
-            className="w-full flex items-center justify-center gap-2 py-2 font-medium text-base text-[var(--color-text-primary)] 
-        bg-[var(--color-chat)] hover:bg-[var(--color-hover-soft)] rounded"
+            className="w-full flex items-center justify-center gap-2 py-2 font-medium text-base text-[var(--color-text-primary)]
+        bg-[var(--color-chat)] hover:bg-black/10 rounded"
           >
-            <UserPlus size={20} />
+            <UserPlus size={16} />
             <p>Thêm thành viên</p>
           </button>
         </div>
 
         {/* Body */}
-        <div className="p-4 flex flex-col gap-4 ">
+        <div className="flex flex-col gap-4 ">
           {/* Title */}
-          <h3 className="font-medium text-base text-[var(--color-text-primary)]">{`Danh sách thành viên (${members?.length})`}</h3>
-
-          {/* Search */}
-          <SearchBar placeholder="Tìm kiếm thành viên..." />
+          <h3 className="px-4 font-medium text-sm text-[var(--color-text-primary)]">{`Danh sách thành viên (${members?.length})`}</h3>
 
           {/* Members List */}
           <ul className="flex flex-col gap-1">
             {sortedMembers.map((member) => (
               <li
                 key={member.id}
-              className="flex items-center px-2 py-3 hover:bg-[var(--color-hover-surface)] rounded group"
-            >
+                className="flex items-center px-4 py-3 hover:bg-gray-100 rounded group"
+              >
                 <div className="min-w-0 flex-1 flex items-center gap-2">
                   {/* Avatar */}
                   <div className="relative">
                     <img
                       src={member.avatarUrl}
                       alt={member.name}
-                      className="w-11 h-11 rounded-full object-cover border-2 border-[var(--color-border)]"
+                      className="w-12 h-12 rounded-full object-cover border-2 border-[var(--color-border)]"
                     />
 
                     {/* Key */}
@@ -115,7 +112,7 @@ const DrawerMembersInfo = ({
 
                     {member.role === "owner" && (
                       <span className="text-xs text-[var(--color-text-secondary)]">
-                        Người tạo
+                        Trưởng nhóm
                       </span>
                     )}
 
@@ -131,7 +128,7 @@ const DrawerMembersInfo = ({
                 {canShowDeleteIcon(member) && (
                   <button
                     onClick={() => onRemoveMember(member.id)}
-                    className="p-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition rounded hover:bg-[var(--color-hover-soft)]"
+                    className="p-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition rounded hover:bg-black/10"
                   >
                     <Trash size={18} color="red" />
                   </button>
