@@ -22,7 +22,7 @@ const slides = [
 
 const ChatEmptyState = () => {
   return (
-    <div className="flex-2 bg-[var(--color-app)] flex items-center justify-center">
+    <div className="flex-1 min-w-0 bg-[var(--color-app)] flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <header className="text-center mb-6">
           <h1 className="text-2xl">Chào mừng đến với Messages</h1>

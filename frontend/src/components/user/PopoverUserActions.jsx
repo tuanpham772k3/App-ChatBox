@@ -30,28 +30,28 @@ const PopoverUserActions = ({ children, userInfo }) => {
             {/* body */}
             <div className="flex flex-col gap-1">
               <button
-                className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left text-[var(--color-text-primary)] 
-            hover:bg-[var(--color-hover-surface)] rounded"
+                className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left text-[var(--color-text-primary)]
+            hover:bg-black/10 rounded"
               >
                 Năng cấp tài khoản
               </button>
               <button
                 onClick={openModalUserInfo}
-                className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left text-[var(--color-text-primary)] 
-            hover:bg-[var(--color-hover-surface)] rounded"
+                className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left text-[var(--color-text-primary)]
+            hover:bg-black/10 rounded"
               >
                 Hồ sơ
               </button>
               <button
-                className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left text-[var(--color-text-primary)] 
-            hover:bg-[var(--color-hover-surface)] rounded"
+                className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left text-[var(--color-text-primary)]
+            hover:bg-black/10 rounded"
               >
                 Cài đặt
               </button>
             </div>
             {/* footer */}
             <footer className="pt-1 border-t border-[var(--color-border)]">
-              <button className="w-full px-3 py-2 text-left text-sm text-red-500 hover:bg-[var(--color-hover-surface)] rounded">
+              <button className="w-full px-3 py-2 text-left text-sm text-red-500 hover:bg-black/10 rounded">
                 Đăng xuất
               </button>
             </footer>

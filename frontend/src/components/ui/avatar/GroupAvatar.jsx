@@ -5,10 +5,10 @@ const GroupAvatar = ({ users, size = 48 }) => {
   const visibleUsers = users.slice(0, visibleCount);
   const membersCount = users.length;
 
-  const itemSize = size/2;
+  const itemSize = size / 2;
   return (
     <div
-      className="relative rounded-full bg-[var(--color-app)]"
+      className="relative shrink-0 rounded-full bg-[var(--color-app)]"
       style={{ width: size, height: size }}
     >
       {visibleUsers.map((user, index) => {

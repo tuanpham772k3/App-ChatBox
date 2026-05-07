@@ -49,7 +49,7 @@ const ModalUserInfo = ({ isOpen, onCancel }) => {
       open={isOpen}
       onCancel={onCancel}
       footer={null}
-      width={400}
+      width="min(calc(100vw - 2rem), 25rem)"
       centered
       closeIcon={<CloseOutlined style={{ color: "var(--color-text-secondary)" }} />}
       styles={{
@@ -86,7 +86,7 @@ const ModalUserInfo = ({ isOpen, onCancel }) => {
                     />
                     <button
                       onClick={() => modalTransition("editAvatar")}
-                      className="absolute bottom-0 right-0 p-1 text-[var(--color-text-secondary)] bg-[var(--color-app)] hover:bg-[var(--color-hover-soft)] rounded-full border border-[var(--color-border)]"
+                      className="absolute bottom-0 right-0 p-1 text-[var(--color-text-secondary)] bg-[var(--color-app)] hover:bg-black/10 rounded-full border border-[var(--color-border)]"
                     >
                       <Camera size={22} />
                     </button>
@@ -95,7 +95,7 @@ const ModalUserInfo = ({ isOpen, onCancel }) => {
                     <h2 className="text-xl font-medium">{profile?.username}</h2>
                     <button
                       onClick={() => modalTransition("editInfo")}
-                      className="p-1 rounded-full hover:bg-[var(--color-hover-soft)]"
+                      className="p-1 rounded-full hover:bg-black/10"
                     >
                       <PencilLine size={16} />
                     </button>
@@ -136,7 +136,7 @@ const ModalUserInfo = ({ isOpen, onCancel }) => {
           <div className="p-3 border-t border-[var(--color-border)]">
             <button
               onClick={() => modalTransition("editInfo")}
-              className="w-full flex justify-center items-center gap-2 py-1 bg-[var(--color-chat)] hover:bg-[var(--color-hover-soft)] rounded"
+              className="w-full flex justify-center items-center gap-2 py-1 bg-[var(--color-chat)] hover:bg-black/10 rounded"
             >
               <PencilLine size={20} />
               <span className="text-lg font-medium">Cập nhật</span>
@@ -210,7 +210,7 @@ const ModalUserInfo = ({ isOpen, onCancel }) => {
           <div className="flex justify-end gap-2 px-4 py-3 border-t border-[var(--color-border)]">
             <button
               onClick={() => modalTransition("view")}
-              className="px-4 py-2 bg-[var(--color-chat)] hover:bg-[var(--color-hover-soft)] rounded"
+              className="px-4 py-2 bg-[var(--color-chat)] hover:bg-black/10 rounded"
             >
               Hủy
             </button>

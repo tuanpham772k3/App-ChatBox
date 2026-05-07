@@ -95,7 +95,7 @@ const UserProfileEditForm = ({ profile, onCancel, onSubmit }) => {
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 bg-[var(--color-chat)] hover:bg-[var(--color-hover-soft)] rounded"
+          className="px-4 py-2 bg-[var(--color-chat)] hover:bg-black/10 rounded"
         >
           Hủy
         </button>

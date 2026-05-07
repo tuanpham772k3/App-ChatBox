@@ -9,32 +9,19 @@
   --color-primary: #2563eb;
 
   /* Background */
-  --color-app: #f8fafc;
+  --color-app: #ffffff;
   --color-chat: #f1f5f9;
-  --color-surface: #ffffff;
-
-  /* Hover */
-  --color-hover-surface: #f1f5f9;
-  --color-hover-soft: #e2e8f0;
-  --color-primary-hover: #1d4ed8;
-  --color-primary-active: #1e40af;
-  --color-icon-hover-bg: #e2e8f0;
-  --color-icon-hover-text: #0f172a;
-  --color-success-hover: #16a34a;
-  --color-error-hover: #dc2626;
-  --color-warning-hover: #d97706;
 
   /* Text-Icon color */
-  --color-text-primary: #0f172a;
-  --color-text-secondary: #64748b;
+  --color-text-primary: #141415;
+  --color-text-secondary: #767a7f;
+  --color-text-disable: #b9bdc1;
+
+  /* Focus */
+  --color-primary-focus: #1d4ed8;
 
   /* Border */
   --color-border: #e5e7eb;
-
-  /* State color */
-  --color-success: #22c55e;
-  --color-error: #ef4444;
-  --color-warning: #f59e0b;
 }
 
 /* Reset/Normalize CSS */
