@@ -18,16 +18,16 @@ const ConversationItem = ({
 
   return (
     <li>
-      <article
-        className={`relative group w-full max-w-full rounded-xl transition ${
-          isActive ? "bg-[var(--color-primary)]/10" : "hover:bg-gray-100"
+      <div
+        className={`group w-full min-w-0 max-w-full flex justify-between rounded-lg transition-colors ${
+          isActive ? "bg-[var(--color-primary)]/5" : "hover:bg-gray-100"
         }`}
-        aria-current={isActive ? "true" : undefined}
       >
+        {/* ====== Content ====== */}
         <button
           type="button"
           onClick={onSelect}
-          className="w-full max-w-full flex items-center gap-2 px-2 py-3 pr-10 sm:pr-14 rounded-xl text-left focus:bg-gray-100"
+          className="min-w-0 text-left flex items-center gap-2 px-2 py-3"
         >
           {/* Avatar */}
           <span className="relative shrink-0">
@@ -69,15 +69,15 @@ const ConversationItem = ({
           </span>
         </button>
 
-        {/* Popover + Time + UnreadCount + Pin */}
-        <div className="absolute right-2 top-2 flex flex-col items-end gap-2 shrink-0 pointer-events-none">
-          {/* Row 1: Time (default) ↔ Popover (on hover) */}
-          <div className="relative h-5 flex items-center justify-end">
-            <time className="text-xs text-[var(--color-text-secondary)] whitespace-nowrap group-hover:opacity-0 transition-opacity duration-150">
+        {/* ====== Metadata ====== */}
+        <div className="flex flex-col shrink-0 items-end justify-between gap-2 py-3 pr-2 sm:pr-3">
+          {/* Top row */}
+          <div className="relative flex h-5 items-center justify-end gap-1">
+            <time className="touch-hide whitespace-nowrap text-[11px] text-[var(--color-text-secondary)] transition-opacity duration-150 hidden lg:block lg:group-hover:opacity-0">
               {display.lastMsgTime}
             </time>
 
-            <div className="absolute inset-0 flex items-center justify-end opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-150 pointer-events-auto">
+            <div className="touch-always-visible lg:absolute lg:right-0 flex items-center justify-center lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150">
               <PopoverConversationAction
                 isPinned={isPinned}
                 onTogglePin={onTogglePin}
@@ -89,7 +89,7 @@ const ConversationItem = ({
                   type="button"
                   onClick={(e) => e.stopPropagation()}
                   aria-label="Open conversation actions"
-                  className="p-1 rounded-full hover:bg-slate-200 transition"
+                  className="hover:bg-slate-200 transition-colors"
                 >
                   <Ellipsis size={20} />
                 </button>
@@ -97,22 +97,22 @@ const ConversationItem = ({
             </div>
           </div>
 
-          {/* Row 2: Pin icon + Unread badge */}
-          <div className="flex items-center gap-1">
+          {/* Bottom row */}
+          <div className="flex min-h-5 items-center gap-1">
             {isPinned && (
-              <span className="text-[var(--color-primary)]" title="Đã ghim">
+              <span className="text-[var(--color-primary)] shrink-0" title="Đã ghim">
                 <Pin size={14} className="rotate-45" />
               </span>
             )}
 
             {unreadCount > 0 && (
-              <span className="w-4 h-4 flex items-center justify-center rounded-full bg-red-600 text-[10px] text-white">
+              <span className="min-w-5 h-5 px-1 text-[10px] flex items-center justify-center rounded-full bg-red-600 text-white font-medium">
                 {unreadCount > 99 ? "99+" : unreadCount}
               </span>
             )}
           </div>
         </div>
-      </article>
+      </div>
     </li>
   );
 };

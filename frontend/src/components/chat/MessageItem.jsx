@@ -139,7 +139,7 @@ const MessageItem = ({
 
         {/* Ellipsis + Menu */}
         {isMine && !msg.isDeleted && (
-          <div className="self-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-150">
+          <div className="touch-always-visible self-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-150">
             <Popover
               trigger="click"
               placement="bottom"
