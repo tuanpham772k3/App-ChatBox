@@ -19,7 +19,7 @@ const ConversationItem = ({
   return (
     <li>
       <div
-        className={`group w-full min-w-0 max-w-full flex justify-between rounded-lg transition-colors ${
+        className={`group w-full min-w-0 max-w-full flex rounded-lg transition-colors ${
           isActive ? "bg-[var(--color-primary)]/5" : "hover:bg-gray-100"
         }`}
       >
@@ -27,7 +27,7 @@ const ConversationItem = ({
         <button
           type="button"
           onClick={onSelect}
-          className="min-w-0 text-left flex items-center gap-2 px-2 py-3"
+          className="min-w-0 flex-1 flex items-center gap-2 px-2 py-3"
         >
           {/* Avatar */}
           <span className="relative shrink-0">
@@ -50,7 +50,7 @@ const ConversationItem = ({
           </span>
 
           {/* Name + LastMessage */}
-          <span className="flex-1 flex flex-col gap-1 min-w-0">
+          <span className="flex-1 flex flex-col gap-1 min-w-0 text-left">
             <span className={`truncate text-sm ${unreadCount > 0 && "font-medium"}`}>
               {display.displayName}
             </span>
