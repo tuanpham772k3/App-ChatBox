@@ -186,20 +186,21 @@ const Messages = ({
     <>
       <ul
         ref={containerRef}
+        aria-label="Messages"
         className="flex-1 px-4 py-4 space-y-0.5 bg-[var(--color-chat)] overflow-y-auto custom-scrollbar"
       >
-        {/* 👇 Sentinel */}
-        <div ref={topRef} />
+        {/* Sentinel for loading older messages */}
+        <li ref={topRef} aria-hidden="true" className="h-px" />
 
         {loading ? (
-          <div className="flex justify-center">
+          <li className="flex justify-center" aria-live="polite">
             <Spin />
-          </div>
+          </li>
         ) : (
           messages.length === 0 && (
-            <p className="text-center text-sm text-[var(--color-text-secondary)]">
+            <li className="text-center text-sm text-[var(--color-text-secondary)]">
               Chưa có tin nhắn nào
-            </p>
+            </li>
           )
         )}
 

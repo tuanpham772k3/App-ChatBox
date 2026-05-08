@@ -11,7 +11,7 @@ const ConversationHeader = ({
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   return (
-    <section className="h-16 sm:h-20 flex items-center justify-between gap-3 px-4 sm:px-8 border-b border-[var(--color-border)]">
+    <header className="h-16 sm:h-20 flex items-center justify-between gap-3 px-6 border-b border-[var(--color-border)]">
       {isSearchOpen ? (
         <SearchBar
           value={searchValue}
@@ -33,13 +33,15 @@ const ConversationHeader = ({
             >
               <Menu size={22} />
             </button>
-            <h2 className="min-w-0 truncate font-bold text-2xl text-[var(--color-primary)]">
+            <h1 className="min-w-0 truncate font-bold text-2xl text-[var(--color-primary)]">
               Messages
-            </h2>
+            </h1>
           </div>
           <div className="shrink-0 flex gap-2 sm:gap-3">
             <button
               title="Tạo hội thoại đơn"
+              type="button"
+              aria-label="Create private conversation"
               onClick={() => onOpenModal("private")}
               className="flex items-center p-2 rounded-full bg-[var(--color-app)] text-[var(--color-text-secondary)] hover:bg-black/10 transition-colors"
             >
@@ -48,6 +50,8 @@ const ConversationHeader = ({
 
             <button
               title="Tạo nhóm chat"
+              type="button"
+              aria-label="Create group conversation"
               onClick={() => onOpenModal("group")}
               className="flex items-center p-2 rounded-full bg-[var(--color-app)] text-[var(--color-text-secondary)] hover:bg-black/10 transition-colors"
             >
@@ -56,6 +60,8 @@ const ConversationHeader = ({
 
             <button
               title="Tìm kiếm hội thoại"
+              type="button"
+              aria-label="Search conversations"
               onClick={() => setIsSearchOpen(true)}
               className="flex items-center p-2 rounded-full bg-[var(--color-app)] text-[var(--color-text-secondary)] hover:bg-black/10 transition-colors"
             >
@@ -64,7 +70,7 @@ const ConversationHeader = ({
           </div>
         </>
       )}
-    </section>
+    </header>
   );
 };
 

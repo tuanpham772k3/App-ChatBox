@@ -144,12 +144,23 @@ const MessageInput = ({
   };
 
   return (
-    <div className="flex flex-col p-2 sm:p-4 border-t border-[var(--color-border)]">
+    <form
+      className="flex flex-col p-2 sm:p-4 border-t border-[var(--color-border)]"
+      aria-label="Message composer"
+      onSubmit={(e) => {
+        e.preventDefault();
+        id ? handleEdit() : handleSend();
+      }}
+    >
       {/* ====== Editing ====== */}
       {isEditing && (
         <div className="p-2 pb-2 text-sm text-[var(--color-text-secondary)] flex items-center justify-between">
           <span>Đang chỉnh sửa tin nhắn</span>
-          <button onClick={handleCancelEdit} className="text-blue-500 hover:underline">
+          <button
+            type="button"
+            onClick={handleCancelEdit}
+            className="text-blue-500 hover:underline"
+          >
             Hủy
           </button>
         </div>
@@ -163,21 +174,41 @@ const MessageInput = ({
             customRequest={handleUploadImage}
             accept="image/*"
           >
-            <button className="flex h-10 w-10 shrink-0 justify-center items-center rounded-full hover:bg-black/10 text-[var(--color-text-secondary)]">
+            <button
+              type="button"
+              aria-label="Upload image"
+              className="flex h-10 w-10 shrink-0 justify-center items-center rounded-full hover:bg-black/10 text-[var(--color-text-secondary)]"
+            >
               <Image size={20} />
             </button>
           </Upload>
 
-          <button className="flex h-10 w-10 shrink-0 justify-center items-center rounded-full hover:bg-black/10 text-[var(--color-text-secondary)]">
+          <button
+            type="button"
+            aria-label="Choose emoji"
+            className="flex h-10 w-10 shrink-0 justify-center items-center rounded-full hover:bg-black/10 text-[var(--color-text-secondary)]"
+          >
             <Smile size={20} />
           </button>
-          <button className="hidden h-10 w-10 shrink-0 justify-center items-center rounded-full hover:bg-black/10 text-[var(--color-text-secondary)] sm:flex">
+          <button
+            type="button"
+            aria-label="Send current location"
+            className="hidden h-10 w-10 shrink-0 justify-center items-center rounded-full hover:bg-black/10 text-[var(--color-text-secondary)] sm:flex"
+          >
             <Navigation size={20} />
           </button>
-          <button className="hidden h-10 w-10 shrink-0 justify-center items-center rounded-full hover:bg-black/10 text-[var(--color-text-secondary)] sm:flex">
+          <button
+            type="button"
+            aria-label="Share location pin"
+            className="hidden h-10 w-10 shrink-0 justify-center items-center rounded-full hover:bg-black/10 text-[var(--color-text-secondary)] sm:flex"
+          >
             <MapPin size={20} />
           </button>
-          <button className="hidden h-10 w-10 shrink-0 justify-center items-center rounded-full hover:bg-black/10 text-[var(--color-text-secondary)] md:flex">
+          <button
+            type="button"
+            aria-label="Record voice message"
+            className="hidden h-10 w-10 shrink-0 justify-center items-center rounded-full hover:bg-black/10 text-[var(--color-text-secondary)] md:flex"
+          >
             <Mic size={20} />
           </button>
         </div>
@@ -185,9 +216,11 @@ const MessageInput = ({
         {/* ====== Input ====== */}
         <Input
           value={inputValue}
+          aria-label={isEditing ? "Edit message" : "Message"}
           onChange={handleOnchange}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
+              e.preventDefault();
               id ? handleEdit() : handleSend();
             }
           }}
@@ -198,7 +231,8 @@ const MessageInput = ({
 
         {/* ===== SEND BUTTON ===== */}
         <button
-          onClick={id ? handleEdit : handleSend}
+          type="submit"
+          aria-label={id ? "Save edited message" : "Send message"}
           disabled={!inputValue.trim()}
           className={`w-10 h-10 flex items-center justify-center rounded-full shrink-0
       ${
@@ -210,7 +244,7 @@ const MessageInput = ({
           <Send size={20} />
         </button>
       </div>
-    </div>
+    </form>
   );
 };
 

@@ -18,11 +18,13 @@ const ChatHeader = ({
       : typingNames.join(", ");
 
   return (
-    <div className="h-16 sm:h-20 transition-all flex items-center justify-between gap-2 px-3 sm:px-4 border-b border-[var(--color-border)]">
+    <header className="h-16 sm:h-20 transition-all flex items-center justify-between gap-2 px-3 sm:px-4 border-b border-[var(--color-border)]">
       <div className="min-w-0 flex-1 flex items-center gap-4 sm:gap-3">
         {/* Back button (only visible on mobile) */}
         <button
+          type="button"
           onClick={onBack}
+          aria-label="Back to conversations"
           className="md:hidden shrink-0 p-2 rounded-full text-[var(--color-text-primary)] hover:bg-gray-100"
         >
           <SlArrowLeft size={18} />
@@ -40,7 +42,10 @@ const ChatHeader = ({
                 className="w-12 h-12 shrink-0 rounded-full border-2 border-[var(--color-border)]"
               />
               {isOnline && (
-                <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[var(--color-app)] rounded-full" />
+                <span
+                  className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[var(--color-app)] rounded-full"
+                  aria-label="Online"
+                />
               )}
             </>
           )}
@@ -49,26 +54,26 @@ const ChatHeader = ({
         {/* ===== INFO ===== */}
         <div className="flex flex-col min-w-0">
           {/* Name */}
-          <h2 className="truncate text-sm md:text-lg font-medium text-[var(--color-text-primary)]">
+          <h2 className="truncate text-sm md:text-base lg:text-lg font-semibold text-[var(--color-text-primary)]">
             {displayInfo.displayName}
           </h2>
 
           {/* Typing or status */}
           {typingText ? (
-            <span className="text-sm text-green-500 italic animate-pulse truncate">
-              {typingText} đang nhập
+            <span className="text-xs md:text-sm text-green-500 italic animate-pulse truncate">
+              {typingText} đang nhập...
             </span>
           ) : displayInfo.isGroup ? (
             <button
               onClick={onOpenMembersInfo}
               type="button"
-              className="min-w-0 truncate flex items-center gap-1 text-sm text-[var(--color-text-secondary)]"
+              className="min-w-0 truncate flex items-center gap-1 text-xs md:text-sm text-[var(--color-text-primary)] hover:text-blue-500 transition-colors"
             >
-              <UsersRound size={20} className="shrink-0" />
+              <UsersRound size={16} className="shrink-0" />
               <span>{`${displayInfo.participants.length} thành viên`}</span>
             </button>
           ) : (
-            <span className="text-sm text-[var(--color-text-secondary)]">
+            <span className="text-xs md:text-sm text-[var(--color-text-secondary)]">
               {isOnline ? "Đang hoạt động" : "Ngoại tuyến"}
             </span>
           )}
@@ -81,26 +86,37 @@ const ChatHeader = ({
         {displayInfo.isGroup && (
           <button
             onClick={onOpenAddMembers}
-            size={20}
+            type="button"
+            aria-label="Add members"
             className="hidden lg:flex p-2 rounded-full hover:bg-black/10"
           >
             <UserPlus size={20} />
           </button>
         )}
-        <button className="p-2 rounded-full hover:bg-black/10">
+        <button
+          type="button"
+          aria-label="Start video call"
+          className="p-2 rounded-full hover:bg-black/10"
+        >
           <Video size={20} />
         </button>
-        <button className="p-2 rounded-full hover:bg-black/10">
+        <button
+          type="button"
+          aria-label="Search in conversation"
+          className="p-2 rounded-full hover:bg-black/10"
+        >
           <Search size={20} />
         </button>
         <button
+          type="button"
           onClick={onOpenConversationInfo}
+          aria-label="Open conversation information"
           className="p-2 rounded-full hover:bg-black/10"
         >
           <PanelRight size={20} />
         </button>
       </div>
-    </div>
+    </header>
   );
 };
 

@@ -19,10 +19,10 @@ const ChatPage = () => {
   }, [screens.md]);
 
   return (
-    <div className="min-h-screen h-dvh flex overflow-hidden">
-      <div className="shrink-0">
+    <main className="min-h-screen h-dvh flex overflow-hidden" aria-label="Chat application">
+      <aside className="shrink-0" aria-label="Primary navigation">
         <Sidebar />
-      </div>
+      </aside>
 
       <Drawer
         open={isSidebarOpen}
@@ -37,7 +37,8 @@ const ChatPage = () => {
         <Sidebar mode="mobile" onClose={() => setIsSidebarOpen(false)} />
       </Drawer>
 
-      <div
+      <section
+        aria-label="Conversations"
         className={`min-w-0 flex-1 ${
           activeChatId ? "hidden md:flex" : "flex"
         } md:flex-none md:w-[min(42vw,22.5rem)] lg:w-[22.5rem]`}
@@ -47,12 +48,15 @@ const ChatPage = () => {
           onSelectChat={setActiveChatId}
           onOpenSidebar={() => setIsSidebarOpen(true)}
         />
-      </div>
+      </section>
 
-      <div className={`min-w-0 flex-1 ${activeChatId ? "flex" : "hidden md:flex"}`}>
+      <section
+        aria-label="Active conversation"
+        className={`min-w-0 flex-1 ${activeChatId ? "flex" : "hidden md:flex"}`}
+      >
         <ChatWindow activeChatId={activeChatId} onBack={() => setActiveChatId(null)} />
-      </div>
-    </div>
+      </section>
+    </main>
   );
 };
 

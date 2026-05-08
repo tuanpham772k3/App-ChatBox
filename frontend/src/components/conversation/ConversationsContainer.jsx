@@ -146,7 +146,10 @@ const ConversationContainer = ({ activeChatId, onSelectChat, onOpenSidebar }) =>
 
   return (
     <>
-      <section className="flex flex-col w-full bg-[var(--color-app)] border-r border-[var(--color-border)] overflow-hidden">
+      <section
+        className="flex flex-col w-full bg-[var(--color-app)] border-r border-[var(--color-border)] overflow-hidden"
+        aria-labelledby="conversations-heading"
+      >
         {/* --- HEADER --- */}
         <ConversationHeader
           searchValue={searchInput}
@@ -161,19 +164,19 @@ const ConversationContainer = ({ activeChatId, onSelectChat, onOpenSidebar }) =>
             <Spin />
           </div>
         ) : (
-          <div className="flex-1 p-6 overflow-y-auto scrollbar-thin scrollbar-thumb-[var(--color-border)] scrollbar-track-transparent">
+          <div className="flex-1 px-3 py-6 overflow-y-auto scrollbar-thin scrollbar-thumb-[var(--color-border)] scrollbar-track-transparent">
             {/* Title */}
-            <div className="flex items-center gap-2 px-2 mb-2 text-sm text-[var(--color-text-secondary)]">
-              <MessageSquareText size={14} />
-              <span>All Message</span>
-            </div>
+            <header className="flex items-center gap-2 px-2 mb-2 text-sm text-[var(--color-text-secondary)]">
+              <MessageSquareText size={14} aria-hidden="true" />
+              <h2 id="conversations-heading">All Message</h2>
+            </header>
 
             {/* List conversations */}
             <ul className="flex flex-col gap-2 min-w-0">
               {filteredConversations.length === 0 ? (
-                <div className="text-center text-[var(--color-text-secondary)] mt-8">
+                <li className="text-center text-[var(--color-text-secondary)] mt-8">
                   Chưa có cuộc trò chuyện nào
-                </div>
+                </li>
               ) : (
                 <>
                   {filteredConversations.map((conversation) => {

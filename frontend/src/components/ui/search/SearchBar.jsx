@@ -3,11 +3,16 @@ import { Search } from "lucide-react";
 
 const SearchBar = ({ value, onChange, onCancel, placeholder }) => {
   return (
-    <div className="w-full min-w-0 flex gap-2">
-      <div className="min-w-0 flex-1 flex items-center px-4 py-2 bg-[var(--color-surface)] hover:bg-slate-100 text-[var(--color-text-secondary)] rounded-full border focus-within:border-[var(--color-primary)]">
+    <form
+      className="w-full min-w-0 flex gap-2"
+      role="search"
+      onSubmit={(e) => e.preventDefault()}
+    >
+      <div className="min-w-0 flex-1 flex items-center px-4 py-2 text-[var(--color-text-secondary)] bg-[var(--color-surface)] hover:bg-slate-100 focus-within:bg-slate-100 rounded-full border focus-within:border-[var(--color-primary)]">
         <Search size={20} className="shrink-0" />
         <input
-          type="text"
+          type="search"
+          aria-label={placeholder || "Search"}
           {...(value !== undefined ? { value } : {})}
           onChange={(e) => onChange?.(e.target.value)}
           placeholder={placeholder}
@@ -16,13 +21,14 @@ const SearchBar = ({ value, onChange, onCancel, placeholder }) => {
       </div>
       {onCancel && (
         <button
+          type="button"
           onClick={onCancel}
-          className="shrink-0 px-3 py-1 rounded-md font-medium bg-[var(--color-chat)] hover:bg-black/10"
+          className="shrink-0 px-3 py-1 rounded-md font-medium bg-[var(--color-chat)] hover:bg-black/10 focus:bg-black/10"
         >
           Đóng
         </button>
       )}
-    </div>
+    </form>
   );
 };
 

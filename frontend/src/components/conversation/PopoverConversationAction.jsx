@@ -24,6 +24,7 @@ const PopoverConversationAction = ({
           className="space-y-1 text-[var(--color-text-primary)]"
         >
           <button
+            type="button"
             onClick={onTogglePin}
             className="flex items-center gap-2 w-full px-3 py-2 hover:bg-black/10 rounded"
           >
@@ -31,6 +32,7 @@ const PopoverConversationAction = ({
             <span>{isPinned ? "Bỏ ghim hội thoại" : "Ghim hội thoại"}</span>
           </button>
           <button
+            type="button"
             onClick={onMarkUnread}
             className="flex items-center gap-2 w-full px-3 py-2 hover:bg-black/10 rounded"
           >
@@ -38,6 +40,7 @@ const PopoverConversationAction = ({
             <span>Đánh dấu chưa đọc</span>
           </button>
           <button
+            type="button"
             onClick={onClearHistory}
             className="flex items-center gap-2 w-full px-3 py-2 text-red-500 hover:bg-black/10 rounded"
           >
@@ -45,6 +48,7 @@ const PopoverConversationAction = ({
             <span>Xóa lịch sử trò chuyện</span>
           </button>
           <button
+            type="button"
             onClick={onRemove}
             className="flex items-center gap-2 w-full px-3 py-2 text-red-500 hover:bg-black/10 rounded"
           >

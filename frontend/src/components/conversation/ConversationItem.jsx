@@ -18,51 +18,66 @@ const ConversationItem = ({
 
   return (
     <li>
-      <div
-        className={`relative group w-full max-w-full flex items-center gap-2 p-2 pr-10 sm:pr-14 rounded-xl cursor-pointer transition
-        ${isActive ? "bg-[var(--color-primary)]/10" : "hover:bg-gray-100 focus:bg-gray-100"}
-      `}
-        onClick={onSelect}
+      <article
+        className={`relative group w-full max-w-full rounded-xl transition ${
+          isActive ? "bg-[var(--color-primary)]/10" : "hover:bg-gray-100"
+        }`}
+        aria-current={isActive ? "true" : undefined}
       >
-        {/* Avatar */}
-        <div className="relative shrink-0">
-          {display.isGroup ? (
-            <GroupAvatar users={display.participants} size={50} />
-          ) : (
-            <img
-              src={display.displayAvatar}
-              alt={display.displayName}
-              className="w-12 h-12 rounded-full object-cover border-1 border-[var(--color-border)]"
-            />
-          )}
-
-          {isOnline && (
-            <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[var(--color-app)] rounded-full"></span>
-          )}
-        </div>
-
-        {/* Name + LastMessage */}
-        <div className="flex-1 flex flex-col min-w-0">
-          <h3 className="truncate text-base">{display.displayName}</h3>
-
-          <div className="truncate text-sm text-[var(--color-text-secondary)]">
-            {display.lastMsgSender && (
-              <span className="text-[var(--color-text-secondary)]">
-                {display.lastMsgSender}: <span>{display.lastMsgContent}</span>
-              </span>
+        <button
+          type="button"
+          onClick={onSelect}
+          className="w-full max-w-full flex items-center gap-2 px-2 py-3 pr-10 sm:pr-14 rounded-xl text-left focus:bg-gray-100"
+        >
+          {/* Avatar */}
+          <span className="relative shrink-0">
+            {display.isGroup ? (
+              <GroupAvatar users={display.participants} size={50} />
+            ) : (
+              <img
+                src={display.displayAvatar}
+                alt={display.displayName}
+                className="w-12 h-12 rounded-full object-cover border-1 border-[var(--color-border)]"
+              />
             )}
-          </div>
-        </div>
+
+            {isOnline && (
+              <span
+                className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[var(--color-app)] rounded-full"
+                aria-label="Online"
+              />
+            )}
+          </span>
+
+          {/* Name + LastMessage */}
+          <span className="flex-1 flex flex-col gap-1 min-w-0">
+            <span className={`truncate text-sm ${unreadCount > 0 && "font-medium"}`}>
+              {display.displayName}
+            </span>
+
+            <span
+              className={`truncate text-xs shrink-0 ${
+                unreadCount > 0 ? "text-gray-900" : "text-[var(--color-text-secondary)]"
+              }`}
+            >
+              {display.lastMsgSender && (
+                <>
+                  {display.lastMsgSender}: <span>{display.lastMsgContent}</span>
+                </>
+              )}
+            </span>
+          </span>
+        </button>
 
         {/* Popover + Time + UnreadCount + Pin */}
-        <div className="absolute right-2 top-2 flex flex-col items-end gap-2 shrink-0">
+        <div className="absolute right-2 top-2 flex flex-col items-end gap-2 shrink-0 pointer-events-none">
           {/* Row 1: Time (default) ↔ Popover (on hover) */}
           <div className="relative h-5 flex items-center justify-end">
             <time className="text-xs text-[var(--color-text-secondary)] whitespace-nowrap group-hover:opacity-0 transition-opacity duration-150">
               {display.lastMsgTime}
             </time>
 
-            <div className="absolute inset-0 flex items-center justify-end opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-150">
+            <div className="absolute inset-0 flex items-center justify-end opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-150 pointer-events-auto">
               <PopoverConversationAction
                 isPinned={isPinned}
                 onTogglePin={onTogglePin}
@@ -73,6 +88,7 @@ const ConversationItem = ({
                 <button
                   type="button"
                   onClick={(e) => e.stopPropagation()}
+                  aria-label="Open conversation actions"
                   className="p-1 rounded-full hover:bg-slate-200 transition"
                 >
                   <Ellipsis size={20} />
@@ -96,7 +112,7 @@ const ConversationItem = ({
             )}
           </div>
         </div>
-      </div>
+      </article>
     </li>
   );
 };

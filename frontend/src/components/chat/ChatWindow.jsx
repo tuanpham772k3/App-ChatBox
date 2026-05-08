@@ -159,7 +159,10 @@ const ChatWindow = ({ activeChatId, onBack }) => {
   if (!activeChatId || !currentConversation) return <ChatEmptyState />;
 
   return (
-    <div className="flex flex-col flex-1 bg-[var(--color-app)] overflow-hidden">
+    <article
+      className="flex flex-col flex-1 bg-[var(--color-app)] overflow-hidden"
+      aria-label={`Conversation with ${displayInfo.displayName || "selected contact"}`}
+    >
       {/* --- Header --- */}
       <ChatHeader
         onBack={onBack}
@@ -236,7 +239,7 @@ const ChatWindow = ({ activeChatId, onBack }) => {
         currentUser={displayInfo?.currentUser}
         members={displayInfo?.participants}
       />
-    </div>
+    </article>
   );
 };
 

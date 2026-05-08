@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { Check, CheckCheck, Clock, EllipsisVertical, Pencil, Trash } from "lucide-react";
+import {
+  Check,
+  CheckCheck,
+  Clock,
+  EllipsisVertical,
+  Pencil,
+  Trash,
+  TriangleAlert,
+} from "lucide-react";
 import { Popover } from "antd";
 import MenuActions from "@/components/ui/popover/MenuActions";
 
@@ -72,23 +80,47 @@ const MessageItem = ({
     onDelete: handleDelete,
   });
 
+  const MESSAGE_STATUS = {
+    sending: {
+      icon: Clock,
+      label: "Đang gửi",
+    },
+    sent: {
+      icon: Check,
+      label: "Đã gửi",
+    },
+    delivered: {
+      icon: CheckCheck,
+      label: "Đã nhận",
+    },
+    failed: {
+      icon: TriangleAlert,
+      label: "Lỗi",
+    },
+  };
+
+  const statusConfig = MESSAGE_STATUS[msg.status];
+
   return (
-    <li>
-      {/* --- Display date --- */}
+    <li className="w-full flex flex-col">
+      {/* ====== Display date ====== */}
       {showDate && (
         <div className="flex justify-center m-2">
-          <span className="py-1 px-4 bg-gray-400 rounded-xl text-xs text-white">
+          <time
+            dateTime={msgTime.toISOString()}
+            className="py-1 px-4 bg-gray-400 rounded-xl text-xs text-white"
+          >
             {msgTime.toLocaleDateString([], {
               weekday: "short",
               day: "2-digit",
               month: "2-digit",
               year: "numeric",
             })}
-          </span>
+          </time>
         </div>
       )}
 
-      {/* --- Item Message --- */}
+      {/* ====== Message Item ====== */}
       <div
         className={`group flex items-start gap-2 ${
           isMine ? "justify-end" : "items-end gap-2"
@@ -118,7 +150,8 @@ const MessageItem = ({
               {/* Ellipsis */}
               <button
                 type="button"
-                className="p-1 bg-[var(--color-app)] text-[var(--color-text-primary)] rounded-full border border-[var(--color-border)] shadow-xl hover:bg-black/10"
+                aria-label="Open message actions"
+                className="p-1 bg-[var(--color-app)] text-[var(--color-text-primary)] rounded-full border border-[var(--color-border)] shadow-xs hover:bg-black/10"
               >
                 <EllipsisVertical size={18} />
               </button>
@@ -137,40 +170,60 @@ const MessageItem = ({
 
           {/* --- Bubble --- */}
           <div
-            className={`relative min-w-[3.75rem] max-w-full rounded-xl break-words border shadow-xs text-[var(--color-text-primary)]
+            className={`relative min-w-[3.75rem] max-w-full rounded-lg overflow-hidden break-words border shadow-xs text-[var(--color-text-primary)]
               ${msg.type !== "image" && "py-3 px-3"}
               ${
                 isMine
-                  ? "bg-[var(--color-primary)]/5 border-[var(--color-primary)]"
+                  ? "bg-[var(--color-primary)]/5 border-blue-500"
                   : "bg-[var(--color-app)] border-black/15"
               }`}
           >
             {/* Content */}
             {msg.type === "image" ? (
-              <img
-                src={msg.file?.url}
-                alt="image"
-                className="max-w-full max-h-[min(45vh,21.875rem)] rounded-xl object-contain cursor-pointer"
-                onClick={() => onPreviewImage(msg)}
-              />
+              <figure>
+                <button
+                  type="button"
+                  onClick={() => onPreviewImage(msg)}
+                  aria-label="Preview image message"
+                  className="block max-w-full"
+                >
+                  <img
+                    src={msg.file?.url}
+                    alt={msg.file?.name || "Image message"}
+                    className="max-w-full max-h-[min(45vh,21.875rem)] object-cover cursor-pointer"
+                  />
+                </button>
+              </figure>
             ) : (
-              <span className={msg.isDeleted ? "opacity-70" : ""}>{msg.content}</span>
+              <span
+                className={
+                  msg.isDeleted ? "text-[var(--color-text-secondary)] text-sm" : "text-sm"
+                }
+              >
+                {msg.content}
+              </span>
             )}
 
             {/* Edited */}
-            {msg.isEdited && <div className="text-[10px] opacity-70">(đã chỉnh sửa)</div>}
-
+            {msg.isEdited && !msg.isDeleted && (
+              <div className="text-[10px] text-[var(--color-text-secondary)]">
+                (đã chỉnh sửa)
+              </div>
+            )}
             {/* Time */}
             {showTime && msg.type !== "image" && (
-              <div className={`mt-1 text-xs text-[var(--color-text-secondary)] `}>
+              <time
+                dateTime={msgTime.toISOString()}
+                className="mt-1 block text-xs text-[var(--color-text-secondary)]"
+              >
                 {msgTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-              </div>
+              </time>
             )}
           </div>
         </div>
       </div>
 
-      {/* Hiển thị những người đã đọc tin nhắn OR Trạng thái */}
+      {/* Readers or Status */}
       {isMine && isLastMessage && !msg.isDeleted && (
         <div className="flex justify-end mt-4">
           {readers.length > 0 ? (
@@ -188,38 +241,21 @@ const MessageItem = ({
             <div className="flex items-center gap-1">
               {/* Time ảnh */}
               {showTime && msg.type === "image" && (
-                <div className="py-1 px-2 bg-gray-400 rounded-lg text-xs text-white">
+                <time
+                  dateTime={msgTime.toISOString()}
+                  className="py-1 px-2 bg-gray-400 rounded-lg text-xs text-white"
+                >
                   {msgTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                </div>
+                </time>
               )}
 
               {/* Trạng thái */}
-              <span className="p-1 bg-gray-400 rounded-lg text-xs font-medium text-white ">
-                {/* {msg.status === "sending" && (
-                  <div className="flex items-center gap-1">
-                    <Clock size={14} />
-                    <span>Đang gửi</span>
-                  </div>
-                )}
-                {msg.status === "sent" && (
-                  <div className="flex items-center gap-1">
-                    <Check size={14} />
-                    <span>Đã gửi</span>
-                  </div>
-                )}
-                {msg.status === "delivered" && (
-                  <div className="flex items-center gap-1">
-                    <CheckCheck size={14} />
-                    <span>Đã nhận</span>
-                  </div>
-                )} */}
-                <span>{msg.status}</span>
-                {msg.status === "failed" && (
-                  <div className="flex items-center gap-1">
-                    <span>Lỗi</span>
-                  </div>
-                )}
-              </span>
+              {statusConfig && (
+                <span className="flex items-center gap-1 p-1 bg-gray-400 rounded-lg text-xs font-medium text-white">
+                  <statusConfig.icon size={14} aria-hidden="true" />
+                  <span>{statusConfig.label}</span>
+                </span>
+              )}
             </div>
           )}
         </div>
