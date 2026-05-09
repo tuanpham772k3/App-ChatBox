@@ -150,8 +150,9 @@ const MessageItem = ({
               {/* Ellipsis */}
               <button
                 type="button"
+                onClick={(e) => e.stopPropagation()}
                 aria-label="Open message actions"
-                className="p-1 bg-[var(--color-app)] text-[var(--color-text-primary)] rounded-full border border-[var(--color-border)] shadow-xs hover:bg-black/10"
+                className="p-1 bg-[var(--color-app)] text-[var(--color-text-primary)] rounded-full border border-[var(--color-border)] shadow-xs hover:bg-gray-100 active:bg-black/5"
               >
                 <EllipsisVertical size={18} />
               </button>

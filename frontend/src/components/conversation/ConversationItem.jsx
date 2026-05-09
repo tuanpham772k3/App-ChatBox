@@ -91,7 +91,7 @@ const ConversationItem = ({
                   type="button"
                   onClick={(e) => e.stopPropagation()}
                   aria-label="Open conversation actions"
-                  className="hover:bg-slate-200 focus:bg-gray-200 active:bg-slate-200 transition-colors"
+                  className="p-0.5 rounded-sm hover:bg-gray-200 focus:bg-black/5 active:bg-black/10 transition-colors"
                 >
                   <Ellipsis size={20} />
                 </button>

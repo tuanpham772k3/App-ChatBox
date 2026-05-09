@@ -25,7 +25,7 @@ const ChatHeader = ({
           type="button"
           onClick={onBack}
           aria-label="Back to conversations"
-          className="md:hidden shrink-0 p-2 rounded-full text-[var(--color-text-primary)] hover:bg-gray-100"
+          className="md:hidden shrink-0 p-2 rounded-full text-[var(--color-text-primary)] hover:bg-gray-100 focus:bg-black/5 active:bg-black/10"
         >
           <SlArrowLeft size={18} />
         </button>
@@ -88,7 +88,7 @@ const ChatHeader = ({
             onClick={onOpenAddMembers}
             type="button"
             aria-label="Add members"
-            className="hidden lg:flex p-2 rounded-full hover:bg-black/10"
+            className="hidden lg:flex p-2 rounded-full hover:bg-gray-100 active:bg-black/10"
           >
             <UserPlus size={20} />
           </button>
@@ -96,14 +96,14 @@ const ChatHeader = ({
         <button
           type="button"
           aria-label="Start video call"
-          className="p-2 rounded-full hover:bg-black/10"
+          className="p-2 rounded-full hover:bg-gray-100 focus:bg-black/5 active:bg-black/10"
         >
           <Video size={20} />
         </button>
         <button
           type="button"
           aria-label="Search in conversation"
-          className="p-2 rounded-full hover:bg-black/10"
+          className="p-2 rounded-full hover:bg-gray-100 focus:bg-black/5 active:bg-black/10"
         >
           <Search size={20} />
         </button>
@@ -111,7 +111,7 @@ const ChatHeader = ({
           type="button"
           onClick={onOpenConversationInfo}
           aria-label="Open conversation information"
-          className="p-2 rounded-full hover:bg-black/10"
+          className="p-2 rounded-full hover:bg-gray-100 focus:bg-black/5 active:bg-black/10"
         >
           <PanelRight size={20} />
         </button>
