@@ -25,7 +25,9 @@ const PopoverConversationAction = ({
         >
           <button
             type="button"
-            onClick={onTogglePin}
+            onClick={() => {
+              onTogglePin(), setOpen(false);
+            }}
             className="flex items-center gap-2 w-full px-3 py-2 hover:bg-black/10 rounded"
           >
             {isPinned ? <PinOff size={20} /> : <Pin size={20} />}
@@ -33,7 +35,9 @@ const PopoverConversationAction = ({
           </button>
           <button
             type="button"
-            onClick={onMarkUnread}
+            onClick={() => {
+              onMarkUnread(), setOpen(false);
+            }}
             className="flex items-center gap-2 w-full px-3 py-2 hover:bg-black/10 rounded"
           >
             <MailCheck size={20} />
@@ -41,7 +45,9 @@ const PopoverConversationAction = ({
           </button>
           <button
             type="button"
-            onClick={onClearHistory}
+            onClick={() => {
+              onClearHistory(), setOpen(false);
+            }}
             className="flex items-center gap-2 w-full px-3 py-2 text-red-500 hover:bg-black/10 rounded"
           >
             <BrushCleaning size={20} />
@@ -49,7 +55,9 @@ const PopoverConversationAction = ({
           </button>
           <button
             type="button"
-            onClick={onRemove}
+            onClick={() => {
+              onRemove(), setOpen(false);
+            }}
             className="flex items-center gap-2 w-full px-3 py-2 text-red-500 hover:bg-black/10 rounded"
           >
             <Trash size={20} />

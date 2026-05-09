@@ -172,7 +172,7 @@ const ConversationContainer = ({ activeChatId, onSelectChat, onOpenSidebar }) =>
             </header>
 
             {/* List conversations */}
-            <ul className="flex flex-col gap-2 min-w-0">
+            <ul className="flex flex-col gap-1 min-w-0">
               {filteredConversations.length === 0 ? (
                 <li className="text-center text-[var(--color-text-secondary)] mt-8">
                   Chưa có cuộc trò chuyện nào

@@ -19,16 +19,18 @@ const ConversationItem = ({
   return (
     <li>
       <div
-        className={`group w-full min-w-0 max-w-full flex rounded-lg transition-colors ${
-          isActive ? "bg-[var(--color-primary)]/5" : "hover:bg-gray-100"
-        }`}
+        role="button"
+        tabIndex={0}
+        onClick={onSelect}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            onSelect();
+          }
+        }}
+        className="group min-w-0 max-w-full flex-1 flex items-center justify-between px-2 py-3 cursor-pointer rounded-lg transition-colors focus:bg-[var(--color-primary)]/10 hover:bg-gray-100 active:bg-gray-200"
       >
         {/* ====== Content ====== */}
-        <button
-          type="button"
-          onClick={onSelect}
-          className="min-w-0 flex-1 flex items-center gap-2 px-2 py-3"
-        >
+        <div className="flex items-center gap-3 min-w-0">
           {/* Avatar */}
           <span className="relative shrink-0">
             {display.isGroup ? (
@@ -67,13 +69,13 @@ const ConversationItem = ({
               )}
             </span>
           </span>
-        </button>
+        </div>
 
         {/* ====== Metadata ====== */}
-        <div className="flex flex-col shrink-0 items-end justify-between gap-2 py-3 pr-2 sm:pr-3">
+        <div className="flex flex-col shrink-0 items-end gap-1">
           {/* Top row */}
-          <div className="relative flex h-5 items-center justify-end gap-1">
-            <time className="touch-hide whitespace-nowrap text-[11px] text-[var(--color-text-secondary)] transition-opacity duration-150 hidden lg:block lg:group-hover:opacity-0">
+          <div className="relative flex items-center justify-end">
+            <time className="touch-hide whitespace-nowrap text-[11px] text-[var(--color-text-secondary)] hidden lg:block lg:group-hover:opacity-0 transition-opacity duration-150">
               {display.lastMsgTime}
             </time>
 
@@ -89,7 +91,7 @@ const ConversationItem = ({
                   type="button"
                   onClick={(e) => e.stopPropagation()}
                   aria-label="Open conversation actions"
-                  className="hover:bg-slate-200 transition-colors"
+                  className="hover:bg-slate-200 focus:bg-gray-200 active:bg-slate-200 transition-colors"
                 >
                   <Ellipsis size={20} />
                 </button>
