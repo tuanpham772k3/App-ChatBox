@@ -22,6 +22,26 @@ import {
 import { markConversationAsRead } from "@/store/conversationsSlice";
 import { emitEvent } from "@/lib/socket";
 
+const MessageDateDivider = ({ date }) => {
+  const messageDate = new Date(date);
+
+  return (
+    <li className="sticky top-0 z-10 flex justify-center py-2 list-none">
+      <time
+        dateTime={messageDate.toISOString()}
+        className="py-1 px-4 bg-gray-400 backdrop-blur rounded-xl text-xs text-white shadow"
+      >
+        {messageDate.toLocaleDateString([], {
+          weekday: "short",
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        })}
+      </time>
+    </li>
+  );
+};
+
 const Messages = ({
   currentUserId,
   currentConversationId,
@@ -59,7 +79,7 @@ const Messages = ({
       .catch((error) => {
         console.log("Error marking conversation as read:", error);
       });
-  }, [messages, currentConversationId, dispatch]);
+  }, [messages, currentConversationId, currentUserId, dispatch]);
 
   // ===== Load initial messages =====
   useEffect(() => {
@@ -187,7 +207,7 @@ const Messages = ({
       <ul
         ref={containerRef}
         aria-label="Messages"
-        className="flex-1 px-4 py-4 space-y-0.5 bg-[var(--color-chat)] overflow-y-auto custom-scrollbar"
+        className="h-full flex-1 px-4 py-4 space-y-0.5 bg-[var(--color-chat)] overflow-y-auto custom-scrollbar"
       >
         {/* Sentinel for loading older messages */}
         <li ref={topRef} aria-hidden="true" className="h-px" />
@@ -206,21 +226,22 @@ const Messages = ({
 
         {messagesWithMeta.map((msg, index) => {
           return (
-            <MessageItem
-              key={msg._id}
-              msg={msg}
-              currentUserId={currentUserId}
-              currentConversation={currentConversation}
-              isMine={msg.meta.isMine}
-              showDate={msg.meta.showDate}
-              showTime={msg.meta.showTime}
-              showName={msg.meta.showName}
-              showAvatar={msg.meta.showAvatar}
-              isLastMessage={index === messages.length - 1}
-              onPreviewImage={handlePreviewImage}
-              onDeleteMessage={handleDeleteMessage}
-              onEditClick={handleEditClick}
-            />
+            <React.Fragment key={msg._id}>
+              {msg.meta.showDate && <MessageDateDivider date={msg.createdAt} />}
+              <MessageItem
+                msg={msg}
+                currentUserId={currentUserId}
+                currentConversation={currentConversation}
+                isMine={msg.meta.isMine}
+                showTime={msg.meta.showTime}
+                showName={msg.meta.showName}
+                showAvatar={msg.meta.showAvatar}
+                isLastMessage={index === messages.length - 1}
+                onPreviewImage={handlePreviewImage}
+                onDeleteMessage={handleDeleteMessage}
+                onEditClick={handleEditClick}
+              />
+            </React.Fragment>
           );
         })}
       </ul>

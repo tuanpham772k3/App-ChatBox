@@ -32,7 +32,6 @@ const MessageItem = ({
   currentUserId,
   currentConversation,
   isMine,
-  showDate,
   showTime,
   showName,
   showAvatar,
@@ -102,25 +101,7 @@ const MessageItem = ({
   const statusConfig = MESSAGE_STATUS[msg.status];
 
   return (
-    <li className="w-full flex flex-col">
-      {/* ====== Display date ====== */}
-      {showDate && (
-        <div className="flex justify-center m-2">
-          <time
-            dateTime={msgTime.toISOString()}
-            className="py-1 px-4 bg-gray-400 rounded-xl text-xs text-white"
-          >
-            {msgTime.toLocaleDateString([], {
-              weekday: "short",
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
-            })}
-          </time>
-        </div>
-      )}
-
-      {/* ====== Message Item ====== */}
+    <li className={`${showAvatar ? "mt-4" : "mt-1"} list-none`}>
       <div
         className={`group flex items-start gap-2 ${
           isMine ? "justify-end" : "items-end gap-2"
