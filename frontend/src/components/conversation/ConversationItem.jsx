@@ -27,7 +27,11 @@ const ConversationItem = ({
             onSelect();
           }
         }}
-        className="group min-w-0 max-w-full flex-1 flex items-center justify-between px-2 py-3 cursor-pointer rounded-lg transition-colors focus:bg-[var(--color-primary)]/10 hover:bg-gray-100 active:bg-gray-200"
+        className={`group min-w-0 max-w-full flex-1 flex items-center justify-between px-2 py-3 cursor-pointer rounded-lg transition-colors ${
+          isActive
+            ? "bg-[var(--color-primary)]/10"
+            : "hover:bg-gray-100 active:bg-gray-200 focus:bg-[var(--color-primary)]/10"
+        }`}
       >
         {/* ====== Content ====== */}
         <div className="flex items-center gap-3 min-w-0">
