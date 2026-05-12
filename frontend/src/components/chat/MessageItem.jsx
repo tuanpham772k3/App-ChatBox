@@ -212,7 +212,7 @@ const MessageItem = ({
             <div className="flex gap-1">
               {readers.map((p) => (
                 <img
-                  key={getRefId(p.userId)}
+                  key={p.userId?._id}
                   src={p.userId?.avatarUrl?.url || "/avatarA.jpg"}
                   alt={p.userId?.username || "Người dùng"}
                   className="w-4 h-4 rounded-full object-cover"

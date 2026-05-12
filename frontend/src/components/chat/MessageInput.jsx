@@ -8,7 +8,7 @@ import { createNewMessage, editMessageById } from "@/store/messagesSlice";
 
 const MessageInput = ({
   currentUserId,
-  currentConversationId,
+  activeChatId,
   editingMessage,
   setEditingMessage,
 }) => {
@@ -34,7 +34,7 @@ const MessageInput = ({
       // 2. Tạo message text
       const result = await dispatch(
         createNewMessage({
-          conversationId: currentConversationId,
+          conversationId: activeChatId,
           content: text,
           senderId: { _id: currentUserId }, // Để xử lý redux thunk
           tempId,
@@ -124,10 +124,10 @@ const MessageInput = ({
       setText(value);
     }
 
-    if (!currentConversationId) return;
+    if (!activeChatId) return;
 
     emitEvent("typing_start", {
-      conversationId: currentConversationId,
+      conversationId: activeChatId,
     });
 
     // Clear timeout cũ (nếu có)
@@ -138,7 +138,7 @@ const MessageInput = ({
     // Set timeout mới cho typing_stop
     typingTimeoutRef.current = setTimeout(() => {
       emitEvent("typing_stop", {
-        conversationId: currentConversationId,
+        conversationId: activeChatId,
       });
     }, 1000);
   };

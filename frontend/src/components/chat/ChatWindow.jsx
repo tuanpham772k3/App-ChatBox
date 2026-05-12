@@ -36,8 +36,9 @@ const ChatWindow = ({ activeChatId, onBack }) => {
   const dispatch = useDispatch();
 
   const currentUserId = useSelector((state) => state.auth.user?.id);
-  const { conversations, currentConversationId, typingUsers, statusUsers, images } =
-    useSelector((state) => state.conversations);
+  const { conversations, typingUsers, statusUsers, images } = useSelector(
+    (state) => state.conversations
+  );
 
   const [openModal, setOpenModal] = useState(null);
   const [openDrawer, setOpenDrawer] = useState(null);
@@ -49,13 +50,13 @@ const ChatWindow = ({ activeChatId, onBack }) => {
   });
   const notification = useNotification();
 
-  const currentConversation = conversations.find((c) => c._id === currentConversationId);
+  const currentConversation = conversations.find((c) => c._id === activeChatId);
 
   const typingNames = useMemo(() => {
-    if (!currentConversationId) return [];
+    if (!activeChatId) return [];
     if (!currentConversation) return [];
 
-    const typingMap = typingUsers[currentConversationId] || {};
+    const typingMap = typingUsers[activeChatId] || {};
 
     return currentConversation.participants
       .filter((p) => typingMap[p.userId._id] && p.userId._id !== currentUserId)
@@ -74,10 +75,10 @@ const ChatWindow = ({ activeChatId, onBack }) => {
   const isOnline = partnerStatus?.presence === "online";
 
   const handleTogglePinConversation = () => {
-    if (!currentConversationId || !currentUserId) return;
+    if (!activeChatId || !currentUserId) return;
     dispatch(
       togglePinConversation({
-        conversationId: currentConversationId,
+        conversationId: activeChatId,
         userId: currentUserId,
       })
     )
@@ -91,10 +92,10 @@ const ChatWindow = ({ activeChatId, onBack }) => {
   };
 
   const handleClearHistory = () => {
-    if (!currentConversationId || !currentUserId) return;
+    if (!activeChatId || !currentUserId) return;
     dispatch(
       clearConversationHistory({
-        conversationId: currentConversationId,
+        conversationId: activeChatId,
         userId: currentUserId,
       })
     )
@@ -113,8 +114,8 @@ const ChatWindow = ({ activeChatId, onBack }) => {
   };
 
   const handleLeaveGroup = () => {
-    if (!currentConversationId) return;
-    dispatch(leaveGroup(currentConversationId))
+    if (!activeChatId) return;
+    dispatch(leaveGroup(activeChatId))
       .unwrap()
       .then(() => {
         notification.success({ message: "Rời nhóm thành công" });
@@ -130,31 +131,31 @@ const ChatWindow = ({ activeChatId, onBack }) => {
   };
 
   useEffect(() => {
-    if (openDrawer === DRAWER.INFO && currentConversationId) {
+    if (openDrawer === DRAWER.INFO && activeChatId) {
       dispatch(
         getConversationImages({
-          conversationId: currentConversationId,
+          conversationId: activeChatId,
           limit: 8,
         })
       )
         .unwrap()
         .catch(console.error);
     }
-  }, [openDrawer, currentConversationId, dispatch]);
+  }, [openDrawer, activeChatId, dispatch]);
 
   useEffect(() => {
-    if (!activeChatId || !currentConversationId) return;
+    if (!activeChatId || !activeChatId) return;
 
     emitEvent("join_conversation", {
-      conversationId: currentConversationId,
+      conversationId: activeChatId,
     });
 
     return () => {
       emitEvent("leave_conversation", {
-        conversationId: currentConversationId,
+        conversationId: activeChatId,
       });
     };
-  }, [activeChatId, currentConversationId]);
+  }, [activeChatId, activeChatId]);
 
   if (!activeChatId || !currentConversation) return <ChatEmptyState />;
 
@@ -176,14 +177,14 @@ const ChatWindow = ({ activeChatId, onBack }) => {
 
       <Messages
         currentUserId={currentUserId}
-        currentConversationId={currentConversationId}
+        activeChatId={activeChatId}
         currentConversation={currentConversation}
         setEditingMessage={setEditingMessage}
       />
 
       <MessageInput
         currentUserId={currentUserId}
-        currentConversationId={currentConversationId}
+        activeChatId={activeChatId}
         editingMessage={editingMessage}
         setEditingMessage={setEditingMessage}
       />
@@ -221,13 +222,13 @@ const ChatWindow = ({ activeChatId, onBack }) => {
       <ModalAddMembers
         isOpen={openModal === MODAL.ADD}
         onCancel={() => setOpenModal(null)}
-        conversationId={currentConversation?._id}
+        conversationId={activeChatId}
       />
 
       <ModalRemoveMembers
         isOpen={openModal === MODAL.REMOVE}
         onCancel={() => setOpenModal(null)}
-        conversationId={currentConversation?._id}
+        conversationId={activeChatId}
         memberId={selectedMemberId}
       />
 
@@ -235,7 +236,7 @@ const ChatWindow = ({ activeChatId, onBack }) => {
         isOpen={openModal === MODAL.LEAVE}
         onClose={() => setOpenModal(null)}
         onLeave={handleLeaveGroup}
-        conversationId={currentConversation?._id}
+        conversationId={activeChatId}
         currentUser={displayInfo?.currentUser}
         members={displayInfo?.participants}
       />

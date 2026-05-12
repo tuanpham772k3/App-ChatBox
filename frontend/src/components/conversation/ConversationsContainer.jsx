@@ -5,10 +5,8 @@ import { Spin } from "antd";
 import {
   clearConversationHistory,
   deleteConversationForMe,
-  getConversationById,
   getConversations,
   markConversationAsUnread,
-  setCurrentConversation,
   togglePinConversation,
 } from "../../store/conversationsSlice";
 import ConversationHeader from "./ConversationHeader";
@@ -46,13 +44,6 @@ const ConversationContainer = ({ activeChatId, onSelectChat, onOpenSidebar }) =>
     if (activeChatId === conversationId) return;
 
     onSelectChat(conversationId);
-    dispatch(setCurrentConversation(conversationId));
-
-    dispatch(getConversationById(conversationId))
-      .unwrap()
-      .catch((err) => {
-        console.log("Error fetching conversation:", err);
-      });
   };
 
   // Xóa hội thoại phía tôi

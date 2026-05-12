@@ -44,7 +44,7 @@ const MessageDateDivider = ({ date }) => {
 
 const Messages = ({
   currentUserId,
-  currentConversationId,
+  activeChatId,
   currentConversation,
   setEditingMessage,
 }) => {
@@ -67,11 +67,11 @@ const Messages = ({
 
   // ===== Mark conversation as read =====
   useEffect(() => {
-    if (!currentConversationId) return;
+    if (!activeChatId) return;
 
     dispatch(
       markConversationAsRead({
-        conversationId: currentConversationId,
+        conversationId: activeChatId,
         userId: currentUserId,
       })
     )
@@ -79,11 +79,11 @@ const Messages = ({
       .catch((error) => {
         console.log("Error marking conversation as read:", error);
       });
-  }, [messages, currentConversationId, currentUserId, dispatch]);
+  }, [messages, activeChatId, currentUserId, dispatch]);
 
   // ===== Load initial messages =====
   useEffect(() => {
-    if (!currentConversationId) return;
+    if (!activeChatId) return;
 
     dispatch(clearMessages());
 
@@ -92,11 +92,11 @@ const Messages = ({
 
     dispatch(
       fetchConversationMessages({
-        conversationId: currentConversationId,
+        conversationId: activeChatId,
         cursor: null,
       })
     );
-  }, [currentConversationId, dispatch]);
+  }, [activeChatId, dispatch]);
 
   // ===== Auto scroll =====
   useEffect(() => {
@@ -126,7 +126,7 @@ const Messages = ({
   useEffect(() => {
     if (!inView) return;
     if (!hasMore || loading) return;
-    if (!currentConversationId) return;
+    if (!activeChatId) return;
 
     const el = containerRef.current;
     if (!el) return;
@@ -135,7 +135,7 @@ const Messages = ({
 
     dispatch(
       fetchConversationMessages({
-        conversationId: currentConversationId,
+        conversationId: activeChatId,
         cursor,
       })
     )

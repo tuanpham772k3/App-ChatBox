@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { emitEvent, offEvent, onEvent } from "@/lib/socket";
 import {
   addConversation,
@@ -20,9 +20,6 @@ import {
 
 export const useSocket = () => {
   const dispatch = useDispatch();
-  const currentConversationId = useSelector(
-    (state) => state.conversations.currentConversationId
-  );
 
   useEffect(() => {
     const onStatusChanged = (data) => {
@@ -58,13 +55,10 @@ export const useSocket = () => {
     };
 
     const onMessageNew = (msg) => {
-      if (!msg?._id) return;
-      if (String(msg?.conversationId) !== String(currentConversationId)) return;
       dispatch(addIncomingMessage(msg));
     };
 
     const onMessageEdit = (msg) => {
-      if (String(msg?.conversationId) !== String(currentConversationId)) return;
       dispatch(updateMessage(msg));
     };
 
@@ -77,8 +71,6 @@ export const useSocket = () => {
     };
 
     const onMessageDelivered = (msg) => {
-      if (!msg?._id || !msg?.conversationId) return;
-
       emitEvent("message_delivered", {
         messageId: msg._id,
         conversationId: msg.conversationId,
@@ -112,5 +104,5 @@ export const useSocket = () => {
       offEvent("message_delete", onMessageDelete);
       offEvent("message_delivered", onMessageDeliveredStatus);
     };
-  }, [currentConversationId, dispatch]);
+  }, [dispatch]);
 };
