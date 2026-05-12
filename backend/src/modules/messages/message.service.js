@@ -15,7 +15,7 @@ const MessageService = {
   createMessage: async (conversationId, senderId, content, fileInfo) => {
     const conversation = await Conversation.findOne({
       _id: conversationId,
-      "participants.user": senderId,
+      "participants.userId": senderId,
       isActive: true,
     }).lean();
 
@@ -45,8 +45,8 @@ const MessageService = {
 
     // Tạo message object & thêm file nếu có
     const messageData = {
-      conversation: conversationId,
-      sender: senderId,
+      conversationId,
+      senderId,
       type,
       content: content ? content.trim() : null,
       file: fileInfo
@@ -63,7 +63,7 @@ const MessageService = {
     const savedMessage = await Message.create(messageData);
 
     const populatedMessage = await Message.findById(savedMessage._id)
-      .populate("sender", "username email avatarUrl")
+      .populate("senderId", "username email avatarUrl")
       .lean();
 
     // Cập nhật conversation.lastMessage và tăng unreadCount cho participants khác
@@ -72,8 +72,8 @@ const MessageService = {
       {
         $set: {
           lastMessage: {
-            _id: savedMessage._id,
-            sender: senderId,
+            messageId: savedMessage._id,
+            senderId,
             type,
             content: type === "text" ? content.trim() : fileInfo?.filename || type,
             file: fileInfo
@@ -94,7 +94,7 @@ const MessageService = {
         },
       },
       {
-        arrayFilters: [{ "p.user": { $ne: senderId } }],
+        arrayFilters: [{ "p.userId": { $ne: senderId } }],
         new: true,
         lean: true,
       }
@@ -118,7 +118,7 @@ const MessageService = {
     // 1. Kiểm tra user có quyền truy cập conversation không
     const conversation = await Conversation.findOne({
       _id: conversationId,
-      "participants.user": userId,
+      "participants.userId": userId,
       isActive: true,
     });
 
@@ -128,13 +128,13 @@ const MessageService = {
 
     // Lấy người tham gia hiện tại để xác định mốc thời gian lấy tin nhắn
     const participant = conversation.participants.find(
-      (p) => p.user.toString() === userId
+      (p) => p.userId.toString() === userId
     );
 
     const fromTime = participant.clearedMessagesHistoryAt || participant.joinedAt;
 
     const query = {
-      conversation: conversationId,
+      conversationId,
       createdAt: { $gte: fromTime },
     };
 
@@ -144,7 +144,7 @@ const MessageService = {
 
     // 2. Lấy danh sách tin nhắn (không bao gồm tin nhắn đã xóa)
     const messages = await Message.find(query)
-      .populate("sender", "username email avatarUrl")
+      .populate("senderId", "username email avatarUrl")
       .sort({ createdAt: -1 }) // Sắp xếp từ mới nhất đến cũ nhất
       .limit(limit)
       .lean();
@@ -170,7 +170,7 @@ const MessageService = {
    */
   deleteMessageById: async (messageId, userId) => {
     const message = await Message.findById(messageId).populate(
-      "sender",
+      "senderId",
       "username email avatarUrl"
     );
 
@@ -178,7 +178,7 @@ const MessageService = {
       throw new AppError("Message not found", 404);
     }
 
-    if (message.sender._id.toString() !== userId) {
+    if (message.senderId._id.toString() !== userId) {
       throw new AppError("You can only delete your own messages", 403);
     }
 
@@ -196,8 +196,8 @@ const MessageService = {
     // ===== Update lastMessage nếu cần =====
     const conversation = await Conversation.findOneAndUpdate(
       {
-        _id: message.conversation,
-        "lastMessage._id": message._id,
+        _id: message.conversationId,
+        "lastMessage.messageId": message._id,
       },
       {
         $set: {
@@ -215,7 +215,7 @@ const MessageService = {
     return {
       message,
       conversation,
-      conversationId: message.conversation,
+      conversationId: message.conversationId,
     };
   },
 
@@ -227,16 +227,16 @@ const MessageService = {
    * @returns {object} - Tin nhắn đã được chỉnh sửa
    */
   editMessageById: async (messageId, userId, newContent) => {
-    const message = await Message.findById(messageId)
-      .populate("sender", "username email avatarUrl")
-      .populate("replyTo", "content sender createdAt")
-      .populate("replyTo.sender", "username avatarUrl");
+    const message = await Message.findById(messageId).populate(
+      "senderId",
+      "username email avatarUrl"
+    );
 
     if (!message) {
       throw new AppError("Message not found", 404);
     }
 
-    if (message.sender._id.toString() !== userId) {
+    if (message.senderId._id.toString() !== userId) {
       throw new AppError("You can only edit your own messages", 403);
     }
 
@@ -259,27 +259,27 @@ const MessageService = {
     const updatedMessage = await message.save();
 
     // Nếu là lastMessage thì cập nhật
-    const conversation = await Conversation.findOne(updatedMessage.conversation);
-    if (conversation.lastMessage._id.toString() === messageId) {
+    const conversation = await Conversation.findById(updatedMessage.conversationId);
+    if (conversation?.lastMessage?.messageId?.toString() === messageId) {
       conversation.lastMessage.content = updatedMessage.content;
       await conversation.save();
     }
 
     return {
       message: updatedMessage,
-      conversationId: updatedMessage.conversation,
+      conversationId: updatedMessage.conversationId,
     };
   },
 
   getMessageRealtimeData: async (messageId) => {
     const message = await Message.findById(messageId)
-      .populate("sender", "username email avatarUrl")
+      .populate("senderId", "username email avatarUrl")
       .lean();
     if (!message) {
       throw new AppError("Message not found", 404);
     }
 
-    const conversation = await Conversation.findById(message.conversation)
+    const conversation = await Conversation.findById(message.conversationId)
       .select("participants lastMessage")
       .lean();
     if (!conversation) {
@@ -291,15 +291,15 @@ const MessageService = {
 
   getMessageDeleteRealtimeData: async (messageId) => {
     const message = await Message.findById(messageId)
-      .populate("sender", "username email avatarUrl")
+      .populate("senderId", "username email avatarUrl")
       .lean();
     if (!message) {
       throw new AppError("Message not found", 404);
     }
 
-    const conversation = await Conversation.findById(message.conversation)
+    const conversation = await Conversation.findById(message.conversationId)
       .select("participants lastMessage")
-      .populate("lastMessage.sender", "username avatarUrl")
+      .populate("lastMessage.senderId", "username avatarUrl")
       .lean();
     if (!conversation) {
       throw new AppError("Conversation not found", 404);
@@ -307,7 +307,7 @@ const MessageService = {
 
     return {
       messageId: message._id,
-      conversationId: message.conversation,
+      conversationId: message.conversationId,
       conversation,
       lastMessage: conversation.lastMessage || null,
     };

@@ -58,8 +58,8 @@ const ChatWindow = ({ activeChatId, onBack }) => {
     const typingMap = typingUsers[currentConversationId] || {};
 
     return currentConversation.participants
-      .filter((p) => typingMap[p.user._id] && p.user._id !== currentUserId)
-      .map((p) => p.user.username);
+      .filter((p) => typingMap[p.userId._id] && p.userId._id !== currentUserId)
+      .map((p) => p.userId.username);
   }, [typingUsers, currentConversation, currentUserId]);
 
   const displayInfo = useMemo(
@@ -68,7 +68,7 @@ const ChatWindow = ({ activeChatId, onBack }) => {
   );
 
   const partnerStatus = displayInfo.partnerId
-    ? statusUsers[displayInfo.partnerId] || displayInfo.partner.user
+    ? statusUsers[displayInfo.partnerId] || displayInfo.partner?.userId
     : null;
 
   const isOnline = partnerStatus?.presence === "online";

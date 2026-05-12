@@ -2,30 +2,30 @@ const mongoose = require("mongoose");
 
 const messageSchema = new mongoose.Schema(
   {
-    conversation: {
+    conversationId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Conversation",
       required: true,
-    }, // Tham chiếu đến conversation chứa tin nhăn này
+    },
 
-    sender: {
+    senderId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-    }, // Tham chiếu đến người gửi tin nhắn
+    },
 
     content: {
       type: String,
       trim: true,
       maxlength: 2000,
       default: null,
-    }, // Nội dung tin nhắn
+    },
 
     type: {
       type: String,
       enum: ["text", "image", "file", "emoji"],
       required: true,
-    }, // Loại tin nhắn
+    },
 
     // Thông tin file (nếu là tin nhắn file/image)
     file: {
@@ -77,8 +77,8 @@ const messageSchema = new mongoose.Schema(
 );
 
 // Index để tối ưu truy vấn
-messageSchema.index({ conversation: 1, createdAt: -1 }); // Tìm tin nhắn theo conversation, sắp xếp theo thời gian
-messageSchema.index({ sender: 1 }); // Tìm tin nhắn theo người gửi
+messageSchema.index({ conversationId: 1, createdAt: -1 }); // Tìm tin nhắn theo conversation, sắp xếp theo thời gian
+messageSchema.index({ senderId: 1 }); // Tìm tin nhắn theo người gửi
 messageSchema.index({ status: 1 }); // Tìm tin nhắn theo trạng thái
 
 const Message = mongoose.model("Message", messageSchema);

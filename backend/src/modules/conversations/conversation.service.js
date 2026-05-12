@@ -35,12 +35,20 @@ const ConversationService = {
     const existingConversation = await Conversation.findOne({
       type: "private",
       isActive: true,
-      $and: [{ "participants.user": creatorId }, { "participants.user": participantId }],
+      $and: [
+        { "participants.userId": creatorId },
+        { "participants.userId": participantId },
+      ],
     });
 
     if (existingConversation) {
+      const populatedConversation = await Conversation.findById(existingConversation._id)
+        .populate("participants.userId", "username email avatarUrl bio presence lastSeenAt")
+        .populate("lastMessage.senderId", "username avatarUrl")
+        .lean();
+
       return {
-        conversation: existingConversation,
+        conversation: populatedConversation,
         isNew: false,
         message: "Conversation already exists",
       };
@@ -50,8 +58,13 @@ const ConversationService = {
     const newConversation = new Conversation({
       type: "private",
       participants: [
-        { user: creatorId, lastReadMessage: null, lastReadAt: null, unreadCount: 0 },
-        { user: participantId, lastReadMessage: null, lastReadAt: null, unreadCount: 0 },
+        { userId: creatorId, lastReadMessageId: null, lastReadAt: null, unreadCount: 0 },
+        {
+          userId: participantId,
+          lastReadMessageId: null,
+          lastReadAt: null,
+          unreadCount: 0,
+        },
       ],
       name: null,
       avatar: {
@@ -59,8 +72,8 @@ const ConversationService = {
         public_id: null,
       },
       lastMessage: {
-        _id: null,
-        sender: null,
+        messageId: null,
+        senderId: null,
         type: null,
         content: null,
         file: null,
@@ -73,8 +86,8 @@ const ConversationService = {
     const savedConversation = await newConversation.save();
 
     const populatedConversation = await Conversation.findById(savedConversation._id)
-      .populate("participants.user", "username email avatarUrl bio presence lastSeenAt")
-      .populate("lastMessage.sender", "username avatarUrl")
+      .populate("participants.userId", "username email avatarUrl bio presence lastSeenAt")
+      .populate("lastMessage.senderId", "username avatarUrl")
       .lean();
 
     return {
@@ -117,9 +130,9 @@ const ConversationService = {
 
     // Build participants theo ĐÚNG SUBDOC SCHEMA
     const participants = finalMemberIds.map((userId) => ({
-      user: userId,
+      userId: userId,
       role: userId === creatorId ? "owner" : "member", // Creator là owner, còn lại là member
-      lastReadMessage: null,
+      lastReadMessageId: null,
       lastReadAt: null,
       unreadCount: 0,
     }));
@@ -134,8 +147,8 @@ const ConversationService = {
         public_id: null,
       },
       lastMessage: {
-        _id: null,
-        sender: null,
+        messageId: null,
+        senderId: null,
         type: null,
         content: null,
         file: null,
@@ -148,8 +161,8 @@ const ConversationService = {
     const savedConversation = await newConversation.save();
 
     const populatedConversation = await Conversation.findById(savedConversation._id)
-      .populate("participants.user", "username email avatarUrl bio presence lastSeenAt")
-      .populate("lastMessage.sender", "username avatarUrl")
+      .populate("participants.userId", "username email avatarUrl bio presence lastSeenAt")
+      .populate("lastMessage.senderId", "username avatarUrl")
       .lean();
 
     return {
@@ -174,13 +187,13 @@ const ConversationService = {
       isActive: true,
       participants: {
         $elemMatch: {
-          user: userId,
+          userId: userId,
           deletedAt: null,
         },
       },
     })
-      .populate("participants.user", "username email avatarUrl bio presence lastSeenAt")
-      .populate("lastMessage.sender", "username avatarUrl")
+      .populate("participants.userId", "username email avatarUrl bio presence lastSeenAt")
+      .populate("lastMessage.senderId", "username avatarUrl")
       .sort({ "lastMessage.createdAt": -1, updatedAt: -1 }) // Sắp xếp theo tin nhắn cuối hoặc thời gian cập nhật
       .skip(skip)
       .limit(limit)
@@ -188,9 +201,13 @@ const ConversationService = {
 
     // 2. Total conversation
     const total = await Conversation.countDocuments({
-      "participants.user": userId,
       isActive: true,
-      "participants.deletedAt": null, // Chỉ đếm những conversation mà user chưa xóa phía mình
+      participants: {
+        $elemMatch: {
+          userId,
+          deletedAt: null,
+        },
+      },
     });
 
     return {
@@ -216,7 +233,7 @@ const ConversationService = {
     }
 
     const currentUser = conversation.participants.find(
-      (p) => p.user.toString() === userId
+      (p) => p.userId.toString() === userId
     );
 
     if (!currentUser || currentUser.role !== "owner") {
@@ -229,7 +246,7 @@ const ConversationService = {
     }
 
     // Lấy tất cả ID thành viên đã có trong group && check trùng lặp
-    const existingMemberIds = conversation.participants.map((p) => p.user.toString());
+    const existingMemberIds = conversation.participants.map((p) => p.userId.toString());
     const duplicateIds = memberIds.filter((memberId) =>
       existingMemberIds.includes(memberId)
     );
@@ -240,13 +257,14 @@ const ConversationService = {
 
     // Lọc ra những người không có trong group
     const newMemberIds = memberIds.filter(
-      (memberId) => !conversation.participants.some((p) => p.user.toString() === memberId)
+      (memberId) =>
+        !conversation.participants.some((p) => p.userId.toString() === memberId)
     );
 
     // Chuẩn hóa theo schema
     const formattedNewMembers = newMemberIds.map((newMemberId) => ({
-      user: newMemberId,
-      lastReadMessage: null,
+      userId: newMemberId,
+      lastReadMessageId: null,
       lastReadAt: null,
       unreadCount: 0,
     }));
@@ -256,8 +274,8 @@ const ConversationService = {
     await conversation.save();
 
     const populatedConversation = await Conversation.findById(conversationId)
-      .populate("participants.user", "username email avatarUrl bio status lastSeenAt")
-      .populate("lastMessage.sender", "username avatarUrl")
+      .populate("participants.userId", "username email avatarUrl bio status lastSeenAt")
+      .populate("lastMessage.senderId", "username avatarUrl")
       .lean();
 
     return populatedConversation;
@@ -277,7 +295,7 @@ const ConversationService = {
 
     // Chỉ admin mới được xóa thành viên
     const isAdmin = conversation.participants.some(
-      (p) => p.user.toString() === currentUserId && ["owner", "admin"].includes(p.role)
+      (p) => p.userId.toString() === currentUserId && ["owner", "admin"].includes(p.role)
     );
     if (!isAdmin) {
       throw new AppError("Just owner and admin can remove members", 403);
@@ -292,12 +310,12 @@ const ConversationService = {
     const updatedConversation = await Conversation.findByIdAndUpdate(
       conversationId,
       {
-        $pull: { participants: { user: memberId } },
+        $pull: { participants: { userId: memberId } },
       },
       { new: true }
     )
-      .populate("participants.user", "username email avatarUrl bio presence lastSeenAt")
-      .populate("lastMessage.sender", "username avatarUrl")
+      .populate("participants.userId", "username email avatarUrl bio presence lastSeenAt")
+      .populate("lastMessage.senderId", "username avatarUrl")
       .lean();
 
     return updatedConversation;
@@ -312,11 +330,11 @@ const ConversationService = {
   getConversationById: async (conversationId, userId) => {
     const conversation = await Conversation.findOne({
       _id: conversationId,
-      "participants.user": userId,
+      "participants.userId": userId,
       isActive: true,
     })
-      .populate("participants.user", "username email avatarUrl bio presence lastSeenAt")
-      .populate("lastMessage.sender", "username avatarUrl")
+      .populate("participants.userId", "username email avatarUrl bio presence lastSeenAt")
+      .populate("lastMessage.senderId", "username avatarUrl")
       .lean();
 
     if (!conversation) {
@@ -335,23 +353,23 @@ const ConversationService = {
   markAsRead: async (conversationId, userId) => {
     const conv = await Conversation.findOne({
       _id: conversationId,
-      "participants.user": userId,
+      "participants.userId": userId,
       isActive: true,
     });
 
     if (!conv) throw new AppError("Conversation not found", 404);
 
-    // Cập nhật participant: lastReadAt, lastReadMessage, unreadCount = 0
-    const lastReadMessage = conv.lastMessage?._id || null;
-    const participant = conv.participants.find((p) => p.user.toString() === userId);
+    // Cập nhật participant: lastReadAt, lastReadMessageId, unreadCount = 0
+    const lastReadMessageId = conv.lastMessage?.messageId || null;
+    const participant = conv.participants.find((p) => p.userId.toString() === userId);
 
     participant.lastReadAt = new Date();
-    participant.lastReadMessage = lastReadMessage;
+    participant.lastReadMessageId = lastReadMessageId;
     participant.unreadCount = 0;
 
     await conv.save();
 
-    return { lastReadMessage };
+    return { lastReadMessageId };
   },
 
   /**
@@ -365,7 +383,7 @@ const ConversationService = {
   getConversationImages: async (conversationId, userId, page = 1, limit = 8) => {
     const conversation = await Conversation.findOne({
       _id: conversationId,
-      "participants.user": userId,
+      "participants.userId": userId,
       isActive: true,
     }).select("_id");
 
@@ -377,12 +395,12 @@ const ConversationService = {
     const skip = (page - 1) * limit;
 
     const images = await Message.find({
-      conversation: conversationId,
+      conversationId,
       isDeleted: false,
       $or: [{ type: "image" }, { "file.mimeType": { $regex: /^image\// } }],
     })
-      .select("file sender createdAt")
-      .populate("sender", "username avatarUrl")
+      .select("file senderId createdAt")
+      .populate("senderId", "username avatarUrl")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -400,7 +418,7 @@ const ConversationService = {
   leaveGroup: async (conversationId, userId) => {
     const conversation = await Conversation.findOne({
       _id: conversationId,
-      "participants.user": userId,
+      "participants.userId": userId,
       isActive: true,
     });
 
@@ -414,7 +432,7 @@ const ConversationService = {
 
     // Owner chưa chuyển quyền thì không được rời khỏi group
     const owner = conversation.participants.some(
-      (p) => p.role === "owner" && p.user.toString() === userId
+      (p) => p.role === "owner" && p.userId.toString() === userId
     );
     if (owner) {
       throw new AppError("Owner cannot leave the group. Please transfer ownership.", 403);
@@ -422,7 +440,7 @@ const ConversationService = {
 
     // Rời khỏi group
     conversation.participants = conversation.participants.filter(
-      (p) => p.user.toString() !== userId
+      (p) => p.userId.toString() !== userId
     );
 
     await conversation.save();
@@ -439,7 +457,7 @@ const ConversationService = {
   transferGroupOwnership: async (conversationId, currentUserId, newOwnerId) => {
     const conversation = await Conversation.findOne({
       _id: conversationId,
-      "participants.user": currentUserId,
+      "participants.userId": currentUserId,
       isActive: true,
     });
 
@@ -448,7 +466,7 @@ const ConversationService = {
     }
 
     const owner = conversation.participants.find(
-      (p) => p.user.toString() === currentUserId && p.role === "owner"
+      (p) => p.userId.toString() === currentUserId && p.role === "owner"
     );
 
     if (!owner) {
@@ -456,7 +474,7 @@ const ConversationService = {
     }
 
     const newOwner = conversation.participants.find(
-      (p) => p.user.toString() === newOwnerId
+      (p) => p.userId.toString() === newOwnerId
     );
 
     if (!newOwner) {
@@ -480,7 +498,7 @@ const ConversationService = {
   deleteConversationForMe: async (conversationId, userId) => {
     const conversation = await Conversation.findOne({
       _id: conversationId,
-      "participants.user": userId,
+      "participants.userId": userId,
       isActive: true,
     });
 
@@ -490,12 +508,12 @@ const ConversationService = {
 
     // Đánh dấu là đã xóa
     await Conversation.updateOne(
-      { _id: conversationId, "participants.user": userId },
+      { _id: conversationId, "participants.userId": userId },
       {
         $set: {
           "participants.$.deletedAt": new Date(),
           "participants.$.clearedMessagesHistoryAt": new Date(),
-          "participants.$.lastReadMessage": null,
+          "participants.$.lastReadMessageId": null,
           "participants.$.lastReadAt": null,
           "participants.$.unreadCount": 0,
         },
@@ -508,7 +526,7 @@ const ConversationService = {
   togglePinConversation: async (conversationId, userId) => {
     const conversation = await Conversation.findOne({
       _id: conversationId,
-      "participants.user": userId,
+      "participants.userId": userId,
       isActive: true,
     });
 
@@ -517,7 +535,7 @@ const ConversationService = {
     }
 
     const participant = conversation.participants.find(
-      (p) => p.user.toString() === userId
+      (p) => p.userId.toString() === userId
     );
     if (!participant) {
       throw new AppError("Participant not found", 404);
@@ -535,7 +553,7 @@ const ConversationService = {
   markAsUnread: async (conversationId, userId) => {
     const conversation = await Conversation.findOne({
       _id: conversationId,
-      "participants.user": userId,
+      "participants.userId": userId,
       isActive: true,
     });
 
@@ -544,7 +562,7 @@ const ConversationService = {
     }
 
     const participant = conversation.participants.find(
-      (p) => p.user.toString() === userId
+      (p) => p.userId.toString() === userId
     );
     if (!participant) {
       throw new AppError("Participant not found", 404);
@@ -552,7 +570,7 @@ const ConversationService = {
 
     participant.unreadCount = Math.max(participant.unreadCount || 0, 1);
     participant.lastReadAt = null;
-    participant.lastReadMessage = null;
+    participant.lastReadMessageId = null;
 
     await conversation.save();
 
@@ -565,7 +583,7 @@ const ConversationService = {
   clearConversationHistory: async (conversationId, userId) => {
     const conversation = await Conversation.findOne({
       _id: conversationId,
-      "participants.user": userId,
+      "participants.userId": userId,
       isActive: true,
     });
 
@@ -574,7 +592,7 @@ const ConversationService = {
     }
 
     const participant = conversation.participants.find(
-      (p) => p.user.toString() === userId
+      (p) => p.userId.toString() === userId
     );
     if (!participant) {
       throw new AppError("Participant not found", 404);
@@ -583,7 +601,7 @@ const ConversationService = {
     participant.clearedMessagesHistoryAt = new Date();
     participant.unreadCount = 0;
     participant.lastReadAt = null;
-    participant.lastReadMessage = null;
+    participant.lastReadMessageId = null;
     participant.deletedAt = null;
 
     await conversation.save();
@@ -594,7 +612,7 @@ const ConversationService = {
   getReadStatus: async (conversationId, userId) => {
     const conversation = await Conversation.findOne({
       _id: conversationId,
-      "participants.user": userId,
+      "participants.userId": userId,
       isActive: true,
     }).select("participants");
 
@@ -603,20 +621,20 @@ const ConversationService = {
     }
 
     const participant = conversation.participants.find(
-      (p) => p.user.toString() === userId
+      (p) => p.userId.toString() === userId
     );
 
     return {
       conversationId,
       userId,
-      lastReadMessage: participant?.lastReadMessage || null,
+      lastReadMessageId: participant?.lastReadMessageId || null,
     };
   },
 
   getConversationRealtimeData: async (conversationId) => {
     const conversation = await Conversation.findById(conversationId)
-      .populate("participants.user", "username email avatarUrl bio presence lastSeenAt")
-      .populate("lastMessage.sender", "username avatarUrl")
+      .populate("participants.userId", "username email avatarUrl bio presence lastSeenAt")
+      .populate("lastMessage.senderId", "username avatarUrl")
       .lean();
 
     if (!conversation) {

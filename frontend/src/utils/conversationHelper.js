@@ -4,21 +4,28 @@
  * @param {string} currentUserId - id của chính mình
  * @returns {Object|null} thông tin hiển thị của conversation
  */
+const getRefId = (ref) => ref?._id || ref;
+
 const getPartner = (participants, currentUserId) => {
-  return participants.find((p) => p.user._id !== currentUserId);
+  return participants.find((p) => String(getRefId(p.userId)) !== String(currentUserId));
 };
 
 const getCurrentUser = (participants, currentUserId) => {
-  return participants.find((p) => p.user._id === currentUserId);
+  return participants.find((p) => String(getRefId(p.userId)) === String(currentUserId));
 };
 
 const mapParticipants = (participants, currentUserId) => {
-  return participants.map((p) => ({
-    id: p.user._id,
-    name: p.user._id === currentUserId ? "Bạn" : p.user.username,
-    avatarUrl: p.user.avatarUrl?.url || "/avatarA.jpg",
-    role: p.role,
-  }));
+  return participants.map((p) => {
+    const user = p.userId || {};
+    const userId = getRefId(user);
+
+    return {
+      id: userId,
+      name: String(userId) === String(currentUserId) ? "Bạn" : user.username || "Người dùng",
+      avatarUrl: user.avatarUrl?.url || "/avatarA.jpg",
+      role: p.role,
+    };
+  });
 };
 
 const formatConversationTime = (isoString) => {
@@ -61,10 +68,12 @@ const getLastMessageInfo = (lastMsg, currentUserId) => {
     };
   }
 
-  const isMe = lastMsg.sender?._id === currentUserId;
+  const sender = lastMsg.senderId || {};
+  const senderId = getRefId(sender);
+  const isMe = String(senderId) === String(currentUserId);
 
   return {
-    sender: isMe ? "Bạn" : lastMsg.sender?.username || "",
+    sender: isMe ? "Bạn" : sender.username || "",
     content: lastMsg.content || "",
     time: lastMsg.createdAt ? formatConversationTime(lastMsg.createdAt) : "",
   };
@@ -86,13 +95,13 @@ export const getDisplayInfo = (conversation, currentUserId) => {
     id: conversation._id,
     isGroup,
     partner,
-    partnerId: partner?.user?._id,
+    partnerId: getRefId(partner?.userId),
     currentUser,
     participants: mappedParticipants,
-    displayName: isGroup ? name : partner?.user?.username || "Người dùng",
+    displayName: isGroup ? name : partner?.userId?.username || "Người dùng",
     displayAvatar: isGroup
       ? null
-      : partner?.user?.avatarUrl?.url || "/avatar-default.jpg",
+      : partner?.userId?.avatarUrl?.url || "/avatar-default.jpg",
     lastMsgSender: lastMsg.sender,
     lastMsgContent: lastMsg.content,
     lastMsgTime: lastMsg.time,

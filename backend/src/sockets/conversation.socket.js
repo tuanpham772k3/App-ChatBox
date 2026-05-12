@@ -5,6 +5,8 @@ const {
   emitConversationRead,
 } = require("./realtime.emitter.js");
 
+const getRefId = (ref) => ref?._id || ref;
+
 const conversationSocket = (io, socket) => {
   socket.on("join_conversation", async ({ conversationId }) => {
     if (!conversationId) {
@@ -24,7 +26,7 @@ const conversationSocket = (io, socket) => {
         });
 
       const isParticipant = conv.participants.some(
-        (p) => String(p.user._id) === String(socket.userId)
+        (p) => String(getRefId(p.userId)) === String(socket.userId)
       );
 
       if (!isParticipant) {
@@ -70,7 +72,7 @@ const conversationSocket = (io, socket) => {
         io,
         conversationId: String(readStatus.conversationId),
         userId: String(readStatus.userId),
-        lastReadMessage: readStatus.lastReadMessage,
+        lastReadMessageId: readStatus.lastReadMessageId,
       });
     } catch (err) {
       console.error("conversation_mark_read error:", err);

@@ -22,19 +22,19 @@ const registerSocket = (io) => {
         await broadcastPresence(io, socket.userId, "online");
 
         const conversations = await Conversation.find({
-          "participants.user": socket.userId,
+          "participants.userId": socket.userId,
           isActive: true,
         }).select("lastMessage");
 
         const lastMessageIds = conversations
-          .map((conversation) => conversation.lastMessage?._id)
+          .map((conversation) => conversation.lastMessage?.messageId)
           .filter(Boolean);
 
         if (lastMessageIds.length > 0) {
           const pendingMessages = await Message.find({
             _id: { $in: lastMessageIds },
             status: "sent",
-          }).select("_id sender");
+          }).select("_id senderId");
 
           if (pendingMessages.length > 0) {
             const pendingMessageIds = pendingMessages.map((message) => message._id);
@@ -45,7 +45,7 @@ const registerSocket = (io) => {
             );
 
             pendingMessages.forEach((message) => {
-              io.to(`user_${message.sender}`).emit("message_delivered", {
+              io.to(`user_${message.senderId}`).emit("message_delivered", {
                 messageId: message._id,
                 status: "delivered",
               });

@@ -1,4 +1,7 @@
 export const buildMessageMeta = (messages, currentUserId) => {
+  const getRefId = (ref) => ref?._id || ref;
+  const isSameRef = (a, b) => String(getRefId(a)) === String(getRefId(b));
+
   return messages.map((msg, index) => {
     const prevMsg = messages[index - 1];
     const nextMsg = messages[index + 1];
@@ -7,14 +10,16 @@ export const buildMessageMeta = (messages, currentUserId) => {
     const prevTime = prevMsg ? new Date(prevMsg.createdAt) : null;
     const nextTime = nextMsg ? new Date(nextMsg.createdAt) : null;
 
-    const isMine = msg.sender?._id === currentUserId;
+    const isMine = isSameRef(msg.senderId, currentUserId);
 
     const isNewDayWithPrev =
       !prevMsg || currTime.toDateString() !== prevTime.toDateString();
 
-    const isDifferentSenderWithPrev = prevMsg && prevMsg.sender?._id !== msg.sender?._id;
+    const isDifferentSenderWithPrev =
+      prevMsg && !isSameRef(prevMsg.senderId, msg.senderId);
 
-    const isDifferentSenderWithNext = nextMsg && nextMsg.sender?._id !== msg.sender?._id;
+    const isDifferentSenderWithNext =
+      nextMsg && !isSameRef(nextMsg.senderId, msg.senderId);
 
     return {
       ...msg,

@@ -6,11 +6,11 @@ const conversationSchema = new mongoose.Schema(
       type: String,
       enum: ["private", "group"],
       required: true,
-    }, // Loại cuộc trò chuyện: private (1-1) hoặc group (nhiều người)
+    },
 
     participants: [
       {
-        user: {
+        userId: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "User",
           required: true,
@@ -32,12 +32,12 @@ const conversationSchema = new mongoose.Schema(
           type: Date,
           default: null,
         }, // Mốc thời gian người dùng xóa cuộc trò chuyện (soft delete)
-        lastReadMessage: {
+        lastReadMessageId: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "Message",
         }, // tin nhắn cuối mà người dùng đã đọc
         lastReadAt: { type: Date }, // mốc thời gian đã đọc tin nhắn cuối
-        unreadCount: { type: Number, default: 0 }, // số lượng tin nhắn chưa đọc
+        unreadCount: { type: Number, default: 0 },
         pinnedAt: {
           type: Date,
           default: null,
@@ -45,36 +45,35 @@ const conversationSchema = new mongoose.Schema(
       },
     ], // Danh sách người tham gia cuộc trò chuyện (tối thiểu 2 người)
 
-    name: { type: String }, // Tên nhóm (chỉ dùng cho group chat)
+    name: { type: String }, // only group
 
     avatar: {
-      url: { type: String }, // URL ảnh đại diện nhóm
+      url: { type: String },
       public_id: { type: String }, // ID để xóa/replace ảnh trên Cloudinary
-    }, // Ảnh đại diện nhóm (chỉ dùng cho group chat)
+    },
 
     lastMessage: {
-      _id: { type: mongoose.Schema.Types.ObjectId, ref: "Message" },
-      sender: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      messageId: { type: mongoose.Schema.Types.ObjectId, ref: "Message" },
+      senderId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
       type: { type: String },
       content: { type: String },
       file: { type: Object },
       isDeleted: { type: Boolean, default: false },
       createdAt: { type: Date }, // Thời gian gửi tin nhắn cuối cùng
-    }, // Thông tin tin nhắn cuối cùng để hiển thị preview
+    },
 
-    // Trạng thái cuộc trò chuyện
     isActive: {
       type: Boolean,
       default: true,
-    }, // Cuộc trò chuyện có đang hoạt động không (để soft delete)
+    },
   },
-  { timestamps: true } // Tự động thêm createdAt và updatedAt
+  { timestamps: true }
 );
 
 // Index để tối ưu truy vấn
-conversationSchema.index({ "participants.user": 1 }); // Tìm cuộc trò chuyện theo người tham gia
-conversationSchema.index({ type: 1 }); // Tìm theo loại cuộc trò chuyện
-conversationSchema.index({ "lastMessage.createdAt": -1 }); // Sắp xếp theo tin nhắn cuối
+conversationSchema.index({ "participants.userId": 1, "participants.deletedAt": 1 });
+conversationSchema.index({ type: 1 });
+conversationSchema.index({ "lastMessage.createdAt": -1 });
 
 const Conversation = mongoose.model("Conversation", conversationSchema);
 module.exports = Conversation;

@@ -37,7 +37,7 @@ const messageSocket = (io, socket) => {
       if (!message) return;
 
       // Emit status update
-      io.to(`user_${message.sender}`).emit("message_delivered", {
+      io.to(`user_${message.senderId}`).emit("message_delivered", {
         messageId: messageId,
         status: "delivered",
       });

@@ -2,6 +2,9 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import conversationApi from "@/services/conversationApi";
 import { emitEvent } from "@/lib/socket";
 
+const getRefId = (ref) => ref?._id || ref;
+const isSameRef = (a, b) => String(getRefId(a)) === String(getRefId(b));
+
 /* =============================
  *  Thunk actions
  * ============================= */
@@ -229,6 +232,11 @@ const conversationsSlice = createSlice({
   },
 
   reducers: {
+    // Khắc phục lỗi
+    setCurrentConversation: (state, action) => {
+      state.currentConversationId = action.payload;
+    },
+
     // Thêm hội thoại realtime
     addConversation: (state, action) => {
       const newConv = action.payload;
@@ -266,19 +274,19 @@ const conversationsSlice = createSlice({
       const conv = state.conversations.find((c) => c._id === conversationId);
       if (!conv) return;
 
-      const participants = conv.participants.find((p) => p.user._id === userId);
+      const participants = conv.participants.find((p) => isSameRef(p.userId, userId));
       if (participants) participants.unreadCount = unreadCount;
     },
 
     // Realtime đã đọc (sync cho người khác)
     syncReadStatusRealtime: (state, action) => {
-      const { conversationId, userId, lastReadMessage } = action.payload;
+      const { conversationId, userId, lastReadMessageId } = action.payload;
 
       const conv = state.conversations.find((c) => c._id === conversationId);
       if (!conv) return;
 
       conv.participants = conv.participants.map((p) =>
-        p.user._id === userId ? { ...p, unreadCount: 0, lastReadMessage } : p
+        isSameRef(p.userId, userId) ? { ...p, unreadCount: 0, lastReadMessageId } : p
       );
     },
 
@@ -353,7 +361,11 @@ const conversationsSlice = createSlice({
       })
 
       /** -----GET CONVERSATION BY ID----- */
+      .addCase(getConversationById.pending, (state, action) => {
+        state.currentConversationId = action.meta.arg || null;
+      })
       .addCase(getConversationById.fulfilled, (state, action) => {
+        if (state.currentConversationId !== action.meta.arg) return;
         state.currentConversationId = action.payload._id || null;
       })
 
@@ -387,12 +399,12 @@ const conversationsSlice = createSlice({
         if (!conv) return;
 
         conv.participants = conv.participants.map((p) =>
-          p.user._id === userId
+          isSameRef(p.userId, userId)
             ? {
                 ...p,
                 unreadCount: 0,
                 lastReadAt: new Date().toISOString(),
-                lastReadMessage: conv.lastMessage?._id || null,
+                lastReadMessageId: conv.lastMessage?.messageId || null,
               }
             : p
         );
@@ -422,7 +434,7 @@ const conversationsSlice = createSlice({
         if (!conv) return;
 
         conv.participants = conv.participants.map((p) =>
-          p.user._id === userId ? { ...p, pinnedAt } : p
+          isSameRef(p.userId, userId) ? { ...p, pinnedAt } : p
         );
       })
 
@@ -435,8 +447,8 @@ const conversationsSlice = createSlice({
         if (!conv) return;
 
         conv.participants = conv.participants.map((p) =>
-          p.user._id === userId
-            ? { ...p, unreadCount, lastReadAt: null, lastReadMessage: null }
+          isSameRef(p.userId, userId)
+            ? { ...p, unreadCount, lastReadAt: null, lastReadMessageId: null }
             : p
         );
       })
@@ -449,12 +461,12 @@ const conversationsSlice = createSlice({
         const conv = state.conversations.find((c) => c._id === conversationId);
         if (conv) {
           conv.participants = conv.participants.map((p) =>
-            p.user._id === userId
+            isSameRef(p.userId, userId)
               ? {
                   ...p,
                   unreadCount: 0,
                   lastReadAt: null,
-                  lastReadMessage: null,
+                  lastReadMessageId: null,
                   clearedMessagesHistoryAt: new Date().toISOString(),
                 }
               : p

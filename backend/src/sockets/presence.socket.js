@@ -3,15 +3,15 @@ const User = require("../modules/users/user.model.js");
 
 const getRelatedUserIds = async (userId) => {
   const conversations = await Conversation.find({
-    "participants.user": userId,
+    "participants.userId": userId,
     isActive: true,
-  }).select("participants.user");
+  }).select("participants.userId");
 
   const relatedUserIds = new Set();
 
   conversations.forEach((conversation) => {
     conversation.participants.forEach((participant) => {
-      const participantId = participant.user.toString();
+      const participantId = participant.userId.toString();
       if (participantId !== userId) {
         relatedUserIds.add(participantId);
       }

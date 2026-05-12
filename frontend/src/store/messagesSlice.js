@@ -137,14 +137,14 @@ const messagesSlice = createSlice({
       // CREATE MESSAGE
       // -------------------------------
       .addCase(createNewMessage.pending, (state, action) => {
-        const { tempId, conversationId, sender, content, file } = action.meta.arg;
+        const { tempId, conversationId, senderId, content, file } = action.meta.arg;
 
         //Tạo message tạm thời
         const tempMessage = {
           _id: tempId,
           tempId,
           conversationId,
-          sender,
+          senderId,
           content: file ? null : content,
           type: file ? "image" : "text",
           file: file

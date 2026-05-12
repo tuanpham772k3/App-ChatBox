@@ -59,12 +59,12 @@ export const useSocket = () => {
 
     const onMessageNew = (msg) => {
       if (!msg?._id) return;
-      if (String(msg?.conversation) !== String(currentConversationId)) return;
+      if (String(msg?.conversationId) !== String(currentConversationId)) return;
       dispatch(addIncomingMessage(msg));
     };
 
     const onMessageEdit = (msg) => {
-      if (String(msg?.conversation) !== String(currentConversationId)) return;
+      if (String(msg?.conversationId) !== String(currentConversationId)) return;
       dispatch(updateMessage(msg));
     };
 
@@ -77,11 +77,11 @@ export const useSocket = () => {
     };
 
     const onMessageDelivered = (msg) => {
-      if (!msg?._id || !msg?.conversation) return;
+      if (!msg?._id || !msg?.conversationId) return;
 
       emitEvent("message_delivered", {
         messageId: msg._id,
-        conversationId: msg.conversation,
+        conversationId: msg.conversationId,
       });
     };
 

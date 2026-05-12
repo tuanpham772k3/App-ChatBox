@@ -8,6 +8,7 @@ import {
   getConversationById,
   getConversations,
   markConversationAsUnread,
+  setCurrentConversation,
   togglePinConversation,
 } from "../../store/conversationsSlice";
 import ConversationHeader from "./ConversationHeader";
@@ -45,6 +46,7 @@ const ConversationContainer = ({ activeChatId, onSelectChat, onOpenSidebar }) =>
     if (activeChatId === conversationId) return;
 
     onSelectChat(conversationId);
+    dispatch(setCurrentConversation(conversationId));
 
     dispatch(getConversationById(conversationId))
       .unwrap()
@@ -117,10 +119,10 @@ const ConversationContainer = ({ activeChatId, onSelectChat, onOpenSidebar }) =>
     const sortByPinned = (list) =>
       [...list].sort((a, b) => {
         const aPinned = a.participants.find(
-          (p) => p.user._id === currentUserId
+          (p) => p.userId._id === currentUserId
         )?.pinnedAt;
         const bPinned = b.participants.find(
-          (p) => p.user._id === currentUserId
+          (p) => p.userId._id === currentUserId
         )?.pinnedAt;
         if (aPinned && bPinned) return new Date(bPinned) - new Date(aPinned);
         if (aPinned) return -1;
@@ -184,7 +186,7 @@ const ConversationContainer = ({ activeChatId, onSelectChat, onOpenSidebar }) =>
 
                     // status
                     const partnerStatus = displayInfo.partnerId
-                      ? statusUsers[displayInfo.partnerId] || displayInfo.partner.user
+                      ? statusUsers[displayInfo.partnerId] || displayInfo.partner?.userId
                       : null;
 
                     const isOnline =

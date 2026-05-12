@@ -55,7 +55,7 @@ const MessageItem = ({
   };
 
   // Avatar người gửi
-  const avatar = msg.sender?.avatarUrl?.url || "/avatarA.jpg";
+  const avatar = msg.senderId?.avatarUrl?.url || "/avatarA.jpg";
   // Date tin hiện tại
   const msgTime = new Date(msg.createdAt);
 
@@ -63,9 +63,9 @@ const MessageItem = ({
     if (!participants) return [];
 
     return participants.filter((p) => {
-      if (p.user._id === currentUserId) return false;
-      if (!p.lastReadMessage) return false;
-      return p.lastReadMessage >= msgId;
+      if (p.userId._id === currentUserId) return false;
+      if (!p.lastReadMessageId) return false;
+      return p.lastReadMessageId >= msgId;
     });
   };
 
@@ -111,7 +111,7 @@ const MessageItem = ({
         {showAvatar ? (
           <img
             src={avatar}
-            alt={msg.sender?.username}
+            alt={msg.senderId?.username}
             className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full object-cover cursor-pointer border border-[var(--color-border)]"
           />
         ) : (
@@ -146,7 +146,7 @@ const MessageItem = ({
           {/* --- Name Sender --- */}
           {showName && currentConversation?.type === "group" && (
             <span className="bg-[var(--color-app)] p-1 rounded-xl text-xs font-medium text-[var(--color-text-secondary)]">
-              {msg.sender?.username || "Người dùng"}
+              {msg.senderId?.username || "Người dùng"}
             </span>
           )}
 
@@ -212,9 +212,9 @@ const MessageItem = ({
             <div className="flex gap-1">
               {readers.map((p) => (
                 <img
-                  key={p.user._id}
-                  src={p.user.avatarUrl?.url || "/avatarA.jpg"}
-                  alt={p.user.username}
+                  key={getRefId(p.userId)}
+                  src={p.userId?.avatarUrl?.url || "/avatarA.jpg"}
+                  alt={p.userId?.username || "Người dùng"}
                   className="w-4 h-4 rounded-full object-cover"
                 />
               ))}

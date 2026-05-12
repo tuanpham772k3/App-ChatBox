@@ -36,7 +36,7 @@ const MessageInput = ({
         createNewMessage({
           conversationId: currentConversationId,
           content: text,
-          sender: { _id: currentUserId }, // Để xử lý redux thunk
+          senderId: { _id: currentUserId }, // Để xử lý redux thunk
           tempId,
           ...payload,
         })
