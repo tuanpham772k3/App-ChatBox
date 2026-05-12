@@ -5,8 +5,6 @@ const {
   emitConversationRead,
 } = require("./realtime.emitter.js");
 
-const getRefId = (ref) => ref?._id || ref;
-
 const conversationSocket = (io, socket) => {
   socket.on("join_conversation", async ({ conversationId }) => {
     if (!conversationId) {
@@ -26,7 +24,7 @@ const conversationSocket = (io, socket) => {
         });
 
       const isParticipant = conv.participants.some(
-        (p) => String(getRefId(p.userId)) === String(socket.userId)
+        (p) => String(p.userId?._id) === String(socket.userId)
       );
 
       if (!isParticipant) {

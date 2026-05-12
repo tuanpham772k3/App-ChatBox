@@ -4,25 +4,20 @@
  * @param {string} currentUserId - id của chính mình
  * @returns {Object|null} thông tin hiển thị của conversation
  */
-const getRefId = (ref) => ref?._id || ref;
-
 const getPartner = (participants, currentUserId) => {
-  return participants.find((p) => String(getRefId(p.userId)) !== String(currentUserId));
+  return participants.find((p) => p.userId?._id !== currentUserId);
 };
 
 const getCurrentUser = (participants, currentUserId) => {
-  return participants.find((p) => String(getRefId(p.userId)) === String(currentUserId));
+  return participants.find((p) => p.userId?._id === currentUserId);
 };
 
 const mapParticipants = (participants, currentUserId) => {
   return participants.map((p) => {
-    const user = p.userId || {};
-    const userId = getRefId(user);
-
     return {
-      id: userId,
-      name: String(userId) === String(currentUserId) ? "Bạn" : user.username || "Người dùng",
-      avatarUrl: user.avatarUrl?.url || "/avatarA.jpg",
+      id: p.userId?._id,
+      name: p.userId?.id === currentUserId ? "Bạn" : p.userId.username || "Người dùng",
+      avatarUrl: p.userId.avatarUrl?.url || "/avatarA.jpg",
       role: p.role,
     };
   });
@@ -68,12 +63,10 @@ const getLastMessageInfo = (lastMsg, currentUserId) => {
     };
   }
 
-  const sender = lastMsg.senderId || {};
-  const senderId = getRefId(sender);
-  const isMe = String(senderId) === String(currentUserId);
+  const isMe = lastMsg.senderId?._id === currentUserId;
 
   return {
-    sender: isMe ? "Bạn" : sender.username || "",
+    sender: isMe ? "Bạn" : lastMsg.senderId?.username || "",
     content: lastMsg.content || "",
     time: lastMsg.createdAt ? formatConversationTime(lastMsg.createdAt) : "",
   };
@@ -95,7 +88,7 @@ export const getDisplayInfo = (conversation, currentUserId) => {
     id: conversation._id,
     isGroup,
     partner,
-    partnerId: getRefId(partner?.userId),
+    partnerId: partner?.userId?._id,
     currentUser,
     participants: mappedParticipants,
     displayName: isGroup ? name : partner?.userId?.username || "Người dùng",

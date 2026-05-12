@@ -1,16 +1,12 @@
-const getRefId = (ref) => ref?._id || ref;
-
 const buildLastMessagePayload = (conversationId, message) => {
-  const senderId = message.senderId;
-
   return {
     conversationId,
     lastMessage: {
-      messageId: message.messageId || message._id,
+      messageId: message._id,
       senderId: {
-        _id: getRefId(senderId),
-        username: senderId?.username,
-        avatarUrl: senderId?.avatarUrl,
+        _id: message.senderId?._id,
+        username: message.senderId?.username,
+        avatarUrl: message.senderId?.avatarUrl,
       },
       type: message.type,
       content: message.content || message.file?.filename || message.type || "",
@@ -58,7 +54,7 @@ const emitConversationCreated = ({ io, conversation }) => {
   const participants = conversation.participants || [];
 
   participants.forEach((participant) => {
-    const participantId = String(participant.userId?._id || participant.userId);
+    const participantId = String(participant.userId?._id);
     io.to(`user_${participantId}`).emit("conversation:new", conversation);
   });
 };
@@ -73,7 +69,7 @@ const emitMessageEditedWithConversationSync = ({ io, message, conversation }) =>
 
   const payload = buildLastMessagePayload(conversationId, message);
   (conversation.participants || []).forEach((participant) => {
-    const participantId = String(participant.userId?._id || participant.userId);
+    const participantId = String(participant.userId?._id);
     io.to(`user_${participantId}`).emit("conversation:lastMessage", payload);
   });
 };
@@ -91,7 +87,7 @@ const emitMessageDeleted = ({
 
   const payload = buildLastMessagePayload(conversationId, lastMessage);
   conversation.participants.forEach((participant) => {
-    const participantId = String(participant.userId?._id || participant.userId);
+    const participantId = String(participant.userId?._id);
     io.to(`user_${participantId}`).emit("conversation:lastMessage", payload);
   });
 };
