@@ -26,21 +26,22 @@ const registerSocket = (io) => {
           isActive: true,
         }).select("lastMessage");
 
-        const lastMessageIds = conversations
-          .map((conversation) => conversation.lastMessage?.messageId)
-          .filter(Boolean);
+        const conversationIds = conversations.map((c) => c._id);
 
-        if (lastMessageIds.length > 0) {
+        if (conversationIds.length > 0) {
           const pendingMessages = await Message.find({
-            _id: { $in: lastMessageIds },
+            conversationId: { $in: conversationIds },
+            senderId: { $ne: socket.userId },
             status: "sent",
           }).select("_id senderId");
 
           if (pendingMessages.length > 0) {
-            const pendingMessageIds = pendingMessages.map((message) => message._id);
-
             await Message.updateMany(
-              { _id: { $in: pendingMessageIds } },
+              {
+                conversationId: { $in: conversationIds },
+                senderId: { $ne: socket.userId },
+                status: "sent",
+              },
               { $set: { status: "delivered" } }
             );
 

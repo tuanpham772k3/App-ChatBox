@@ -1,4 +1,5 @@
 const Message = require("../modules/messages/message.model.js");
+const Conversation = require("../modules/conversations/conversation.model.js");
 const MessageService = require("../modules/messages/message.service.js");
 const {
   emitMessageCreated,
@@ -24,12 +25,22 @@ const messageSocket = (io, socket) => {
   });
 
   socket.on("message_delivered", async ({ messageId, conversationId }) => {
-    if (!messageId) return;
-    if (!conversationId) return;
-
     try {
-      const message = await Message.findByIdAndUpdate(
-        messageId,
+      const isParticipant = await Conversation.exists({
+        _id: conversationId,
+        "participants.userId": socket.userId,
+        isActive: true,
+      });
+
+      if (!isParticipant) return;
+
+      const message = await Message.findOneAndUpdate(
+        {
+          _id: messageId,
+          conversationId,
+          senderId: { $ne: socket.userId },
+          status: "sent",
+        },
         { status: "delivered" },
         { new: true }
       );
@@ -50,7 +61,9 @@ const messageSocket = (io, socket) => {
     if (!messageId) return;
 
     try {
-      const { message, conversation } = await MessageService.getMessageRealtimeData(messageId);
+      const { message, conversation } = await MessageService.getMessageRealtimeData(
+        messageId
+      );
       emitMessageCreated({
         io,
         message,
@@ -66,7 +79,9 @@ const messageSocket = (io, socket) => {
     if (!messageId) return;
 
     try {
-      const { message, conversation } = await MessageService.getMessageRealtimeData(messageId);
+      const { message, conversation } = await MessageService.getMessageRealtimeData(
+        messageId
+      );
       emitMessageEditedWithConversationSync({
         io,
         message,
