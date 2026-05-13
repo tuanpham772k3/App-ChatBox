@@ -16,8 +16,8 @@ const mapParticipants = (participants, currentUserId) => {
   return participants.map((p) => {
     return {
       id: p.userId?._id,
-      name: p.userId?.id === currentUserId ? "Bạn" : p.userId.username || "Người dùng",
-      avatarUrl: p.userId.avatarUrl?.url || "/avatarA.jpg",
+      name: p.userId?._id === currentUserId ? "Bạn" : p.userId?.username || "Người dùng",
+      avatarUrl: p.userId?.avatarUrl?.url || "/avatarA.jpg",
       role: p.role,
     };
   });
