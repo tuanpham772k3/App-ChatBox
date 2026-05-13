@@ -43,7 +43,10 @@ const ConversationService = {
 
     if (existingConversation) {
       const populatedConversation = await Conversation.findById(existingConversation._id)
-        .populate("participants.userId", "username email avatarUrl bio presence lastSeenAt")
+        .populate(
+          "participants.userId",
+          "username email avatarUrl bio presence lastSeenAt"
+        )
         .populate("lastMessage.senderId", "username avatarUrl")
         .lean();
 
@@ -385,20 +388,35 @@ const ConversationService = {
       _id: conversationId,
       "participants.userId": userId,
       isActive: true,
-    }).select("_id");
+    }).select("participants");
 
     if (!conversation) {
       throw new AppError("Conversation not found or access denied", 404);
     }
 
-    // Query ảnh
+    const participant = conversation.participants.find(
+      (p) => p.userId.toString() === userId.toString()
+    );
+
+    if (!participant) {
+      throw new AppError("Participant not found", 404);
+    }
+
+    const clearedAt = participant.clearedMessagesHistoryAt;
+
     const skip = (page - 1) * limit;
 
-    const images = await Message.find({
+    const query = {
       conversationId,
       isDeleted: false,
       $or: [{ type: "image" }, { "file.mimeType": { $regex: /^image\// } }],
-    })
+    };
+
+    if (clearedAt) {
+      query.createdAt = { $gt: clearedAt };
+    }
+
+    const images = await Message.find(query)
       .select("file senderId createdAt")
       .populate("senderId", "username avatarUrl")
       .sort({ createdAt: -1 })
