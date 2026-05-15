@@ -67,7 +67,7 @@ const MessageService = {
       .lean();
 
     // Cập nhật conversation.lastMessage và tăng unreadCount cho participants khác
-    const updatedConv = await Conversation.findOneAndUpdate(
+    await Conversation.findOneAndUpdate(
       { _id: conversationId },
       {
         $set: {
@@ -100,10 +100,7 @@ const MessageService = {
       }
     );
 
-    return {
-      message: populatedMessage,
-      conversation: updatedConv,
-    };
+    return populatedMessage;
   },
 
   /**
@@ -127,9 +124,7 @@ const MessageService = {
     }
 
     // Lấy người tham gia hiện tại để xác định mốc thời gian lấy tin nhắn
-    const participant = conversation.participants.find(
-      (p) => p.userId.toString() === userId
-    );
+    const participant = conversation.participants.find((p) => p.userId.equals(userId));
 
     const fromTime = participant.clearedMessagesHistoryAt || participant.joinedAt;
 
@@ -178,7 +173,7 @@ const MessageService = {
       throw new AppError("Message not found", 404);
     }
 
-    if (message.senderId._id.toString() !== userId) {
+    if (!message.senderId?._id?.equals(userId)) {
       throw new AppError("You can only delete your own messages", 403);
     }
 
@@ -194,7 +189,7 @@ const MessageService = {
     await message.save();
 
     // ===== Update lastMessage nếu cần =====
-    const conversation = await Conversation.findOneAndUpdate(
+    await Conversation.findOneAndUpdate(
       {
         _id: message.conversationId,
         "lastMessage.messageId": message._id,
@@ -208,15 +203,10 @@ const MessageService = {
       },
       {
         new: true,
-        select: "participants",
       }
     ).lean();
 
-    return {
-      message,
-      conversation,
-      conversationId: message.conversationId,
-    };
+    return message;
   },
 
   /**
@@ -236,7 +226,7 @@ const MessageService = {
       throw new AppError("Message not found", 404);
     }
 
-    if (message.senderId._id.toString() !== userId) {
+    if (!message.senderId?._id?.equals(userId)) {
       throw new AppError("You can only edit your own messages", 403);
     }
 
@@ -260,15 +250,13 @@ const MessageService = {
 
     // Nếu là lastMessage thì cập nhật
     const conversation = await Conversation.findById(updatedMessage.conversationId);
-    if (conversation?.lastMessage?.messageId?.toString() === messageId) {
+
+    if (conversation?.lastMessage?.messageId?.equals(messageId)) {
       conversation.lastMessage.content = updatedMessage.content;
       await conversation.save();
     }
 
-    return {
-      message: updatedMessage,
-      conversationId: updatedMessage.conversationId,
-    };
+    return updatedMessage;
   },
 
   getMessageRealtimeData: async (messageId) => {

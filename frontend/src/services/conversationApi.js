@@ -6,7 +6,7 @@ const conversationApi = {
    * POST /conversations/private
    * @param {string} participantId - id của người muốn chat cùng
    */
-  createConversation: (participantId) => {
+  createPrivateConversation: (participantId) => {
     return instance.post("/conversations/private", { participantId });
   },
 

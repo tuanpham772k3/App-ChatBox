@@ -1,4 +1,5 @@
 const MessageService = require("./message.service.js");
+const { Types } = require("mongoose");
 
 /**
  * Tạo tin nhắn mới
@@ -6,7 +7,7 @@ const MessageService = require("./message.service.js");
 const createNewMessage = async (req, res, next) => {
   try {
     const { userId } = req.user;
-    const { tempId, conversationId, content, file } = req.body;
+    const { conversationId, content, file } = req.body;
 
     if (!conversationId) {
       return res.status(400).json({
@@ -15,19 +16,17 @@ const createNewMessage = async (req, res, next) => {
       });
     }
 
-    const result = await MessageService.createMessage(
+    const newMessage = await MessageService.createMessage(
       conversationId,
       userId,
       content,
       file
     );
 
-    const { message } = result;
-
     return res.status(201).json({
       success: true,
       message: "Message created successfully",
-      data: { newMessage: message, tempId },
+      data: newMessage,
     });
   } catch (error) {
     return next(error);
@@ -45,7 +44,7 @@ const getConversationMessages = async (req, res, next) => {
     const before = req.query.before || null;
     const limit = Math.min(Number(req.query.limit) || 20, 50);
 
-    if (!conversationId.match(/^[0-9a-fA-F]{24}$/)) {
+    if (!Types.ObjectId.isValid(conversationId)) {
       return res.status(400).json({
         success: false,
         message: "Invalid conversation ID format",
@@ -77,14 +76,14 @@ const deleteMessageById = async (req, res, next) => {
     const { messageId } = req.params;
     const { userId } = req.user;
 
-    if (!messageId.match(/^[0-9a-fA-F]{24}$/)) {
+    if (!Types.ObjectId.isValid(messageId)) {
       return res.status(400).json({
         success: false,
         message: "Invalid message ID format",
       });
     }
 
-    const { message } = await MessageService.deleteMessageById(messageId, userId);
+    const message = await MessageService.deleteMessageById(messageId, userId);
 
     return res.status(200).json({
       success: true,
@@ -103,9 +102,9 @@ const editMessageById = async (req, res, next) => {
   try {
     const { userId } = req.user;
     const { messageId } = req.params;
-    const { content: newContent } = req.body;
+    const newContent = req.body.content;
 
-    if (!messageId.match(/^[0-9a-fA-F]{24}$/)) {
+    if (!Types.ObjectId.isValid(messageId)) {
       return res.status(400).json({
         success: false,
         message: "Invalid message ID format",
@@ -119,7 +118,7 @@ const editMessageById = async (req, res, next) => {
       });
     }
 
-    const { message } = await MessageService.editMessageById(messageId, userId, newContent);
+    const message = await MessageService.editMessageById(messageId, userId, newContent);
 
     return res.status(200).json({
       success: true,

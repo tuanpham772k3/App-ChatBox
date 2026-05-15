@@ -24,7 +24,7 @@ const emitMessageCreated = ({ io, message, conversation, senderId }) => {
   const conversationId = String(conversation._id || message.conversationId);
 
   participants.forEach((participant) => {
-    const participantId = String(participant.userId?._id || participant.userId);
+    const participantId = String(participant.userId);
 
     if (participantId !== String(senderId)) {
       io.to(`user_${participantId}`).emit("message_new", message);
@@ -54,7 +54,7 @@ const emitConversationCreated = ({ io, conversation }) => {
   const participants = conversation.participants || [];
 
   participants.forEach((participant) => {
-    const participantId = String(participant.userId?._id);
+    const participantId = String(participant.userId);
     io.to(`user_${participantId}`).emit("conversation:new", conversation);
   });
 };
@@ -63,13 +63,15 @@ const emitMessageEditedWithConversationSync = ({ io, message, conversation }) =>
   if (!message || !conversation) return;
 
   const conversationId = String(conversation._id || message.conversationId);
+
   emitMessageEdited({ io, message, conversationId });
 
-  if (String(conversation.lastMessage?.messageId || "") !== String(message._id)) return;
+  if (String(conversation.lastMessage?.messageId) !== String(message._id)) return;
 
   const payload = buildLastMessagePayload(conversationId, message);
-  (conversation.participants || []).forEach((participant) => {
-    const participantId = String(participant.userId?._id);
+
+  conversation.participants.forEach((participant) => {
+    const participantId = String(participant.userId);
     io.to(`user_${participantId}`).emit("conversation:lastMessage", payload);
   });
 };
@@ -87,7 +89,7 @@ const emitMessageDeleted = ({
 
   const payload = buildLastMessagePayload(conversationId, lastMessage);
   conversation.participants.forEach((participant) => {
-    const participantId = String(participant.userId?._id);
+    const participantId = String(participant.userId);
     io.to(`user_${participantId}`).emit("conversation:lastMessage", payload);
   });
 };
@@ -95,7 +97,7 @@ const emitMessageDeleted = ({
 const emitConversationRead = ({ io, conversationId, userId, lastReadMessageId }) => {
   io.to(`conversation_${conversationId}`).emit("conversation:read", {
     conversationId,
-    userId: String(userId),
+    userId,
     lastReadMessageId,
   });
 };

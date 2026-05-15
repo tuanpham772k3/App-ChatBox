@@ -4,7 +4,7 @@ import { useDispatch } from "react-redux";
 import { CloseOutlined } from "@ant-design/icons";
 import FriendItem from "@/components/ui/member/FriendItem";
 import { searchUsers } from "@/store/userSlice";
-import { createConversation } from "../../store/conversationsSlice";
+import { createPrivateConversation } from "../../store/conversationsSlice";
 import { useNotification } from "@/hooks/useNotification";
 import SearchBar from "../ui/search/SearchBar";
 
@@ -67,7 +67,7 @@ const ModalCreatePrivate = ({ isOpen, onCancel }) => {
       }
 
       // Create conversation
-      await dispatch(createConversation(selectedFriend)).unwrap();
+      await dispatch(createPrivateConversation(selectedFriend)).unwrap();
 
       // Reset state
       setSelectedFriend("");

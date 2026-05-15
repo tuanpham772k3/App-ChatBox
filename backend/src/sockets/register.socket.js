@@ -29,21 +29,16 @@ const registerSocket = (io) => {
         const conversationIds = conversations.map((c) => c._id);
 
         if (conversationIds.length > 0) {
-          const pendingMessages = await Message.find({
+          const filter = {
             conversationId: { $in: conversationIds },
             senderId: { $ne: socket.userId },
             status: "sent",
-          }).select("_id senderId");
+          };
+
+          const pendingMessages = await Message.find(filter).select("_id senderId");
 
           if (pendingMessages.length > 0) {
-            await Message.updateMany(
-              {
-                conversationId: { $in: conversationIds },
-                senderId: { $ne: socket.userId },
-                status: "sent",
-              },
-              { $set: { status: "delivered" } }
-            );
+            await Message.updateMany(filter, { $set: { status: "delivered" } });
 
             pendingMessages.forEach((message) => {
               io.to(`user_${message.senderId}`).emit("message_delivered", {

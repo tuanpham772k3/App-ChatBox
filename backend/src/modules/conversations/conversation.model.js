@@ -35,31 +35,32 @@ const conversationSchema = new mongoose.Schema(
         lastReadMessageId: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "Message",
+          default: null,
         }, // tin nhắn cuối mà người dùng đã đọc
-        lastReadAt: { type: Date }, // mốc thời gian đã đọc tin nhắn cuối
-        unreadCount: { type: Number, default: 0 },
+        lastReadAt: { type: Date, default: null }, // mốc thời gian đã đọc tin nhắn cuối
+        unreadCount: { type: Number, default: 0, min: 0 },
         pinnedAt: {
           type: Date,
           default: null,
         }, // mốc thời gian ghim hội thoại (null = chưa ghim)
       },
-    ], // Danh sách người tham gia cuộc trò chuyện (tối thiểu 2 người)
+    ],
 
-    name: { type: String }, // only group
+    name: { type: String, default: null }, // only group
 
     avatar: {
       url: { type: String },
-      public_id: { type: String }, // ID để xóa/replace ảnh trên Cloudinary
+      public_id: { type: String, default: null }, // ID để xóa/replace ảnh trên Cloudinary
     },
 
     lastMessage: {
-      messageId: { type: mongoose.Schema.Types.ObjectId, ref: "Message" },
-      senderId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-      type: { type: String },
-      content: { type: String },
-      file: { type: Object },
+      messageId: { type: mongoose.Schema.Types.ObjectId, ref: "Message", default: null },
+      senderId: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+      type: { type: String, default: null },
+      content: { type: String, default: null },
+      file: { type: Object, default: null },
       isDeleted: { type: Boolean, default: false },
-      createdAt: { type: Date }, // Thời gian gửi tin nhắn cuối cùng
+      createdAt: { type: Date, default: null },
     },
 
     isActive: {
@@ -70,10 +71,13 @@ const conversationSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Index để tối ưu truy vấn
-conversationSchema.index({ "participants.userId": 1, "participants.deletedAt": 1 });
-conversationSchema.index({ type: 1 });
-conversationSchema.index({ "lastMessage.createdAt": -1 });
+conversationSchema.index({
+  "participants.userId": 1,
+  "participants.deletedAt": 1,
+  isActive: 1,
+  "lastMessage.createdAt": -1,
+  updatedAt: -1,
+});
 
 const Conversation = mongoose.model("Conversation", conversationSchema);
 module.exports = Conversation;

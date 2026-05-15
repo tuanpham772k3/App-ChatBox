@@ -1,3 +1,4 @@
+const { Types } = require("mongoose");
 const ConversationService = require("./conversation.service.js");
 
 /**
@@ -5,7 +6,7 @@ const ConversationService = require("./conversation.service.js");
  */
 const createPrivateConversation = async (req, res, next) => {
   try {
-    const { userId } = req.user;
+    const creatorId = req.user.userId;
     const { participantId } = req.body;
 
     if (!participantId) {
@@ -15,23 +16,29 @@ const createPrivateConversation = async (req, res, next) => {
       });
     }
 
-    if (!participantId.match(/^[0-9a-fA-F]{24}$/)) {
+    if (!Types.ObjectId.isValid(participantId)) {
       return res.status(400).json({
         success: false,
         message: "Invalid participant ID format",
       });
     }
 
-    const { conversation, isNew, message } =
-      await ConversationService.createPrivateConversation(userId, participantId);
+    if (creatorId === participantId) {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot create conversation with yourself",
+      });
+    }
+
+    const conversation = await ConversationService.createPrivateConversation(
+      creatorId,
+      participantId
+    );
 
     return res.status(201).json({
       success: true,
-      message,
-      data: {
-        conversation,
-        isNew,
-      },
+      message: "Conversation created successfully",
+      data: conversation,
     });
   } catch (error) {
     return next(error);
@@ -43,8 +50,8 @@ const createPrivateConversation = async (req, res, next) => {
  */
 const createGroupConversation = async (req, res, next) => {
   try {
-    const { userId } = req.user;
-    const { name, memberIds = [], avatar = null } = req.body;
+    const creatorId = req.user.userId;
+    const { name, memberIds, avatar = null } = req.body;
 
     if (!name || typeof name !== "string" || name.trim().length === 0) {
       return res.status(400).json({
@@ -53,7 +60,7 @@ const createGroupConversation = async (req, res, next) => {
       });
     }
 
-    if (!Array.isArray(memberIds)) {
+    if (!memberIds || !Array.isArray(memberIds)) {
       return res.status(400).json({
         success: false,
         message: "Member must be an array of user IDs",
@@ -67,16 +74,17 @@ const createGroupConversation = async (req, res, next) => {
       });
     }
 
-    const { conversation, isNew, message } =
-      await ConversationService.createGroupConversation(userId, name, memberIds, avatar);
+    const conversation = await ConversationService.createGroupConversation(
+      creatorId,
+      name,
+      memberIds,
+      avatar
+    );
 
     return res.status(201).json({
       success: true,
-      message,
-      data: {
-        conversation,
-        isNew,
-      },
+      message: "Group conversation created successfully",
+      data: conversation,
     });
   } catch (error) {
     return next(error);
@@ -119,14 +127,94 @@ const getConversations = async (req, res, next) => {
 };
 
 /**
+ * Thêm thành viên vào group
+ */
+const addMemberToGroup = async (req, res, next) => {
+  try {
+    const { userId } = req.user;
+    const { conversationId } = req.params;
+    let { memberIds } = req.body;
+
+    if (!Types.ObjectId.isValid(conversationId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid ID format",
+      });
+    }
+
+    if (!Array.isArray(memberIds) || memberIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "memberIds must be a non-empty array",
+      });
+    }
+
+    // remove duplicate input
+    memberIds = [...new Set(memberIds)];
+
+    const conversation = await ConversationService.addMemberToGroup(
+      conversationId,
+      memberIds,
+      userId
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Member added successfully",
+      data: conversation,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+/**
+ * Xóa thành viên khỏi group
+ */
+const removeMemberFromGroup = async (req, res, next) => {
+  try {
+    const { userId } = req.user;
+    const { conversationId, memberId } = req.params;
+
+    if (!Types.ObjectId.isValid(conversationId) || !Types.ObjectId.isValid(memberId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid ID format",
+      });
+    }
+
+    if (userId === memberId) {
+      return res.status(403).json({
+        success: false,
+        message: "Cannot remove themselves",
+      });
+    }
+
+    const conversation = await ConversationService.removeMemberFromGroup(
+      conversationId,
+      userId,
+      memberId
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Member removed successfully",
+      data: conversation,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+/**
  * Lấy thông tin chi tiết một conversation
  */
 const getConversationById = async (req, res, next) => {
   try {
-    const { conversationId } = req.params;
     const { userId } = req.user;
+    const { conversationId } = req.params;
 
-    if (!conversationId.match(/^[0-9a-fA-F]{24}$/)) {
+    if (!Types.ObjectId.isValid(conversationId)) {
       return res.status(400).json({
         success: false,
         message: "Invalid conversation ID format",
@@ -149,90 +237,14 @@ const getConversationById = async (req, res, next) => {
 };
 
 /**
- * Thêm thành viên vào group
- */
-const addMemberToGroup = async (req, res, next) => {
-  try {
-    const { userId } = req.user;
-    const { conversationId } = req.params;
-    const { memberIds } = req.body;
-
-    if (!conversationId.match(/^[0-9a-fA-F]{24}$/)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid ID format",
-      });
-    }
-
-    if (!Array.isArray(memberIds) || memberIds.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: "memberIds must be a non-empty array",
-      });
-    }
-
-    const conversation = await ConversationService.addMemberToGroup(
-      conversationId,
-      memberIds,
-      userId
-    );
-
-    return res.status(200).json({
-      success: true,
-      message: "Member added successfully",
-      data: {
-        conversation,
-        conversationId,
-      },
-    });
-  } catch (error) {
-    return next(error);
-  }
-};
-
-/**
- * Xóa thành viên khỏi group
- */
-const removeMemberFromGroup = async (req, res, next) => {
-  try {
-    const { userId } = req.user;
-    const { conversationId, memberId } = req.params;
-
-    if (
-      !conversationId.match(/^[0-9a-fA-F]{24}$/) ||
-      !memberId?.match(/^[0-9a-fA-F]{24}$/)
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid ID format",
-      });
-    }
-
-    const conversation = await ConversationService.removeMemberFromGroup(
-      conversationId,
-      userId,
-      memberId
-    );
-
-    return res.status(200).json({
-      success: true,
-      message: "Member removed successfully",
-      data: { conversation, conversationId },
-    });
-  } catch (error) {
-    return next(error);
-  }
-};
-
-/**
  * Đánh dấu đã đọc (soft delete)
  */
 const markAsRead = async (req, res, next) => {
   try {
-    const { conversationId } = req.params;
     const { userId } = req.user;
+    const { conversationId } = req.params;
 
-    if (!conversationId.match(/^[0-9a-fA-F]{24}$/)) {
+    if (!Types.ObjectId.isValid(conversationId)) {
       return res.status(400).json({
         success: false,
         message: "Invalid conversation ID format",
@@ -254,13 +266,13 @@ const markAsRead = async (req, res, next) => {
 // Lấy ảnh trong conversation (dùng cho phần media trong conversation details)
 const getConversationImages = async (req, res, next) => {
   try {
-    const { conversationId } = req.params;
     const { userId } = req.user;
+    const { conversationId } = req.params;
 
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 8;
 
-    if (!conversationId.match(/^[0-9a-fA-F]{24}$/)) {
+    if (!Types.ObjectId.isValid(conversationId)) {
       return res.status(400).json({
         success: false,
         message: "Invalid conversation ID format",
@@ -287,10 +299,10 @@ const getConversationImages = async (req, res, next) => {
 // Rời nhóm
 const leaveGroup = async (req, res, next) => {
   try {
-    const { conversationId } = req.params;
     const { userId } = req.user;
+    const { conversationId } = req.params;
 
-    if (!conversationId.match(/^[0-9a-fA-F]{24}$/)) {
+    if (!Types.ObjectId.isValid(conversationId)) {
       return res.status(400).json({
         success: false,
         message: "Invalid conversation ID format",
@@ -312,18 +324,18 @@ const leaveGroup = async (req, res, next) => {
 // Chuyển quyền sở hữu nhóm
 const transferGroupOwnership = async (req, res, next) => {
   try {
-    const { conversationId } = req.params;
     const { userId } = req.user;
     const { newOwnerId } = req.body;
+    const { conversationId } = req.params;
 
-    if (!conversationId.match(/^[0-9a-fA-F]{24}$/)) {
+    if (!Types.ObjectId.isValid(conversationId)) {
       return res.status(400).json({
         success: false,
         message: "Invalid conversation ID format",
       });
     }
 
-    if (!newOwnerId || !newOwnerId.match(/^[0-9a-fA-F]{24}$/)) {
+    if (!newOwnerId || !Types.ObjectId.isValid(newOwnerId)) {
       return res.status(400).json({
         success: false,
         message: "Invalid new owner ID format",
@@ -342,15 +354,12 @@ const transferGroupOwnership = async (req, res, next) => {
   }
 };
 
-/**
- * Xóa hội thoại của chính tôi (soft delete)
- */
 const deleteConversationForMe = async (req, res, next) => {
   try {
-    const { conversationId } = req.params;
     const { userId } = req.user;
+    const { conversationId } = req.params;
 
-    if (!conversationId.match(/^[0-9a-fA-F]{24}$/)) {
+    if (!Types.ObjectId.isValid(conversationId)) {
       return res.status(400).json({
         success: false,
         message: "Invalid conversation ID format",
@@ -371,22 +380,25 @@ const deleteConversationForMe = async (req, res, next) => {
 
 const togglePinConversation = async (req, res, next) => {
   try {
-    const { conversationId } = req.params;
     const { userId } = req.user;
+    const { conversationId } = req.params;
 
-    if (!conversationId.match(/^[0-9a-fA-F]{24}$/)) {
+    if (!Types.ObjectId.isValid(conversationId)) {
       return res.status(400).json({
         success: false,
         message: "Invalid conversation ID format",
       });
     }
 
-    const result = await ConversationService.togglePinConversation(conversationId, userId);
+    const pinnedAt = await ConversationService.togglePinConversation(
+      conversationId,
+      userId
+    );
 
     return res.status(200).json({
       success: true,
       message: "Toggle pin conversation successfully",
-      data: result,
+      data: pinnedAt,
     });
   } catch (error) {
     return next(error);
@@ -395,22 +407,22 @@ const togglePinConversation = async (req, res, next) => {
 
 const markAsUnread = async (req, res, next) => {
   try {
-    const { conversationId } = req.params;
     const { userId } = req.user;
+    const { conversationId } = req.params;
 
-    if (!conversationId.match(/^[0-9a-fA-F]{24}$/)) {
+    if (!Types.ObjectId.isValid(conversationId)) {
       return res.status(400).json({
         success: false,
         message: "Invalid conversation ID format",
       });
     }
 
-    const result = await ConversationService.markAsUnread(conversationId, userId);
+    const unreadCount = await ConversationService.markAsUnread(conversationId, userId);
 
     return res.status(200).json({
       success: true,
       message: "Conversation marked as unread",
-      data: result,
+      data: unreadCount,
     });
   } catch (error) {
     return next(error);
@@ -419,22 +431,22 @@ const markAsUnread = async (req, res, next) => {
 
 const clearConversationHistory = async (req, res, next) => {
   try {
-    const { conversationId } = req.params;
     const { userId } = req.user;
+    const { conversationId } = req.params;
 
-    if (!conversationId.match(/^[0-9a-fA-F]{24}$/)) {
+    if (!Types.ObjectId.isValid(conversationId)) {
       return res.status(400).json({
         success: false,
         message: "Invalid conversation ID format",
       });
     }
 
-    const result = await ConversationService.clearConversationHistory(conversationId, userId);
+    await ConversationService.clearConversationHistory(conversationId, userId);
 
     return res.status(200).json({
       success: true,
       message: "Conversation history cleared successfully",
-      data: result,
+      data: null,
     });
   } catch (error) {
     return next(error);

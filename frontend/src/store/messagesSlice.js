@@ -24,8 +24,8 @@ export const createNewMessage = createAsyncThunk(
         finalPayload.file = uploadRes;
       }
 
-      const res = await messagesApi.createNewMessage(finalPayload);
-      return res; // { newMessage, tempId }
+      const newMessage = await messagesApi.createNewMessage(finalPayload);
+      return newMessage;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -38,7 +38,7 @@ export const fetchConversationMessages = createAsyncThunk(
   async ({ conversationId, cursor }, { rejectWithValue }) => {
     try {
       const res = await messagesApi.getConversationMessages(conversationId, cursor);
-      return res; // result = { messages, nextCursor, hasMore }
+      return res; // { messages, nextCursor, hasMore }
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -50,8 +50,8 @@ export const deleteMessageById = createAsyncThunk(
   "messages/delete",
   async (messageId, { rejectWithValue }) => {
     try {
-      const res = await messagesApi.deleteMessageById(messageId);
-      return res; // message
+      const message = await messagesApi.deleteMessageById(messageId);
+      return message;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -63,8 +63,8 @@ export const editMessageById = createAsyncThunk(
   "messages/edit",
   async ({ messageId, newContent }, { rejectWithValue }) => {
     try {
-      const res = await messagesApi.editMessageById(messageId, newContent);
-      return res; // message
+      const message = await messagesApi.editMessageById(messageId, newContent);
+      return message;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -162,7 +162,8 @@ const messagesSlice = createSlice({
         state.error = null;
       })
       .addCase(createNewMessage.fulfilled, (state, action) => {
-        const { newMessage, tempId } = action.payload;
+        const newMessage = action.payload;
+        const { tempId } = action.meta.arg;
 
         const index = state.messages.findIndex((m) => m.tempId === tempId);
 

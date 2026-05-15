@@ -7,15 +7,15 @@ import { emitEvent } from "@/lib/socket";
  * ============================= */
 
 // Tạo hội thoại 1-1 mới
-export const createConversation = createAsyncThunk(
+export const createPrivateConversation = createAsyncThunk(
   "conversations/create",
   async (participantId, { rejectWithValue }) => {
     try {
-      const res = await conversationApi.createConversation(participantId);
-      if (res?.isNew && res?.conversation?._id) {
-        emitEvent("conversation_created", { conversationId: res.conversation._id });
+      const conversation = await conversationApi.createPrivateConversation(participantId);
+      if (conversation?._id) {
+        emitEvent("conversation_created", { conversationId: conversation._id });
       }
-      return res; // backend trả về: { conversation, isNew }
+      return conversation;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -30,11 +30,11 @@ export const createGroupConversation = createAsyncThunk(
    */
   async (payload, { rejectWithValue }) => {
     try {
-      const res = await conversationApi.createGroupConversation(payload);
-      if (res?.isNew && res?.conversation?._id) {
-        emitEvent("conversation_created", { conversationId: res.conversation._id });
+      const conversation = await conversationApi.createGroupConversation(payload);
+      if (conversation?._id) {
+        emitEvent("conversation_created", { conversationId: conversation._id });
       }
-      return res; // backend trả về: { conversation, isNew }
+      return conversation;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -79,11 +79,11 @@ export const addMemberToGroup = createAsyncThunk(
    */
   async ({ conversationId, memberIds }, { rejectWithValue }) => {
     try {
-      const res = await conversationApi.addMemberToGroup({
+      const conversation = await conversationApi.addMemberToGroup({
         conversationId,
         memberIds,
       });
-      return res; // { conversation, conversationId };
+      return conversation;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -100,11 +100,11 @@ export const removeMemberFromGroup = createAsyncThunk(
    */
   async ({ conversationId, memberId }, { rejectWithValue }) => {
     try {
-      const res = await conversationApi.removeMemberFromGroup({
+      const conversation = await conversationApi.removeMemberFromGroup({
         conversationId,
         memberId,
       });
-      return res; // { conversationId, conversation };
+      return conversation;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -118,7 +118,7 @@ export const markConversationAsRead = createAsyncThunk(
     try {
       await conversationApi.markAsRead(conversationId);
       emitEvent("conversation_mark_read", { conversationId });
-      return { conversationId, userId };
+      return;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -144,7 +144,7 @@ export const leaveGroup = createAsyncThunk(
   async (conversationId, { rejectWithValue }) => {
     try {
       await conversationApi.leaveGroup(conversationId);
-      return { conversationId };
+      return;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -157,7 +157,7 @@ export const transferGroupOwnership = createAsyncThunk(
   async ({ conversationId, newOwnerId }, { rejectWithValue }) => {
     try {
       await conversationApi.transferGroupOwnership(conversationId, newOwnerId);
-      return { conversationId, newOwnerId };
+      return;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -170,7 +170,7 @@ export const deleteConversationForMe = createAsyncThunk(
   async (conversationId, { rejectWithValue }) => {
     try {
       await conversationApi.deleteConversationForMe(conversationId);
-      return { conversationId };
+      return;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -181,8 +181,8 @@ export const togglePinConversation = createAsyncThunk(
   "conversations/togglePin",
   async ({ conversationId, userId }, { rejectWithValue }) => {
     try {
-      const res = await conversationApi.togglePinConversation(conversationId);
-      return { ...res, userId }; // { conversationId, pinnedAt, userId }
+      const pinnedAt = await conversationApi.togglePinConversation(conversationId);
+      return pinnedAt;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -193,8 +193,8 @@ export const markConversationAsUnread = createAsyncThunk(
   "conversations/markUnread",
   async ({ conversationId, userId }, { rejectWithValue }) => {
     try {
-      const res = await conversationApi.markAsUnread(conversationId);
-      return { ...res, userId }; // { conversationId, unreadCount, userId }
+      const unreadCount = await conversationApi.markAsUnread(conversationId);
+      return unreadCount;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -206,7 +206,7 @@ export const clearConversationHistory = createAsyncThunk(
   async ({ conversationId, userId }, { rejectWithValue }) => {
     try {
       await conversationApi.clearConversationHistory(conversationId);
-      return { conversationId, userId };
+      return;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -319,20 +319,19 @@ const conversationsSlice = createSlice({
 
   extraReducers: (builder) => {
     builder
-      .addCase(createConversation.fulfilled, (state, action) => {
-        const newConv = action.payload.conversation;
-        const exists = state.conversations.some((c) => c._id === newConv._id);
-        if (!exists) state.conversations.unshift(newConv);
+      .addCase(createPrivateConversation.fulfilled, (state, action) => {
+        const newConversation = action.payload;
+        const exists = state.conversations.some((c) => c._id === newConversation._id);
+        if (!exists) state.conversations.unshift(newConversation);
       })
 
       /** -----CREATE GROUP CONVERSATION----- */
       .addCase(createGroupConversation.fulfilled, (state, action) => {
-        const newGroup = action.payload.conversation;
+        const newGroup = action.payload;
         if (!newGroup) return;
 
         const exists = state.conversations.some((c) => c._id === newGroup._id);
         if (!exists) {
-          // Đưa nhóm mới lên đầu danh sách
           state.conversations.unshift(newGroup);
         }
       })
@@ -353,7 +352,8 @@ const conversationsSlice = createSlice({
 
       /** -----ADD MEMBER TO GROUP----- */
       .addCase(addMemberToGroup.fulfilled, (state, action) => {
-        const { conversationId, conversation } = action.payload;
+        const conversation = action.payload;
+        const conversationId = action.meta.arg.conversationId;
 
         const idx = state.conversations.findIndex((c) => c._id === conversationId);
         if (idx === -1 || !conversation) return;
@@ -363,7 +363,8 @@ const conversationsSlice = createSlice({
 
       /** -----REMOVE MEMBER FROM GROUP----- */
       .addCase(removeMemberFromGroup.fulfilled, (state, action) => {
-        const { conversationId, conversation } = action.payload;
+        const conversation = action.payload;
+        const conversationId = action.meta.arg.conversationId;
 
         const idx = state.conversations.findIndex((c) => c._id === conversationId);
         if (idx === -1 || !conversation) return;
@@ -375,7 +376,7 @@ const conversationsSlice = createSlice({
       // MARK CONVERSATION AS READ
       // -------------------------------
       .addCase(markConversationAsRead.fulfilled, (state, action) => {
-        const { conversationId, userId } = action.payload;
+        const { conversationId, userId } = action.meta.arg;
 
         const conv = state.conversations.find((c) => c._id === conversationId);
         if (!conv) return;
@@ -403,7 +404,7 @@ const conversationsSlice = createSlice({
       // DELETE CONVERSATION FOR ME
       // -------------------------------
       .addCase(deleteConversationForMe.fulfilled, (state, action) => {
-        const { conversationId } = action.payload;
+        const conversationId = action.meta.arg;
         state.conversations = state.conversations.filter((c) => c._id !== conversationId);
       })
 
@@ -411,7 +412,9 @@ const conversationsSlice = createSlice({
       // Toggle Pin Conversation
       // -------------------------------
       .addCase(togglePinConversation.fulfilled, (state, action) => {
-        const { conversationId, pinnedAt, userId } = action.payload;
+        const pinnedAt = action.payload;
+        const { conversationId, userId } = action.meta.arg;
+
         const conv = state.conversations.find((c) => c._id === conversationId);
         if (!conv) return;
 
@@ -424,7 +427,9 @@ const conversationsSlice = createSlice({
       // Mark Conversation As Unread
       // -------------------------------
       .addCase(markConversationAsUnread.fulfilled, (state, action) => {
-        const { conversationId, unreadCount, userId } = action.payload;
+        const unreadCount = action.payload;
+        const { conversationId, userId } = action.meta.arg;
+
         const conv = state.conversations.find((c) => c._id === conversationId);
         if (!conv) return;
 
@@ -439,7 +444,8 @@ const conversationsSlice = createSlice({
       // Clear Conversation History
       // -------------------------------
       .addCase(clearConversationHistory.fulfilled, (state, action) => {
-        const { conversationId, userId } = action.payload;
+        const { conversationId, userId } = action.meta.arg;
+
         const conv = state.conversations.find((c) => c._id === conversationId);
         if (conv) {
           conv.participants = conv.participants.map((p) =>

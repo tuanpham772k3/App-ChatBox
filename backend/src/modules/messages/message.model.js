@@ -31,55 +31,50 @@ const messageSchema = new mongoose.Schema(
     file: {
       url: { type: String }, // URL file trên Cloudinary
       public_id: { type: String }, // ID để xóa/replace file trên Cloudinary
-      filename: { type: String }, // Tên file gốc
+      filename: { type: String },
       mimeType: { type: String },
-      size: { type: Number }, // Kích thước file (bytes)
+      size: { type: Number },
     },
 
-    // Thông tin reply (trả lời tin nhắn khác)
+    // Thông tin reply (trả lời tin nhắn khác) // Tin nhắn được trả lời
     replyTo: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Message",
       default: null,
-    }, // Tin nhắn được trả lời
+    },
 
-    // Thông tin forward (chuyển tiếp tin nhắn)
+    // Thông tin forward (chuyển tiếp tin nhắn)// Người gửi tin nhắn gốc (nếu là tin nhắn chuyển tiếp)
     forwardedFrom: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       default: null,
-    }, // Người gửi tin nhắn gốc (nếu là tin nhắn chuyển tiếp)
+    },
 
-    // Tin nhắn đã bị xóa
     isDeleted: {
       type: Boolean,
       default: false,
     }, // Soft delete
 
-    // Tin nhắn đã bị chỉnh sửa
     isEdited: {
       type: Boolean,
       default: false,
     },
+
     editedAt: {
       type: Date,
       default: null,
-    }, // Thời gian chỉnh sửa
+    },
 
-    // Trạng thái tin nhắn
     status: {
       type: String,
       enum: ["sent", "delivered"],
       default: "sent",
-    }, // Trạng thái: đã gửi, đã giao
+    },
   },
-  { timestamps: true } // Tự động thêm createdAt và updatedAt
+  { timestamps: true }
 );
 
-// Index để tối ưu truy vấn
-messageSchema.index({ conversationId: 1, createdAt: -1 }); // Tìm tin nhắn theo conversation, sắp xếp theo thời gian
-messageSchema.index({ senderId: 1 }); // Tìm tin nhắn theo người gửi
-messageSchema.index({ status: 1 }); // Tìm tin nhắn theo trạng thái
+messageSchema.index({ conversationId: 1, createdAt: -1 });
 
 const Message = mongoose.model("Message", messageSchema);
 module.exports = Message;
