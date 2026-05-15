@@ -13,7 +13,7 @@ const {
 const createNewMessage = async (req, res, next) => {
   try {
     const { userId } = req.user;
-    const { conversationId, content, file } = req.body;
+    const { conversationId, content, file, clientMessageId = null } = req.body;
 
     if (!conversationId) {
       return res.status(400).json({
@@ -22,23 +22,26 @@ const createNewMessage = async (req, res, next) => {
       });
     }
 
-    const newMessage = await MessageService.createMessage(
+    const { message: newMessage, isNew } = await MessageService.createMessage(
       conversationId,
       userId,
       content,
-      file
+      file,
+      clientMessageId
     );
 
-    // Server-authoritative publish: emit realtime ngay sau khi ghi DB thành công
-    try {
-      const io = getSocket();
-      const { message, conversation } = await MessageService.getMessageRealtimeData(
-        newMessage._id
-      );
-      emitMessageCreated({ io, message, conversation, senderId: userId });
-    } catch (err) {
-      // Không fail request nếu realtime emit lỗi (demo-prod best practice)
-      console.error("[REALTIME] emitMessageCreated failed:", err);
+    // Server-authoritative publish: chỉ emit realtime khi message thật sự được tạo mới
+    if (isNew) {
+      try {
+        const io = getSocket();
+        const { message, conversation } = await MessageService.getMessageRealtimeData(
+          newMessage._id
+        );
+        emitMessageCreated({ io, message, conversation, senderId: userId });
+      } catch (err) {
+        // Không fail request nếu realtime emit lỗi (demo-prod best practice)
+        console.error("[REALTIME] emitMessageCreated failed:", err);
+      }
     }
 
     return res.status(201).json({

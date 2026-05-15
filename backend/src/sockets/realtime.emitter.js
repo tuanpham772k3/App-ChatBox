@@ -27,7 +27,9 @@ const emitMessageCreated = ({ io, message, conversation, senderId }) => {
     const participantId = String(participant.userId);
     if (!participantId) return;
 
-    io.to(`user_${participantId}`).emit("message_new", message);
+    if (participantId !== senderId) {
+      io.to(`user_${participantId}`).emit("message_new", message);
+    }
 
     io.to(`user_${participantId}`).emit(
       "conversation:lastMessage",

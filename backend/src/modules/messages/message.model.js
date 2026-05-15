@@ -14,10 +14,18 @@ const messageSchema = new mongoose.Schema(
       required: true,
     },
 
+    // Idempotency key do client tạo. Dùng để retry/dedupe khi gửi tin nhắn.
+    // Không đặt unique ở field-level để tránh unique "global"; sẽ dùng compound unique index bên dưới.
+    clientMessageId: {
+      type: String,
+      default: null,
+      trim: true,
+    },
+
     content: {
       type: String,
       trim: true,
-      maxlength: 2000,
+      maxLength: 2000,
       default: null,
     },
 
@@ -75,6 +83,15 @@ const messageSchema = new mongoose.Schema(
 );
 
 messageSchema.index({ conversationId: 1, createdAt: -1 });
+
+// Idempotency: cùng 1 sender trong 1 conversation không được có 2 message cùng clientMessageId
+messageSchema.index(
+  { conversationId: 1, senderId: 1, clientMessageId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { clientMessageId: { $exists: true, $ne: null } },
+  }
+);
 
 const Message = mongoose.model("Message", messageSchema);
 module.exports = Message;

@@ -56,6 +56,11 @@ export const useSocket = () => {
 
     const onMessageNew = (msg) => {
       dispatch(addIncomingMessage(msg));
+
+      emitEvent("message_delivered", {
+        messageId: msg._id,
+        conversationId: msg.conversationId,
+      });
     };
 
     const onMessageEdit = (msg) => {
@@ -70,13 +75,6 @@ export const useSocket = () => {
       dispatch(updateStatusMessage({ messageId, status }));
     };
 
-    const onMessageDelivered = (msg) => {
-      emitEvent("message_delivered", {
-        messageId: msg._id,
-        conversationId: msg.conversationId,
-      });
-    };
-
     onEvent("user_status_changed", onStatusChanged);
     onEvent("user_typing", onTypingStart);
     onEvent("user_stop_typing", onTypingStop);
@@ -84,7 +82,6 @@ export const useSocket = () => {
     onEvent("conversation:lastMessage", onConversationLastMessage);
     onEvent("conversation:unread", onConversationUnread);
     onEvent("conversation:read", onConversationRead);
-    onEvent("message_new", onMessageDelivered);
     onEvent("message_new", onMessageNew);
     onEvent("message_edit", onMessageEdit);
     onEvent("message_delete", onMessageDelete);
@@ -98,7 +95,6 @@ export const useSocket = () => {
       offEvent("conversation:lastMessage", onConversationLastMessage);
       offEvent("conversation:unread", onConversationUnread);
       offEvent("conversation:read", onConversationRead);
-      offEvent("message_new", onMessageDelivered);
       offEvent("message_new", onMessageNew);
       offEvent("message_edit", onMessageEdit);
       offEvent("message_delete", onMessageDelete);

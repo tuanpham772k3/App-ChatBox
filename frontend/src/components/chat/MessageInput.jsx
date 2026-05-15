@@ -28,6 +28,11 @@ const MessageInput = ({
   // Xử lý gửi tin nhắn
   const sendMessage = async (payload) => {
     try {
+      // Idempotency key (KISS): mỗi lần gửi 1 message tạo 1 clientMessageId
+      const clientMessageId =
+        globalThis.crypto?.randomUUID?.() ??
+        `cm_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+
       // 1. Tạo id message tạm thời
       const tempId = "temp-" + Date.now();
 
@@ -38,6 +43,7 @@ const MessageInput = ({
           content: text,
           senderId: { _id: currentUserId }, // Để xử lý redux thunk
           tempId,
+          clientMessageId,
           ...payload,
         })
       ).unwrap();

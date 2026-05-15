@@ -9,10 +9,11 @@ const MessageService = {
    * @param {string} content - Nội dung tin nhắn
    * @param {string} type - Loại tin nhắn (text, image, file, emoji)
    * @param {object} fileInfo - Thông tin file (nếu có)
+   * @param {string|null} clientMessageId - Idempotency key do client tạo
    * @param {string} replyTo - ID của tin nhắn được trả lời (nếu có)
-   * @returns {object} - Tin nhắn đã được tạo
+   * @returns {{ message: object, isNew: boolean }} - Tin nhắn + cờ isNew (phục vụ publish realtime)
    */
-  createMessage: async (conversationId, senderId, content, fileInfo) => {
+  createMessage: async (conversationId, senderId, content, fileInfo, clientMessageId) => {
     const conversation = await Conversation.findOne({
       _id: conversationId,
       "participants.userId": senderId,
@@ -43,10 +44,26 @@ const MessageService = {
       throw new AppError("File info is required for file/image message", 400);
     }
 
-    // Tạo message object & thêm file nếu có
-    const messageData = {
+    // ===== Idempotency / dedupe (KISS) =====
+    // Nếu client retry cùng clientMessageId thì trả về message cũ (không tạo mới, không tăng unreadCount lần nữa)
+    if (clientMessageId) {
+      const existing = await Message.findOne({
+        conversationId,
+        senderId,
+        clientMessageId,
+      })
+        .populate("senderId", "username email avatarUrl")
+        .lean();
+
+      if (existing) {
+        return { message: existing, isNew: false };
+      }
+    }
+
+    const message = await Message.create({
       conversationId,
       senderId,
+      clientMessageId: clientMessageId || null,
       type,
       content: content ? content.trim() : null,
       file: fileInfo
@@ -58,13 +75,9 @@ const MessageService = {
             size: fileInfo.size,
           }
         : null,
-    };
+    });
 
-    const savedMessage = await Message.create(messageData);
-
-    const populatedMessage = await Message.findById(savedMessage._id)
-      .populate("senderId", "username email avatarUrl")
-      .lean();
+    await message.populate("senderId", "username email avatarUrl");
 
     // Cập nhật conversation.lastMessage và tăng unreadCount cho participants khác
     await Conversation.findOneAndUpdate(
@@ -72,7 +85,7 @@ const MessageService = {
       {
         $set: {
           lastMessage: {
-            messageId: savedMessage._id,
+            messageId: message._id,
             senderId,
             type,
             content: type === "text" ? content.trim() : fileInfo?.filename || type,
@@ -84,7 +97,7 @@ const MessageService = {
                 }
               : null,
             isDeleted: false,
-            createdAt: savedMessage.createdAt,
+            createdAt: message.createdAt,
           },
           updatedAt: new Date(),
           "participants.$[p].deletedAt": null,
@@ -100,7 +113,7 @@ const MessageService = {
       }
     );
 
-    return populatedMessage;
+    return { message: message.toObject(), isNew: true };
   },
 
   /**
