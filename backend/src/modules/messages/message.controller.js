@@ -1,5 +1,11 @@
 const MessageService = require("./message.service.js");
 const { Types } = require("mongoose");
+const { getSocket } = require("../../socket.js");
+const {
+  emitMessageCreated,
+  emitMessageDeleted,
+  emitMessageEditedWithConversationSync,
+} = require("../../sockets/realtime.emitter.js");
 
 /**
  * Tạo tin nhắn mới
@@ -22,6 +28,18 @@ const createNewMessage = async (req, res, next) => {
       content,
       file
     );
+
+    // Server-authoritative publish: emit realtime ngay sau khi ghi DB thành công
+    try {
+      const io = getSocket();
+      const { message, conversation } = await MessageService.getMessageRealtimeData(
+        newMessage._id
+      );
+      emitMessageCreated({ io, message, conversation, senderId: userId });
+    } catch (err) {
+      // Không fail request nếu realtime emit lỗi (demo-prod best practice)
+      console.error("[REALTIME] emitMessageCreated failed:", err);
+    }
 
     return res.status(201).json({
       success: true,
@@ -85,6 +103,21 @@ const deleteMessageById = async (req, res, next) => {
 
     const message = await MessageService.deleteMessageById(messageId, userId);
 
+    // Emit realtime delete (server-authoritative)
+    try {
+      const io = getSocket();
+      const realtimeData = await MessageService.getMessageDeleteRealtimeData(messageId);
+      emitMessageDeleted({
+        io,
+        messageId: String(realtimeData.messageId),
+        conversationId: String(realtimeData.conversationId),
+        conversation: realtimeData.conversation,
+        lastMessage: realtimeData.lastMessage,
+      });
+    } catch (err) {
+      console.error("[REALTIME] emitMessageDeleted failed:", err);
+    }
+
     return res.status(200).json({
       success: true,
       message: "Message deleted successfully",
@@ -119,6 +152,19 @@ const editMessageById = async (req, res, next) => {
     }
 
     const message = await MessageService.editMessageById(messageId, userId, newContent);
+
+    // Emit realtime edit (server-authoritative)
+    try {
+      const io = getSocket();
+      const realtimeData = await MessageService.getMessageRealtimeData(messageId);
+      emitMessageEditedWithConversationSync({
+        io,
+        message: realtimeData.message,
+        conversation: realtimeData.conversation,
+      });
+    } catch (err) {
+      console.error("[REALTIME] emitMessageEdited failed:", err);
+    }
 
     return res.status(200).json({
       success: true,

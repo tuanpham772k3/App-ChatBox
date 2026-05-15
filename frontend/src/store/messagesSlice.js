@@ -165,16 +165,38 @@ const messagesSlice = createSlice({
         const newMessage = action.payload;
         const { tempId } = action.meta.arg;
 
-        const index = state.messages.findIndex((m) => m.tempId === tempId);
+        // Tránh duplicate khi socket "message_new" tới trước REST response:
+        // - socket đã add message thật (_id thật)
+        // - sau đó fulfilled sẽ replace temp message thành message thật -> tạo 2 item cùng _id
+        const tempIndex = state.messages.findIndex((m) => m.tempId === tempId);
+        const existingIndex = state.messages.findIndex((m) => m._id === newMessage._id);
 
-        if (index !== -1) {
-          state.messages[index] = newMessage;
-        } else {
-          const exists = state.messages.some((m) => m._id === newMessage._id);
-          if (!exists) {
-            state.messages.push(newMessage);
+        // Case A: Đã có message thật trong list (thường do realtime tới trước)
+        if (existingIndex !== -1) {
+          let idx = existingIndex;
+
+          // Nếu vẫn còn temp message -> xoá temp để không bị trùng
+          if (tempIndex !== -1 && tempIndex !== existingIndex) {
+            state.messages.splice(tempIndex, 1);
+            // Sau khi splice, index của existing có thể bị shift
+            if (tempIndex < existingIndex) idx = existingIndex - 1;
           }
+
+          // Đồng bộ lại message thật (phòng trường hợp payload REST đầy đủ hơn)
+          if (idx >= 0 && idx < state.messages.length) {
+            state.messages[idx] = newMessage;
+          }
+          return;
         }
+
+        // Case B: Chưa có message thật -> replace temp (happy path)
+        if (tempIndex !== -1) {
+          state.messages[tempIndex] = newMessage;
+          return;
+        }
+
+        // Case C: Không tìm thấy temp (UI không optimistic) -> push nếu chưa có
+        state.messages.push(newMessage);
       })
       .addCase(createNewMessage.rejected, (state, action) => {
         const { tempId } = action.meta.arg;

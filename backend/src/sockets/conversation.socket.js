@@ -1,9 +1,4 @@
 const Conversation = require("../modules/conversations/conversation.model.js");
-const ConversationService = require("../modules/conversations/conversation.service.js");
-const {
-  emitConversationCreated,
-  emitConversationRead,
-} = require("./realtime.emitter.js");
 
 const conversationSocket = (io, socket) => {
   socket.on("join_conversation", async ({ conversationId }) => {
@@ -24,7 +19,7 @@ const conversationSocket = (io, socket) => {
         });
 
       const isParticipant = conv.participants.some(
-        (p) => String(p.userId?._id) === String(socket.userId)
+        (p) => String(p.userId) === String(socket.userId)
       );
 
       if (!isParticipant) {
@@ -33,7 +28,7 @@ const conversationSocket = (io, socket) => {
 
       socket.join(`conversation_${conversationId}`);
 
-      // 🔥 Log join thành công
+      // Log join thành công
       console.log(
         `[SOCKET] User ${socket.userId} joined room conversation_${conversationId}`
       );
@@ -52,42 +47,10 @@ const conversationSocket = (io, socket) => {
     if (!conversationId) return;
     socket.leave(`conversation_${conversationId}`);
 
-    // 🔥 Log leave
+    // Log leave
     console.log(
       `[SOCKET] User ${socket.userId} leave room conversation_${conversationId}`
     );
-  });
-
-  socket.on("conversation_mark_read", async ({ conversationId }) => {
-    if (!conversationId) return;
-
-    try {
-      const readStatus = await ConversationService.getReadStatus(
-        conversationId,
-        socket.userId
-      );
-      emitConversationRead({
-        io,
-        conversationId: String(readStatus.conversationId),
-        userId: String(readStatus.userId),
-        lastReadMessageId: readStatus.lastReadMessageId,
-      });
-    } catch (err) {
-      console.error("conversation_mark_read error:", err);
-    }
-  });
-
-  socket.on("conversation_created", async ({ conversationId }) => {
-    if (!conversationId) return;
-
-    try {
-      const conversation = await ConversationService.getConversationRealtimeData(
-        conversationId
-      );
-      emitConversationCreated({ io, conversation });
-    } catch (err) {
-      console.error("conversation_created error:", err);
-    }
   });
 };
 

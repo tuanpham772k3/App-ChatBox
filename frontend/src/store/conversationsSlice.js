@@ -12,9 +12,6 @@ export const createPrivateConversation = createAsyncThunk(
   async (participantId, { rejectWithValue }) => {
     try {
       const conversation = await conversationApi.createPrivateConversation(participantId);
-      if (conversation?._id) {
-        emitEvent("conversation_created", { conversationId: conversation._id });
-      }
       return conversation;
     } catch (err) {
       return rejectWithValue(err);
@@ -31,9 +28,6 @@ export const createGroupConversation = createAsyncThunk(
   async (payload, { rejectWithValue }) => {
     try {
       const conversation = await conversationApi.createGroupConversation(payload);
-      if (conversation?._id) {
-        emitEvent("conversation_created", { conversationId: conversation._id });
-      }
       return conversation;
     } catch (err) {
       return rejectWithValue(err);
@@ -117,7 +111,6 @@ export const markConversationAsRead = createAsyncThunk(
   async ({ conversationId, userId }, { rejectWithValue }) => {
     try {
       await conversationApi.markAsRead(conversationId);
-      emitEvent("conversation_mark_read", { conversationId });
       return;
     } catch (err) {
       return rejectWithValue(err);

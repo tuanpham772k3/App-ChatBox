@@ -1,5 +1,10 @@
 const { Types } = require("mongoose");
 const ConversationService = require("./conversation.service.js");
+const { getSocket } = require("../../socket.js");
+const {
+  emitConversationCreated,
+  emitConversationRead,
+} = require("../../sockets/realtime.emitter.js");
 
 /**
  * Tạo conversation 1-1
@@ -34,6 +39,14 @@ const createPrivateConversation = async (req, res, next) => {
       creatorId,
       participantId
     );
+
+    // Server-authoritative publish: emit realtime ngay sau khi tạo conversation thành công
+    try {
+      const io = getSocket();
+      emitConversationCreated({ io, conversation });
+    } catch (err) {
+      console.error("[REALTIME] emitConversationCreated (private) failed:", err);
+    }
 
     return res.status(201).json({
       success: true,
@@ -80,6 +93,14 @@ const createGroupConversation = async (req, res, next) => {
       memberIds,
       avatar
     );
+
+    // Server-authoritative publish
+    try {
+      const io = getSocket();
+      emitConversationCreated({ io, conversation });
+    } catch (err) {
+      console.error("[REALTIME] emitConversationCreated (group) failed:", err);
+    }
 
     return res.status(201).json({
       success: true,
@@ -252,6 +273,20 @@ const markAsRead = async (req, res, next) => {
     }
 
     await ConversationService.markAsRead(conversationId, userId);
+
+    // Server-authoritative publish read receipt (nếu người khác đang join room)
+    try {
+      const io = getSocket();
+      const readStatus = await ConversationService.getReadStatus(conversationId, userId);
+      emitConversationRead({
+        io,
+        conversationId: String(readStatus.conversationId),
+        userId: String(readStatus.userId),
+        lastReadMessageId: readStatus.lastReadMessageId,
+      });
+    } catch (err) {
+      console.error("[REALTIME] emitConversationRead failed:", err);
+    }
 
     return res.status(200).json({
       success: true,

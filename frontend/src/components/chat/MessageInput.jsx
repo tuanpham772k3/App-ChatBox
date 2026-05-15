@@ -32,7 +32,7 @@ const MessageInput = ({
       const tempId = "temp-" + Date.now();
 
       // 2. Tạo message text
-      const result = await dispatch(
+      await dispatch(
         createNewMessage({
           conversationId: activeChatId,
           content: text,
@@ -41,10 +41,6 @@ const MessageInput = ({
           ...payload,
         })
       ).unwrap();
-
-      emitEvent("message_created", {
-        messageId: result?.newMessage?._id,
-      });
     } catch (err) {
       notification.error({
         message: "Gửi tin nhắn thất bại",
@@ -83,13 +79,7 @@ const MessageInput = ({
       if (!content.trim()) return;
       if (content.trim() === originalContent.trim()) return;
 
-      const updatedMessage = await dispatch(
-        editMessageById({ messageId: id, newContent: content })
-      ).unwrap();
-
-      emitEvent("message_edited", {
-        messageId: updatedMessage?._id,
-      });
+      await dispatch(editMessageById({ messageId: id, newContent: content })).unwrap();
 
       setEditingMessage({
         id: null,
