@@ -15,6 +15,7 @@ const MessageInput = ({
   const dispatch = useDispatch();
 
   const [text, setText] = useState("");
+  const [isSending, setIsSending] = useState("");
 
   const typingTimeoutRef = useRef(null);
 
@@ -56,13 +57,18 @@ const MessageInput = ({
   };
 
   const handleSend = async () => {
-    if (!text.trim()) return;
+    if (!text.trim() || isSending) return;
 
-    await sendMessage({
-      content: text,
-    });
+    setIsSending(true);
 
-    setText("");
+    try {
+      await sendMessage({
+        content: text,
+      });
+      setText("");
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const handleUploadImage = async ({ file }) => {
@@ -229,7 +235,7 @@ const MessageInput = ({
         <button
           type="submit"
           aria-label={id ? "Save edited message" : "Send message"}
-          disabled={!inputValue.trim()}
+          disabled={!inputValue.trim() || isSending}
           className={`w-10 h-10 flex items-center justify-center rounded-full shrink-0
       ${
         inputValue.trim()
