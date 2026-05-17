@@ -92,8 +92,8 @@ const ConversationService = {
     const participants = finalMemberIds.map((memberId) => ({
       userId: memberId,
       role: memberId === creatorId ? "owner" : "member", // Creator là owner, còn lại là member
-      lastReadMessageId: null,
       lastReadAt: null,
+      lastDeliveredAt: null,
       unreadCount: 0,
     }));
 
@@ -308,12 +308,10 @@ const ConversationService = {
 
     if (!conversation) throw new AppError("Conversation not found", 404);
 
-    // Cập nhật participant: lastReadAt, lastReadMessageId, unreadCount = 0
-    const lastReadMessageId = conversation.lastMessage?.messageId || null;
+    const lastReadAt = conversation.lastMessage?.createdAt || null;
     const participant = conversation.participants.find((p) => p.userId?.equals(userId));
 
-    participant.lastReadAt = new Date();
-    participant.lastReadMessageId = lastReadMessageId;
+    participant.lastReadAt = lastReadAt;
     participant.unreadCount = 0;
 
     await conversation.save();
@@ -473,8 +471,8 @@ const ConversationService = {
         $set: {
           "participants.$.deletedAt": new Date(),
           "participants.$.clearedMessagesHistoryAt": new Date(),
-          "participants.$.lastReadMessageId": null,
           "participants.$.lastReadAt": null,
+          "participants.$.lastDeliveredAt": null,
           "participants.$.unreadCount": 0,
         },
       }
@@ -523,7 +521,6 @@ const ConversationService = {
 
     participant.unreadCount = Math.max(participant.unreadCount || 0, 1);
     participant.lastReadAt = null;
-    participant.lastReadMessageId = null;
 
     await conversation.save();
 
@@ -549,7 +546,7 @@ const ConversationService = {
     participant.clearedMessagesHistoryAt = new Date();
     participant.unreadCount = 0;
     participant.lastReadAt = null;
-    participant.lastReadMessageId = null;
+    participant.lastDeliveredAt = null;
     participant.deletedAt = null;
 
     await conversation.save();
@@ -573,7 +570,8 @@ const ConversationService = {
     return {
       conversationId,
       userId,
-      lastReadMessageId: participant?.lastReadMessageId || null,
+      lastReadAt: participant?.lastReadAt || null,
+      participants: conversation.participants,
     };
   },
 

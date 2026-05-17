@@ -72,12 +72,6 @@ const messageSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
-
-    status: {
-      type: String,
-      enum: ["sent", "delivered"],
-      default: "sent",
-    },
   },
   { timestamps: true }
 );

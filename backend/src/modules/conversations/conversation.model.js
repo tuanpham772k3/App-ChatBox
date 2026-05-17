@@ -32,12 +32,8 @@ const conversationSchema = new mongoose.Schema(
           type: Date,
           default: null,
         }, // Mốc thời gian người dùng xóa cuộc trò chuyện (soft delete)
-        lastReadMessageId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Message",
-          default: null,
-        }, // tin nhắn cuối mà người dùng đã đọc
-        lastReadAt: { type: Date, default: null }, // mốc thời gian đã đọc tin nhắn cuối
+        lastReadAt: { type: Date, default: null }, // mốc thời gian của tin nhắn cuối mà người dùng đã đọc
+        lastDeliveredAt: { type: Date, default: null }, //mốc thời gian của tin nhắn cuối được giao đến người dùng
         unreadCount: { type: Number, default: 0, min: 0 },
         pinnedAt: {
           type: Date,

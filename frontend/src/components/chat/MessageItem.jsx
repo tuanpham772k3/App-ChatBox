@@ -27,6 +27,11 @@ const buildMessageActions = ({ onEdit, onDelete }) => [
   },
 ];
 
+const isMessageAtOrBeforePointer = (pointerAt, messageCreatedAt) => {
+  if (!pointerAt || !messageCreatedAt) return false;
+  return new Date(pointerAt).getTime() >= new Date(messageCreatedAt).getTime();
+};
+
 const MessageItem = ({
   msg,
   currentUserId,
@@ -59,19 +64,40 @@ const MessageItem = ({
   // Date tin hiện tại
   const msgTime = new Date(msg.createdAt);
 
-  const getReaders = (participants, currentUserId, msgId) => {
+  const getReceiptParticipants = (
+    participants,
+    currentUserId,
+    messageCreatedAt,
+    pointerAtKey
+  ) => {
     if (!participants) return [];
 
     return participants.filter((p) => {
-      if (p.userId._id === currentUserId) return false;
-      if (!p.lastReadMessageId) return false;
-      return p.lastReadMessageId >= msgId;
+      if (p.userId?._id === currentUserId) return false;
+      return isMessageAtOrBeforePointer(p[pointerAtKey], messageCreatedAt);
     });
   };
 
+  const totalParticipants = currentConversation?.participants.length - 1;
+
   const readers =
     isMine && isLastMessage
-      ? getReaders(currentConversation?.participants, currentUserId, msg._id)
+      ? getReceiptParticipants(
+          currentConversation?.participants,
+          currentUserId,
+          msg.createdAt,
+          "lastReadAt"
+        )
+      : [];
+
+  const deliveredRecipients =
+    isMine && isLastMessage
+      ? getReceiptParticipants(
+          currentConversation?.participants,
+          currentUserId,
+          msg.createdAt,
+          "lastDeliveredAt"
+        )
       : [];
 
   const messageActions = buildMessageActions({
@@ -98,7 +124,10 @@ const MessageItem = ({
     },
   };
 
-  const statusConfig = MESSAGE_STATUS[msg.status];
+  const localStatus = ["sending", "failed"].includes(msg.status) ? msg.status : null;
+  const inferredStatus =
+    deliveredRecipients.length === totalParticipants ? "delivered" : "sent";
+  const statusConfig = MESSAGE_STATUS[localStatus || inferredStatus];
 
   return (
     <li className={`${showAvatar ? "mt-4" : "mt-1"} list-none`}>

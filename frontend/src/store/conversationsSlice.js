@@ -1,6 +1,11 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import conversationApi from "@/services/conversationApi";
-import { emitEvent } from "@/lib/socket";
+
+const isAtOrAfter = (nextAt, currentAt) => {
+  if (!nextAt) return false;
+  if (!currentAt) return true;
+  return new Date(nextAt).getTime() >= new Date(currentAt).getTime();
+};
 
 /* =============================
  *  Thunk actions
@@ -213,6 +218,7 @@ const conversationsSlice = createSlice({
   name: "conversations",
   initialState: {
     conversations: [],
+    activeConversationId: null,
     typingUsers: {},
     statusUsers: {},
     images: [],
@@ -221,6 +227,10 @@ const conversationsSlice = createSlice({
   },
 
   reducers: {
+    setActiveConversationId: (state, action) => {
+      state.activeConversationId = action.payload;
+    },
+
     // Thêm hội thoại realtime
     addConversation: (state, action) => {
       const newConv = action.payload;
@@ -264,14 +274,39 @@ const conversationsSlice = createSlice({
 
     // Realtime đã đọc (sync cho người khác)
     syncReadStatusRealtime: (state, action) => {
-      const { conversationId, userId, lastReadMessageId } = action.payload;
+      const { conversationId, userId, lastReadAt } = action.payload;
 
       const conv = state.conversations.find((c) => c._id === conversationId);
       if (!conv) return;
 
-      conv.participants = conv.participants.map((p) =>
-        p.userId?._id === userId ? { ...p, unreadCount: 0, lastReadMessageId } : p
-      );
+      conv.participants = conv.participants.map((p) => {
+        if (p.userId?._id !== userId) return p;
+        if (!isAtOrAfter(lastReadAt, p.lastReadAt)) return p;
+
+        return {
+          ...p,
+          unreadCount: 0,
+          lastReadAt,
+        };
+      });
+    },
+
+    // Realtime da nhan: advance delivered pointer cua participant
+    syncDeliveredStatusRealtime: (state, action) => {
+      const { conversationId, userId, lastDeliveredAt } = action.payload;
+
+      const conv = state.conversations.find((c) => c._id === conversationId);
+      if (!conv) return;
+
+      conv.participants = conv.participants.map((p) => {
+        if (p.userId?._id !== userId) return p;
+        if (!isAtOrAfter(lastDeliveredAt, p.lastDeliveredAt)) return p;
+
+        return {
+          ...p,
+          lastDeliveredAt,
+        };
+      });
     },
 
     // User status
@@ -379,8 +414,7 @@ const conversationsSlice = createSlice({
             ? {
                 ...p,
                 unreadCount: 0,
-                lastReadAt: new Date().toISOString(),
-                lastReadMessageId: conv.lastMessage?.messageId || null,
+                lastReadAt: conv.lastMessage?.createdAt || null,
               }
             : p
         );
@@ -428,7 +462,7 @@ const conversationsSlice = createSlice({
 
         conv.participants = conv.participants.map((p) =>
           p.userId?._id === userId
-            ? { ...p, unreadCount, lastReadAt: null, lastReadMessageId: null }
+            ? { ...p, unreadCount, lastReadAt: null }
             : p
         );
       })
@@ -447,7 +481,7 @@ const conversationsSlice = createSlice({
                   ...p,
                   unreadCount: 0,
                   lastReadAt: null,
-                  lastReadMessageId: null,
+                  lastDeliveredAt: null,
                   clearedMessagesHistoryAt: new Date().toISOString(),
                 }
               : p
@@ -458,11 +492,13 @@ const conversationsSlice = createSlice({
 });
 
 export const {
+  setActiveConversationId,
   addConversation,
   removeConversationRealtime,
   updateConversationLastMessage,
   updateConversationUnreadCount,
   syncReadStatusRealtime,
+  syncDeliveredStatusRealtime,
   userStatus,
   userStartTyping,
   userStopTyping,

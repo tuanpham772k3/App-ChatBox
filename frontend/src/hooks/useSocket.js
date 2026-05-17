@@ -1,9 +1,10 @@
 import { useEffect } from "react";
-import { useDispatch } from "react-redux";
-import { emitEvent, offEvent, onEvent } from "@/lib/socket";
+import { useDispatch, useSelector } from "react-redux";
+import { emitEvent, isSocketConnected, offEvent, onEvent } from "@/lib/socket";
 import {
   addConversation,
   removeConversationRealtime,
+  syncDeliveredStatusRealtime,
   syncReadStatusRealtime,
   updateConversationLastMessage,
   updateConversationUnreadCount,
@@ -11,15 +12,14 @@ import {
   userStatus,
   userStopTyping,
 } from "@/store/conversationsSlice";
-import {
-  addIncomingMessage,
-  removeMessage,
-  updateMessage,
-  updateStatusMessage,
-} from "@/store/messagesSlice";
+import { addIncomingMessage, removeMessage, updateMessage } from "@/store/messagesSlice";
 
 export const useSocket = () => {
   const dispatch = useDispatch();
+  const currentUserId = useSelector((state) => state.auth.user?.id);
+  const activeConversationId = useSelector(
+    (state) => state.conversations.activeConversationId
+  );
 
   useEffect(() => {
     const onStatusChanged = (data) => {
@@ -54,13 +54,21 @@ export const useSocket = () => {
       dispatch(syncReadStatusRealtime(data));
     };
 
-    const onMessageNew = (msg) => {
-      dispatch(addIncomingMessage(msg));
+    const onConversationDelivered = (data) => {
+      dispatch(syncDeliveredStatusRealtime(data));
+    };
 
-      emitEvent("message_delivered", {
-        messageId: msg._id,
-        conversationId: msg.conversationId,
-      });
+    const onMessageNew = (msg) => {
+      const isMine = msg.senderId?._id === currentUserId;
+      const isActive = msg.conversationId === activeConversationId;
+
+      if (isActive) {
+        dispatch(addIncomingMessage(msg));
+      }
+
+      if (!isMine) {
+        emitEvent("message_delivered", { messageId: msg._id });
+      }
     };
 
     const onMessageEdit = (msg) => {
@@ -71,10 +79,11 @@ export const useSocket = () => {
       dispatch(removeMessage(messageId));
     };
 
-    const onMessageDeliveredStatus = ({ messageId, status }) => {
-      dispatch(updateStatusMessage({ messageId, status }));
+    const requestDeliverySync = () => {
+      emitEvent("delivery_sync");
     };
 
+    onEvent("connect", requestDeliverySync);
     onEvent("user_status_changed", onStatusChanged);
     onEvent("user_typing", onTypingStart);
     onEvent("user_stop_typing", onTypingStop);
@@ -82,12 +91,17 @@ export const useSocket = () => {
     onEvent("conversation:lastMessage", onConversationLastMessage);
     onEvent("conversation:unread", onConversationUnread);
     onEvent("conversation:read", onConversationRead);
+    onEvent("conversation:delivered", onConversationDelivered);
     onEvent("message_new", onMessageNew);
     onEvent("message_edit", onMessageEdit);
     onEvent("message_delete", onMessageDelete);
-    onEvent("message_delivered", onMessageDeliveredStatus);
+
+    if (isSocketConnected()) {
+      requestDeliverySync();
+    }
 
     return () => {
+      offEvent("connect", requestDeliverySync);
       offEvent("user_status_changed", onStatusChanged);
       offEvent("user_typing", onTypingStart);
       offEvent("user_stop_typing", onTypingStop);
@@ -95,10 +109,10 @@ export const useSocket = () => {
       offEvent("conversation:lastMessage", onConversationLastMessage);
       offEvent("conversation:unread", onConversationUnread);
       offEvent("conversation:read", onConversationRead);
+      offEvent("conversation:delivered", onConversationDelivered);
       offEvent("message_new", onMessageNew);
       offEvent("message_edit", onMessageEdit);
       offEvent("message_delete", onMessageDelete);
-      offEvent("message_delivered", onMessageDeliveredStatus);
     };
-  }, [dispatch]);
+  }, [activeConversationId, currentUserId, dispatch]);
 };

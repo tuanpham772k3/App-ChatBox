@@ -282,7 +282,8 @@ const markAsRead = async (req, res, next) => {
         io,
         conversationId: String(readStatus.conversationId),
         userId: String(readStatus.userId),
-        lastReadMessageId: readStatus.lastReadMessageId,
+        lastReadAt: readStatus.lastReadAt,
+        participants: readStatus.participants,
       });
     } catch (err) {
       console.error("[REALTIME] emitConversationRead failed:", err);

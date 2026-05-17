@@ -7,6 +7,7 @@ import {
   deleteConversationForMe,
   getConversations,
   markConversationAsUnread,
+  setActiveConversationId,
   togglePinConversation,
 } from "../../store/conversationsSlice";
 import ConversationHeader from "./ConversationHeader";
@@ -44,6 +45,7 @@ const ConversationContainer = ({ activeChatId, onSelectChat, onOpenSidebar }) =>
     if (activeChatId === conversationId) return;
 
     onSelectChat(conversationId);
+    dispatch(setActiveConversationId(conversationId));
   };
 
   // Xóa hội thoại phía tôi

@@ -17,19 +17,35 @@ const buildLastMessagePayload = (conversationId, message) => {
   };
 };
 
+const emitToConversationAndParticipants = ({
+  io,
+  conversationId,
+  participants,
+  event,
+  payload,
+}) => {
+  let target = io.to(`conversation_${conversationId}`);
+
+  (participants || []).forEach((participant) => {
+    const participantId = String(participant?.userId);
+    if (!participantId) return;
+    target = target.to(`user_${participantId}`);
+  });
+
+  target.emit(event, payload);
+};
+
 const emitMessageCreated = ({ io, message, conversation, senderId }) => {
   if (!message || !conversation) return;
 
-  const participants = conversation.participants || [];
-  const conversationId = String(conversation._id || message.conversationId);
+  const participants = conversation?.participants || [];
+  const conversationId = String(conversation?._id || message.conversationId);
 
   participants.forEach((participant) => {
-    const participantId = String(participant.userId);
+    const participantId = String(participant?.userId);
     if (!participantId) return;
 
-    if (participantId !== senderId) {
-      io.to(`user_${participantId}`).emit("message_new", message);
-    }
+    io.to(`user_${participantId}`).emit("message_new", message);
 
     io.to(`user_${participantId}`).emit(
       "conversation:lastMessage",
@@ -39,7 +55,7 @@ const emitMessageCreated = ({ io, message, conversation, senderId }) => {
     if (participantId !== String(senderId)) {
       io.to(`user_${participantId}`).emit("conversation:unread", {
         conversationId,
-        unreadCount: participant.unreadCount,
+        unreadCount: participant?.unreadCount,
         userId: participantId,
       });
     }
@@ -52,12 +68,11 @@ const emitMessageEdited = ({ io, message, conversationId }) => {
 
 const emitConversationCreated = ({ io, conversation }) => {
   if (!conversation) return;
-  const participants = conversation.participants || [];
+  const participants = conversation?.participants || [];
 
   participants.forEach((participant) => {
-    const participantId = String(participant.userId);
+    const participantId = String(participant?.userId);
     if (!participantId) return;
-
     io.to(`user_${participantId}`).emit("conversation:new", conversation);
   });
 };
@@ -65,7 +80,7 @@ const emitConversationCreated = ({ io, conversation }) => {
 const emitMessageEditedWithConversationSync = ({ io, message, conversation }) => {
   if (!message || !conversation) return;
 
-  const conversationId = String(conversation._id || message.conversationId);
+  const conversationId = String(conversation?._id || message.conversationId);
 
   emitMessageEdited({ io, message, conversationId });
 
@@ -74,9 +89,8 @@ const emitMessageEditedWithConversationSync = ({ io, message, conversation }) =>
   const payload = buildLastMessagePayload(conversationId, message);
 
   conversation.participants.forEach((participant) => {
-    const participantId = String(participant.userId);
+    const participantId = String(participant?.userId);
     if (!participantId) return;
-
     io.to(`user_${participantId}`).emit("conversation:lastMessage", payload);
   });
 };
@@ -94,18 +108,49 @@ const emitMessageDeleted = ({
 
   const payload = buildLastMessagePayload(conversationId, lastMessage);
   conversation.participants.forEach((participant) => {
-    const participantId = String(participant.userId);
+    const participantId = String(participant?.userId);
     if (!participantId) return;
-
     io.to(`user_${participantId}`).emit("conversation:lastMessage", payload);
   });
 };
 
-const emitConversationRead = ({ io, conversationId, userId, lastReadMessageId }) => {
-  io.to(`conversation_${conversationId}`).emit("conversation:read", {
+const emitConversationRead = ({
+  io,
+  conversationId,
+  userId,
+  lastReadAt,
+  participants,
+}) => {
+  emitToConversationAndParticipants({
+    io,
     conversationId,
-    userId,
-    lastReadMessageId,
+    participants,
+    event: "conversation:read",
+    payload: {
+      conversationId,
+      userId,
+      lastReadAt,
+    },
+  });
+};
+
+const emitConversationDelivered = ({
+  io,
+  conversationId,
+  userId,
+  lastDeliveredAt,
+  participants,
+}) => {
+  emitToConversationAndParticipants({
+    io,
+    conversationId,
+    participants,
+    event: "conversation:delivered",
+    payload: {
+      conversationId,
+      userId,
+      lastDeliveredAt,
+    },
   });
 };
 
@@ -116,4 +161,5 @@ module.exports = {
   emitMessageDeleted,
   emitConversationCreated,
   emitConversationRead,
+  emitConversationDelivered,
 };

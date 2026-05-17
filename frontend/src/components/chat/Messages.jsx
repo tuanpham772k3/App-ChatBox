@@ -11,6 +11,7 @@ import "yet-another-react-lightbox/plugins/thumbnails.css";
 import "yet-another-react-lightbox/styles.css";
 
 import { buildMessageMeta } from "@/utils/messageHelper";
+import { emitEvent } from "@/lib/socket";
 
 import MessageItem from "./MessageItem";
 import { useNotification } from "@/hooks/useNotification";
@@ -19,7 +20,7 @@ import {
   deleteMessageById,
   fetchConversationMessages,
 } from "@/store/messagesSlice";
-import { markConversationAsRead } from "@/store/conversationsSlice";
+import { syncReadStatusRealtime } from "@/store/conversationsSlice";
 
 const MessageDateDivider = ({ date }) => {
   const messageDate = new Date(date);
@@ -59,26 +60,10 @@ const Messages = ({
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
   const containerRef = useRef(null);
-  const lastScrollTopRef = useRef(0);
   const initialLoadRef = useRef(true);
+  const lastReadAtRef = useRef(null);
 
   const notification = useNotification();
-
-  // ===== Mark conversation as read =====
-  useEffect(() => {
-    if (!activeChatId) return;
-
-    dispatch(
-      markConversationAsRead({
-        conversationId: activeChatId,
-        userId: currentUserId,
-      })
-    )
-      .unwrap()
-      .catch((error) => {
-        console.log("Error marking conversation as read:", error);
-      });
-  }, [messages, activeChatId, currentUserId, dispatch]);
 
   // ===== Load initial messages =====
   useEffect(() => {
@@ -87,7 +72,7 @@ const Messages = ({
     dispatch(clearMessages());
 
     initialLoadRef.current = true;
-    lastScrollTopRef.current = 0;
+    lastReadAtRef.current = null;
 
     dispatch(
       fetchConversationMessages({
@@ -97,6 +82,27 @@ const Messages = ({
     );
   }, [activeChatId, dispatch]);
 
+  // ===== Read pointer: server is source of truth, client emits latest seen message =====
+  useEffect(() => {
+    if (!activeChatId || !currentUserId || messages.length === 0) return;
+
+    const latestMessage = messages[messages.length - 1];
+    if (!latestMessage?._id || latestMessage.isTemp) return;
+    if (lastReadAtRef.current === latestMessage.createdAt) return;
+
+    lastReadAtRef.current = latestMessage.createdAt;
+
+    emitEvent("message_read", { messageId: latestMessage._id });
+
+    dispatch(
+      syncReadStatusRealtime({
+        conversationId: activeChatId,
+        userId: currentUserId,
+        lastReadAt: latestMessage.createdAt,
+      })
+    );
+  }, [activeChatId, currentUserId, dispatch, messages]);
+
   // ===== Auto scroll =====
   useEffect(() => {
     const el = containerRef.current;
@@ -105,19 +111,17 @@ const Messages = ({
     // Case 1: load lần đầu: luôn scroll xuống cuối
     if (initialLoadRef.current) {
       el.scrollTop = el.scrollHeight;
-      lastScrollTopRef.current = el.scrollTop;
       initialLoadRef.current = false;
       return;
     }
 
     // Case 2: tự động scroll nếu đang ở gần cuối (trong khoảng 300px)
-    const distanceToBottom = el.scrollHeight - el.clientHeight - lastScrollTopRef.current;
+    const distanceToBottom = el.scrollHeight - el.clientHeight - el.scrollTop;
 
-    const isNearBottom = distanceToBottom <= 300;
+    const isNearBottom = distanceToBottom <= 500;
 
     if (isNearBottom) {
       el.scrollTop = el.scrollHeight;
-      lastScrollTopRef.current = el.scrollTop;
     }
   }, [messages]);
 

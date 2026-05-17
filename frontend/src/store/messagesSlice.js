@@ -89,6 +89,18 @@ const messagesSlice = createSlice({
     // Thêm tin nhắn mới real-time
     addIncomingMessage: (state, action) => {
       const newMsg = action.payload;
+
+      if (newMsg.clientMessageId) {
+        const tempIndex = state.messages.findIndex(
+          (m) => m.clientMessageId === newMsg.clientMessageId
+        );
+
+        if (tempIndex !== -1) {
+          state.messages[tempIndex] = newMsg;
+          return;
+        }
+      }
+
       const exists = state.messages.some((m) => m._id === newMsg._id);
       if (!exists) {
         state.messages.push(newMsg);
@@ -113,15 +125,6 @@ const messagesSlice = createSlice({
       }
     },
 
-    // Cập nhật trạng thái tin nhắn real-time
-    updateStatusMessage: (state, action) => {
-      const { messageId, status } = action.payload;
-      const msg = state.messages.find((m) => m._id === messageId);
-      if (msg) {
-        msg.status = status;
-      }
-    },
-
     // Clear khi đổi sang cuộc trò chuyện khác
     clearMessages: (state) => {
       state.messages = [];
@@ -137,12 +140,14 @@ const messagesSlice = createSlice({
       // CREATE MESSAGE
       // -------------------------------
       .addCase(createNewMessage.pending, (state, action) => {
-        const { tempId, conversationId, senderId, content, file } = action.meta.arg;
+        const { tempId, conversationId, senderId, content, file, clientMessageId } =
+          action.meta.arg;
 
         //Tạo message tạm thời
         const tempMessage = {
           _id: tempId,
           tempId,
+          clientMessageId,
           conversationId,
           senderId,
           content: file ? null : content,
@@ -219,11 +224,6 @@ const messagesSlice = createSlice({
   },
 });
 
-export const {
-  addIncomingMessage,
-  updateMessage,
-  removeMessage,
-  updateStatusMessage,
-  clearMessages,
-} = messagesSlice.actions;
+export const { addIncomingMessage, updateMessage, removeMessage, clearMessages } =
+  messagesSlice.actions;
 export default messagesSlice.reducer;
