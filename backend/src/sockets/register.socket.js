@@ -1,7 +1,6 @@
 const Conversation = require("../modules/conversations/conversation.model.js");
 const Message = require("../modules/messages/message.model.js");
 const { authSocket } = require("./auth.socket.js");
-const { disconnectSocket } = require("./disconnect.socket.js");
 const { messageSocket } = require("./message.socket.js");
 const { conversationSocket } = require("./conversation.socket.js");
 const { broadcastPresence } = require("./presence.socket.js");
@@ -114,7 +113,23 @@ const registerSocket = (io) => {
       }
 
       // Xử lý disconnect
-      disconnectSocket(io, socket);
+      socket.on("disconnect", async () => {
+        try {
+          console.log(`User disconnected: ${socket.user?.username} (${socket.id})`);
+
+          const userRoom = io.sockets.adapter.rooms.get(`user_${socket.userId}`);
+          const hasAnotherActiveSession = Boolean(userRoom && userRoom.size > 0);
+
+          if (hasAnotherActiveSession) return;
+
+          await broadcastPresence(io, socket.userId, "offline");
+        } catch (err) {
+          console.error("disconnect handler error:", {
+            userId: socket.userId,
+            error: err,
+          });
+        }
+      });
 
       // Đăng ký socket handlers
       messageSocket(io, socket);
