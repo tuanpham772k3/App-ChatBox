@@ -47,22 +47,29 @@ const MessageItem = ({
 }) => {
   const [open, setOpen] = useState(false); // State menu actions
 
-  // Xóa tin nhắn
   const handleDelete = () => {
     onDeleteMessage(msg._id);
     setOpen(false);
   };
 
-  // Chỉnh sửa tin nhắn
   const handleEdit = () => {
     onEditClick(msg);
     setOpen(false);
   };
 
-  // Avatar người gửi
   const avatar = msg.senderId?.avatarUrl?.url || "/avatarA.jpg";
-  // Date tin hiện tại
-  const msgTime = new Date(msg.createdAt);
+  const msgTimeDate = new Date(msg.createdAt);
+  const msgTime = msgTimeDate.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  const msgEditedAt = new Date(msg.editedAt).toLocaleString([], {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
   const getReceiptParticipants = (
     participants,
@@ -218,16 +225,16 @@ const MessageItem = ({
             {/* Edited */}
             {msg.isEdited && !msg.isDeleted && (
               <div className="text-[10px] text-[var(--color-text-secondary)]">
-                (đã chỉnh sửa)
+                {`Đã chỉnh sửa lúc ${msgEditedAt}`}
               </div>
             )}
             {/* Time */}
             {showTime && msg.type !== "image" && (
               <time
-                dateTime={msgTime.toISOString()}
+                dateTime={msgTimeDate.toISOString()}
                 className="mt-1 block text-xs text-[var(--color-text-secondary)]"
               >
-                {msgTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                {msgTime}
               </time>
             )}
           </div>
@@ -253,10 +260,10 @@ const MessageItem = ({
               {/* Time ảnh */}
               {showTime && msg.type === "image" && (
                 <time
-                  dateTime={msgTime.toISOString()}
+                  dateTime={msgTimeDate.toISOString()}
                   className="py-1 px-2 bg-gray-400 rounded-lg text-xs text-white"
                 >
-                  {msgTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                  {msgTime}
                 </time>
               )}
 
