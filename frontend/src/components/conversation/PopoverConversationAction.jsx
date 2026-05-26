@@ -26,7 +26,8 @@ const PopoverConversationAction = ({
           <button
             type="button"
             onClick={() => {
-              onTogglePin(), setOpen(false);
+              onTogglePin();
+              setOpen(false);
             }}
             className="flex items-center gap-2 w-full px-3 py-2 hover:bg-[var(--color-hover)] rounded"
           >
@@ -36,7 +37,8 @@ const PopoverConversationAction = ({
           <button
             type="button"
             onClick={() => {
-              onMarkUnread(), setOpen(false);
+              onMarkUnread();
+              setOpen(false);
             }}
             className="flex items-center gap-2 w-full px-3 py-2 hover:bg-[var(--color-hover)] rounded"
           >
@@ -46,7 +48,8 @@ const PopoverConversationAction = ({
           <button
             type="button"
             onClick={() => {
-              onClearHistory(), setOpen(false);
+              onClearHistory();
+              setOpen(false);
             }}
             className="flex items-center gap-2 w-full px-3 py-2 text-red-500 hover:bg-[var(--color-hover)] rounded"
           >
@@ -56,7 +59,8 @@ const PopoverConversationAction = ({
           <button
             type="button"
             onClick={() => {
-              onRemove(), setOpen(false);
+              onRemove();
+              setOpen(false);
             }}
             className="flex items-center gap-2 w-full px-3 py-2 text-red-500 hover:bg-[var(--color-hover)] rounded"
           >
