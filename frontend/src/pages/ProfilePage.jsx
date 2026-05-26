@@ -97,7 +97,7 @@ const ProfilePage = () => {
           <span className="font-semibold text-lg">Hồ sơ cá nhân</span>
         </div>
       }
-      className="max-w-xl mx-auto mt-6 shadow-md rounded-2xl border border-gray-200"
+      className="max-w-xl mx-auto mt-6 shadow-md rounded-2xl border border-[var(--color-border)]"
     >
       <Form
         form={form}
@@ -127,11 +127,11 @@ const ProfilePage = () => {
               <img
                 src={profile?.avatarUrl?.url}
                 alt="avatar"
-                className="w-16 h-16 rounded-full object-cover border border-gray-300 mb-2"
+                className="w-16 h-16 rounded-full object-cover border border-[var(--color-border)] mb-2"
               />
 
               {avatarFile && (
-                <span className="text-sm text-gray-600 italic">
+                <span className="text-sm text-[var(--color-text-secondary)] italic">
                   File được chọn: {avatarFile.name}
                 </span>
               )}
@@ -177,7 +177,7 @@ const ProfilePage = () => {
             type="primary"
             htmlType="submit"
             loading={loading}
-            className="bg-blue-600 hover:bg-blue-700 px-6 rounded-lg"
+            className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] px-6 rounded-lg"
           >
             Cập nhật hồ sơ
           </Button>

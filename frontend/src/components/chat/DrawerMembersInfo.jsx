@@ -54,7 +54,7 @@ const DrawerMembersInfo = ({
         <div className="relative flex items-center justify-center">
           <button
             onClick={onClose}
-            className="absolute left-0 p-2 rounded-full lg:hidden hover:bg-gray-100"
+            className="absolute left-0 p-2 rounded-full lg:hidden hover:bg-[var(--color-hover)]"
           >
             <SlArrowLeft size={18} />
           </button>
@@ -69,7 +69,7 @@ const DrawerMembersInfo = ({
           <button
             onClick={onOpenAddMembers}
             className="w-full flex items-center justify-center gap-2 py-2 font-medium text-base text-[var(--color-text-primary)]
-        bg-[var(--color-chat)] hover:bg-black/10 rounded"
+        bg-[var(--color-chat)] hover:bg-[var(--color-hover)] rounded"
           >
             <UserPlus size={16} />
             <p>Thêm thành viên</p>
@@ -86,7 +86,7 @@ const DrawerMembersInfo = ({
             {sortedMembers.map((member) => (
               <li
                 key={member.id}
-                className="flex items-center px-4 py-3 hover:bg-gray-100 rounded group"
+                className="flex items-center px-4 py-3 hover:bg-[var(--color-hover)] rounded group"
               >
                 <div className="min-w-0 flex-1 flex items-center gap-2">
                   {/* Avatar */}
@@ -128,7 +128,7 @@ const DrawerMembersInfo = ({
                 {canShowDeleteIcon(member) && (
                   <button
                     onClick={() => onRemoveMember(member.id)}
-                    className="p-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition rounded hover:bg-black/10"
+                    className="p-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition rounded hover:bg-[var(--color-hover)]"
                   >
                     <Trash size={18} color="red" />
                   </button>

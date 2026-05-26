@@ -135,7 +135,7 @@ const LoginPage = () => {
             Chưa có tài khoản?{" "}
             <Link
               to="/register"
-              className="text-blue-600 hover:text-blue-800 font-bold hover:!underline"
+              className="text-[var(--color-primary)] hover:text-[var(--color-primary-hover)] font-bold hover:!underline"
             >
               Đăng ký
             </Link>

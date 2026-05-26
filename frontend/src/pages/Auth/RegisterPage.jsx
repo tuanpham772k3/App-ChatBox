@@ -168,7 +168,10 @@ const RegisterPage = () => {
 
           <div className="text-center mt-2">
             Đã có tài khoản?{" "}
-            <Link to="/login" className="text-blue-600 hover:text-blue-800 font-medium">
+            <Link
+              to="/login"
+              className="text-[var(--color-primary)] hover:text-[var(--color-primary-hover)] font-medium"
+            >
               Đăng nhập
             </Link>
           </div>

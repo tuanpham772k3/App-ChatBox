@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Modal, Spin } from "antd";
+import { Button, Modal, Spin, Typography } from "antd";
 import { useDispatch } from "react-redux";
 import { CloseOutlined } from "@ant-design/icons";
 import FriendItem from "@/components/ui/member/FriendItem";
@@ -7,6 +7,8 @@ import { searchUsers } from "@/store/userSlice";
 import { createPrivateConversation } from "../../store/conversationsSlice";
 import { useNotification } from "@/hooks/useNotification";
 import SearchBar from "../ui/search/SearchBar";
+
+const { Title } = Typography;
 
 const ModalCreatePrivate = ({ isOpen, onCancel }) => {
   const dispatch = useDispatch();
@@ -97,11 +99,10 @@ const ModalCreatePrivate = ({ isOpen, onCancel }) => {
       }}
     >
       {/* Header */}
-      <div className="p-4 border-b border-[var(--color-border)]">
-        <h2 className="text-[var(--color-text-primary)] text-lg font-semibold">
-          Private chat
-        </h2>
-      </div>
+      <header className="p-4 border-b border-[var(--color-border)]">
+        <Title level={4}>Private chat</Title>
+      </header>
+
       {/* Body */}
       <div className="flex flex-col gap-2 p-4">
         {/* Search */}
@@ -114,14 +115,14 @@ const ModalCreatePrivate = ({ isOpen, onCancel }) => {
         {/* ====== Friends List ====== */}
         <ul className="max-h-[min(60vh,25rem)] flex flex-col gap-1 overflow-y-auto custom-scrollbar">
           {loading ? (
-            <div className="w-full text-center mt-8">
+            <span className="w-full text-center mt-8">
               <Spin />
-            </div>
+            </span>
           ) : (
             results.length === 0 && (
-              <div className="text-center mt-8 text-[var(--color-text-secondary)]">
+              <span className="text-center mt-8 text-[var(--color-text-secondary)]">
                 Không có người dùng nào
-              </div>
+              </span>
             )
           )}
 

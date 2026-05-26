@@ -169,7 +169,7 @@ const MessageItem = ({
                 type="button"
                 onClick={(e) => e.stopPropagation()}
                 aria-label="Open message actions"
-                className="p-1 bg-[var(--color-app)] text-[var(--color-text-primary)] rounded-full border border-[var(--color-border)] shadow-xs hover:bg-gray-100 active:bg-black/5"
+                className="p-1 bg-[var(--color-app)] text-[var(--color-text-primary)] rounded-full border border-[var(--color-border)] shadow-xs hover:bg-[var(--color-hover)] active:bg-[var(--color-active)]"
               >
                 <EllipsisVertical size={18} />
               </button>
@@ -193,7 +193,7 @@ const MessageItem = ({
               ${
                 isMine
                   ? "bg-[var(--color-primary)]/5 border-blue-500"
-                  : "bg-[var(--color-app)] border-black/15"
+                  : "bg-[var(--color-app)] border-[var(--color-message-border)]"
               }`}
           >
             {/* Content */}
@@ -261,7 +261,7 @@ const MessageItem = ({
               {showTime && msg.type === "image" && (
                 <time
                   dateTime={msgTimeDate.toISOString()}
-                  className="py-1 px-2 bg-gray-400 rounded-lg text-xs text-white"
+                  className="py-1 px-2 bg-[var(--color-status)] rounded-lg text-xs text-white"
                 >
                   {msgTime}
                 </time>
@@ -269,7 +269,7 @@ const MessageItem = ({
 
               {/* Trạng thái */}
               {statusConfig && (
-                <span className="flex items-center gap-1 p-1 bg-gray-400 rounded-lg text-xs font-medium text-white">
+                <span className="flex items-center gap-1 p-1 bg-[var(--color-status)] rounded-lg text-xs font-medium text-white">
                   <statusConfig.icon size={14} aria-hidden="true" />
                   <span>{statusConfig.label}</span>
                 </span>

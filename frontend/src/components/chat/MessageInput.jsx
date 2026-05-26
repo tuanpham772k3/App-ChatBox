@@ -161,7 +161,7 @@ const MessageInput = ({
           <button
             type="button"
             onClick={handleCancelEdit}
-            className="text-blue-500 hover:underline"
+            className="text-[var(--color-primary)] hover:underline"
           >
             Hủy
           </button>
@@ -179,7 +179,7 @@ const MessageInput = ({
             <button
               type="button"
               aria-label="Upload image"
-              className="flex h-10 w-10 shrink-0 justify-center items-center rounded-full hover:bg-black/10 text-[var(--color-text-secondary)]"
+              className="flex h-10 w-10 shrink-0 justify-center items-center rounded-full hover:bg-[var(--color-hover)] text-[var(--color-text-secondary)]"
             >
               <Image size={20} />
             </button>
@@ -188,28 +188,28 @@ const MessageInput = ({
           <button
             type="button"
             aria-label="Choose emoji"
-            className="flex h-10 w-10 shrink-0 justify-center items-center rounded-full hover:bg-black/10 text-[var(--color-text-secondary)]"
+            className="flex h-10 w-10 shrink-0 justify-center items-center rounded-full hover:bg-[var(--color-hover)] text-[var(--color-text-secondary)]"
           >
             <Smile size={20} />
           </button>
           <button
             type="button"
             aria-label="Send current location"
-            className="hidden h-10 w-10 shrink-0 justify-center items-center rounded-full hover:bg-black/10 text-[var(--color-text-secondary)] sm:flex"
+            className="hidden h-10 w-10 shrink-0 justify-center items-center rounded-full hover:bg-[var(--color-hover)] text-[var(--color-text-secondary)] sm:flex"
           >
             <Navigation size={20} />
           </button>
           <button
             type="button"
             aria-label="Share location pin"
-            className="hidden h-10 w-10 shrink-0 justify-center items-center rounded-full hover:bg-black/10 text-[var(--color-text-secondary)] sm:flex"
+            className="hidden h-10 w-10 shrink-0 justify-center items-center rounded-full hover:bg-[var(--color-hover)] text-[var(--color-text-secondary)] sm:flex"
           >
             <MapPin size={20} />
           </button>
           <button
             type="button"
             aria-label="Record voice message"
-            className="hidden h-10 w-10 shrink-0 justify-center items-center rounded-full hover:bg-black/10 text-[var(--color-text-secondary)] md:flex"
+            className="hidden h-10 w-10 shrink-0 justify-center items-center rounded-full hover:bg-[var(--color-hover)] text-[var(--color-text-secondary)] md:flex"
           >
             <Mic size={20} />
           </button>
@@ -239,8 +239,8 @@ const MessageInput = ({
           className={`w-10 h-10 flex items-center justify-center rounded-full shrink-0
       ${
         inputValue.trim()
-          ? "bg-blue-500 text-white hover:bg-blue-600"
-          : "bg-gray-200 text-gray-400 cursor-not-allowed"
+          ? "bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)]"
+          : "bg-[var(--color-disabled)] text-[var(--color-text-disable)] cursor-not-allowed"
       }`}
         >
           <Send size={20} />

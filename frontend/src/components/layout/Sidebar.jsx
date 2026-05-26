@@ -66,7 +66,9 @@ const Sidebar = ({ mode = "desktop", onClose }) => {
       {/* ====== Logo ====== */}
       <header className="h-16 sm:h-20 flex items-center gap-3 px-4 border-b border-[var(--color-border)] transition-all">
         <img src={"/message.svg.png"} alt="" className="w-8 h-8 shrink-0" />
-        <p className="text-2xl font-bold text-shadow-sm">Chatbox</p>
+        <p className="text-2xl font-bold text-shadow-sm text-[var(--color-text-primary)]">
+          Chatbox
+        </p>
       </header>
 
       {/* ====== Options Navigation ====== */}

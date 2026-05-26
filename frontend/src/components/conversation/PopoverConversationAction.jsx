@@ -28,7 +28,7 @@ const PopoverConversationAction = ({
             onClick={() => {
               onTogglePin(), setOpen(false);
             }}
-            className="flex items-center gap-2 w-full px-3 py-2 hover:bg-black/10 rounded"
+            className="flex items-center gap-2 w-full px-3 py-2 hover:bg-[var(--color-hover)] rounded"
           >
             {isPinned ? <PinOff size={20} /> : <Pin size={20} />}
             <span>{isPinned ? "Bỏ ghim hội thoại" : "Ghim hội thoại"}</span>
@@ -38,7 +38,7 @@ const PopoverConversationAction = ({
             onClick={() => {
               onMarkUnread(), setOpen(false);
             }}
-            className="flex items-center gap-2 w-full px-3 py-2 hover:bg-black/10 rounded"
+            className="flex items-center gap-2 w-full px-3 py-2 hover:bg-[var(--color-hover)] rounded"
           >
             <MailCheck size={20} />
             <span>Đánh dấu chưa đọc</span>
@@ -48,7 +48,7 @@ const PopoverConversationAction = ({
             onClick={() => {
               onClearHistory(), setOpen(false);
             }}
-            className="flex items-center gap-2 w-full px-3 py-2 text-red-500 hover:bg-black/10 rounded"
+            className="flex items-center gap-2 w-full px-3 py-2 text-red-500 hover:bg-[var(--color-hover)] rounded"
           >
             <BrushCleaning size={20} />
             <span>Xóa lịch sử trò chuyện</span>
@@ -58,7 +58,7 @@ const PopoverConversationAction = ({
             onClick={() => {
               onRemove(), setOpen(false);
             }}
-            className="flex items-center gap-2 w-full px-3 py-2 text-red-500 hover:bg-black/10 rounded"
+            className="flex items-center gap-2 w-full px-3 py-2 text-red-500 hover:bg-[var(--color-hover)] rounded"
           >
             <Trash size={20} />
             <span>Xóa hội thoại</span>

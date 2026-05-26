@@ -29,7 +29,7 @@ const ConversationHeader = ({
               type="button"
               aria-label="Open sidebar"
               onClick={onOpenSidebar}
-              className="flex lg:hidden size-10 shrink-0 items-center justify-center rounded-full text-[var(--color-text-secondary)] hover:bg-gray-100 active:bg-black/10 transition-colors"
+              className="flex lg:hidden size-10 shrink-0 items-center justify-center rounded-full text-[var(--color-text-secondary)] hover:bg-[var(--color-hover)] active:bg-[var(--color-active)] transition-colors"
             >
               <Menu size={22} />
             </button>
@@ -43,7 +43,7 @@ const ConversationHeader = ({
               type="button"
               aria-label="Create private conversation"
               onClick={() => onOpenModal("private")}
-              className="flex items-center p-2 rounded-full bg-[var(--color-app)] text-[var(--color-text-secondary)] hover:bg-gray-100 focus:bg-black/5 active:bg-black/10 transition-colors"
+              className="flex items-center p-2 rounded-full bg-[var(--color-app)] text-[var(--color-text-secondary)] hover:bg-[var(--color-hover)] focus:bg-[var(--color-hover)] active:bg-[var(--color-active)] transition-colors"
             >
               <UserRound size={20} />
             </button>
@@ -53,7 +53,7 @@ const ConversationHeader = ({
               type="button"
               aria-label="Create group conversation"
               onClick={() => onOpenModal("group")}
-              className="flex items-center p-2 rounded-full bg-[var(--color-app)] text-[var(--color-text-secondary)] hover:bg-gray-100 focus:bg-black/5 active:bg-black/10 transition-colors"
+              className="flex items-center p-2 rounded-full bg-[var(--color-app)] text-[var(--color-text-secondary)] hover:bg-[var(--color-hover)] focus:bg-[var(--color-hover)] active:bg-[var(--color-active)] transition-colors"
             >
               <UsersRound size={20} />
             </button>
@@ -63,7 +63,7 @@ const ConversationHeader = ({
               type="button"
               aria-label="Search conversations"
               onClick={() => setIsSearchOpen(true)}
-              className="flex items-center p-2 rounded-full bg-[var(--color-app)] text-[var(--color-text-secondary)] hover:bg-gray-100 focus:bg-black/5 active:bg-black/10 transition-colors"
+              className="flex items-center p-2 rounded-full bg-[var(--color-app)] text-[var(--color-text-secondary)] hover:bg-[var(--color-hover)] focus:bg-[var(--color-hover)] active:bg-[var(--color-active)] transition-colors"
             >
               <Search size={20} />
             </button>

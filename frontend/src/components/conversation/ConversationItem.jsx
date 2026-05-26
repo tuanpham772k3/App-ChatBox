@@ -30,7 +30,7 @@ const ConversationItem = ({
         className={`group min-w-0 max-w-full flex-1 flex items-center justify-between px-2 py-3 cursor-pointer rounded-lg transition-colors ${
           isActive
             ? "bg-[var(--color-primary)]/10"
-            : "hover:bg-gray-100 active:bg-gray-200 focus:bg-[var(--color-primary)]/10"
+            : "hover:bg-[var(--color-hover)] active:bg-[var(--color-active)] focus:bg-[var(--color-primary)]/10"
         }`}
       >
         {/* ====== Content ====== */}
@@ -57,13 +57,19 @@ const ConversationItem = ({
 
           {/* Name + LastMessage */}
           <span className="flex-1 flex flex-col gap-1 min-w-0 text-left">
-            <span className={`truncate text-sm ${unreadCount > 0 && "font-medium"}`}>
+            <span
+              className={`truncate text-sm text-[var(--color-text-primary)] ${
+                unreadCount > 0 && "font-medium"
+              }`}
+            >
               {display.displayName}
             </span>
 
             <span
               className={`truncate text-xs shrink-0 ${
-                unreadCount > 0 ? "text-gray-900" : "text-[var(--color-text-secondary)]"
+                unreadCount > 0
+                  ? "text-[var(--color-text-primary)]"
+                  : "text-[var(--color-text-secondary)]"
               }`}
             >
               {display.lastMsgSender && (
@@ -95,9 +101,9 @@ const ConversationItem = ({
                   type="button"
                   onClick={(e) => e.stopPropagation()}
                   aria-label="Open conversation actions"
-                  className="p-0.5 rounded-sm hover:bg-gray-200 focus:bg-black/5 active:bg-black/10 transition-colors"
+                  className="p-0.5 rounded-sm hover:bg-[var(--color-hover)] focus:bg-[var(--color-hover)] active:bg-[var(--color-active)] transition-colors"
                 >
-                  <Ellipsis size={20} />
+                  <Ellipsis size={20} className="text-[var(--color-text-primary)]" />
                 </button>
               </PopoverConversationAction>
             </div>

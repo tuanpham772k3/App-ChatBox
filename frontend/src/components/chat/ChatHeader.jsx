@@ -25,7 +25,7 @@ const ChatHeader = ({
           type="button"
           onClick={onBack}
           aria-label="Back to conversations"
-          className="md:hidden shrink-0 p-2 rounded-full text-[var(--color-text-primary)] hover:bg-gray-100 focus:bg-black/5 active:bg-black/10"
+          className="md:hidden shrink-0 p-2 rounded-full text-[var(--color-text-primary)] hover:bg-[var(--color-hover)] focus:bg-[var(--color-hover)] active:bg-[var(--color-active)]"
         >
           <SlArrowLeft size={18} />
         </button>
@@ -67,7 +67,7 @@ const ChatHeader = ({
             <button
               onClick={onOpenMembersInfo}
               type="button"
-              className="min-w-0 truncate flex items-center gap-1 text-xs md:text-sm text-[var(--color-text-primary)] hover:text-blue-500 transition-colors"
+              className="min-w-0 truncate flex items-center gap-1 text-xs md:text-sm text-[var(--color-text-primary)] hover:text-[var(--color-primary)] transition-colors"
             >
               <UsersRound size={16} className="shrink-0" />
               <span>{`${displayInfo.participants.length} thành viên`}</span>
@@ -88,7 +88,7 @@ const ChatHeader = ({
             onClick={onOpenAddMembers}
             type="button"
             aria-label="Add members"
-            className="hidden lg:flex p-2 rounded-full hover:bg-gray-100 active:bg-black/10"
+            className="hidden lg:flex p-2 rounded-full hover:bg-[var(--color-hover)] active:bg-[var(--color-active)]"
           >
             <UserPlus size={20} />
           </button>
@@ -96,14 +96,14 @@ const ChatHeader = ({
         <button
           type="button"
           aria-label="Start video call"
-          className="p-2 rounded-full hover:bg-gray-100 focus:bg-black/5 active:bg-black/10"
+          className="p-2 rounded-full hover:bg-[var(--color-hover)] focus:bg-[var(--color-hover)] active:bg-[var(--color-active)]"
         >
           <Video size={20} />
         </button>
         <button
           type="button"
           aria-label="Search in conversation"
-          className="p-2 rounded-full hover:bg-gray-100 focus:bg-black/5 active:bg-black/10"
+          className="p-2 rounded-full hover:bg-[var(--color-hover)] focus:bg-[var(--color-hover)] active:bg-[var(--color-active)]"
         >
           <Search size={20} />
         </button>
@@ -111,7 +111,7 @@ const ChatHeader = ({
           type="button"
           onClick={onOpenConversationInfo}
           aria-label="Open conversation information"
-          className="p-2 rounded-full hover:bg-gray-100 focus:bg-black/5 active:bg-black/10"
+          className="p-2 rounded-full hover:bg-[var(--color-hover)] focus:bg-[var(--color-hover)] active:bg-[var(--color-active)]"
         >
           <PanelRight size={20} />
         </button>

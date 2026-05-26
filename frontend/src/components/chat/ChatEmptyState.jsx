@@ -34,9 +34,11 @@ const ChatEmptyState = () => {
           {slides.map((slide, index) => (
             <div key={index}>
               <div className="flex flex-col items-center text-center gap-4 py-10">
-                <div className="text-gray-600">{slide.icon}</div>
+                <div className="text-[var(--color-text-secondary)]">{slide.icon}</div>
                 <h2 className="text-lg font-semibold">{slide.title}</h2>
-                <p className="text-sm text-gray-500">{slide.description}</p>
+                <p className="text-sm text-[var(--color-text-secondary)]">
+                  {slide.description}
+                </p>
               </div>
             </div>
           ))}

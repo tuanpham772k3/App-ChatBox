@@ -8,7 +8,7 @@ const SearchBar = ({ value, onChange, onCancel, placeholder }) => {
       role="search"
       onSubmit={(e) => e.preventDefault()}
     >
-      <div className="min-w-0 flex-1 flex items-center px-4 py-2 text-[var(--color-text-secondary)] bg-[var(--color-surface)] hover:bg-slate-100 focus-within:bg-slate-100 rounded-full border focus-within:border-[var(--color-primary)]">
+      <div className="min-w-0 flex-1 flex items-center px-4 py-2 text-[var(--color-text-secondary)] bg-[var(--color-surface)] hover:bg-[var(--color-hover)] focus-within:bg-[var(--color-hover)] rounded-full border border-[var(--color-border)] focus-within:border-[var(--color-primary)]">
         <Search size={20} className="shrink-0" />
         <input
           type="search"
@@ -23,7 +23,7 @@ const SearchBar = ({ value, onChange, onCancel, placeholder }) => {
         <button
           type="button"
           onClick={onCancel}
-          className="shrink-0 px-3 py-1 rounded-md font-medium bg-slate-50 hover:bg-gray-100 focus:bg-black/5 active:bg-black/10"
+          className="shrink-0 px-3 py-1 rounded-md font-medium bg-[var(--color-surface)] text-[var(--color-text-primary)] hover:bg-[var(--color-hover)] focus:bg-[var(--color-hover)] active:bg-[var(--color-active)]"
         >
           Đóng
         </button>

@@ -41,7 +41,7 @@ const DrawerConversationInfo = ({
           <div className="relative flex items-center justify-center">
             <button
               onClick={onClose}
-              className="absolute left-0 p-2 lg:hidden rounded-full hover:bg-gray-100"
+              className="absolute left-0 p-2 lg:hidden rounded-full hover:bg-[var(--color-hover)]"
             >
               <SlArrowLeft size={18} />
             </button>
@@ -75,7 +75,7 @@ const DrawerConversationInfo = ({
               <div className="w-full max-w-[75px] flex flex-col items-center gap-2">
                 <button
                   aria-label="Tắt thông báo"
-                  className="p-2 bg-[var(--color-chat)] hover:bg-black/10 rounded-full"
+                  className="p-2 bg-[var(--color-chat)] hover:bg-[var(--color-hover)] rounded-full"
                 >
                   <Bell size={20} />
                 </button>
@@ -88,8 +88,8 @@ const DrawerConversationInfo = ({
                   onClick={onTogglePin}
                   className={`rotate-45 p-2 bg-[var(--color-chat)]  rounded-full ${
                     isPinned
-                      ? "bg-[var(--color-primary)]/20 text-blue-500"
-                      : "hover:bg-black/10"
+                      ? "bg-[var(--color-primary)]/20 text-[var(--color-primary)]"
+                      : "hover:bg-[var(--color-hover)]"
                   }`}
                 >
                   {isPinned ? <PinOff size={20} /> : <Pin size={20} />}
@@ -102,7 +102,7 @@ const DrawerConversationInfo = ({
               <div className="w-full max-w-[75px] flex flex-col items-center gap-2">
                 <button
                   aria-label="Thêm thành viên"
-                  className="p-2 bg-[var(--color-chat)] hover:bg-black/10 rounded-full"
+                  className="p-2 bg-[var(--color-chat)] hover:bg-[var(--color-hover)] rounded-full"
                 >
                   <UserPlus size={20} />
                 </button>
@@ -112,7 +112,7 @@ const DrawerConversationInfo = ({
               <div className="w-full max-w-[75px] flex flex-col items-center gap-2">
                 <button
                   aria-label="Quản lý nhóm"
-                  className="p-2 bg-[var(--color-chat)] hover:bg-black/10 rounded-full"
+                  className="p-2 bg-[var(--color-chat)] hover:bg-[var(--color-hover)] rounded-full"
                 >
                   <Settings size={20} />
                 </button>
@@ -128,7 +128,7 @@ const DrawerConversationInfo = ({
             </h3>
             <button
               onClick={onOpenMembersInfo}
-              className="w-full flex items-center gap-2 px-4 py-3 text-sm text-[var(--color-text-primary)] hover:bg-gray-100 rounded"
+              className="w-full flex items-center gap-2 px-4 py-3 text-sm text-[var(--color-text-primary)] hover:bg-[var(--color-hover)] rounded"
             >
               <UsersRound size={20} />
               <span>{`${displayInfo?.participants?.length} thành viên`}</span>
@@ -158,10 +158,10 @@ const DrawerConversationInfo = ({
                     className="absolute top-1 right-1 flex items-center p-0.5 text-center rounded bg-[var(--color-chat)]
                     opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition"
                   >
-                    <button className="p-1 rounded hover:bg-gray-100">
+                    <button className="p-1 rounded hover:bg-[var(--color-hover)]">
                       <Forward size={18} color="var(--color-text-primary)" />
                     </button>
-                    <button className="p-1 rounded hover:bg-gray-100">
+                    <button className="p-1 rounded hover:bg-[var(--color-hover)]">
                       <Ellipsis size={18} color="var(--color-text-primary)" />
                     </button>
                   </div>
@@ -170,7 +170,7 @@ const DrawerConversationInfo = ({
             </div>
             <button
               onClick={onOpenMediaGallery}
-              className="w-full py-1 my-1 text-base font-semibold text-[var(--color-text-primary)] bg-[var(--color-chat)] hover:bg-black/10 rounded"
+              className="w-full py-1 my-1 text-base font-semibold text-[var(--color-text-primary)] bg-[var(--color-chat)] hover:bg-[var(--color-hover)] rounded"
             >
               Xem tất cả
             </button>
@@ -188,14 +188,14 @@ const DrawerConversationInfo = ({
 
           {/* ====== Actions ====== */}
           <div className="flex flex-col">
-            <button className="w-full flex items-center gap-2 p-4 text-sm hover:bg-gray-100 rounded text-[var(--color-text-primary)]">
+            <button className="w-full flex items-center gap-2 p-4 text-sm hover:bg-[var(--color-hover)] rounded text-[var(--color-text-primary)]">
               <TriangleAlert size={20} />
               <span>Báo xấu</span>
             </button>
 
             <button
               onClick={onClearHistory}
-              className="w-full flex items-center gap-2 p-4 text-sm hover:bg-gray-100 rounded text-red-500"
+              className="w-full flex items-center gap-2 p-4 text-sm hover:bg-[var(--color-hover)] rounded text-red-500"
             >
               <Trash size={20} />
               <span>Xóa lịch sử trò chuyện</span>
@@ -203,7 +203,7 @@ const DrawerConversationInfo = ({
 
             <button
               onClick={onOpenLeaveGroup}
-              className="w-full flex items-center gap-2 p-4 text-sm hover:bg-gray-100 rounded text-red-500"
+              className="w-full flex items-center gap-2 p-4 text-sm hover:bg-[var(--color-hover)] rounded text-red-500"
             >
               <LogOut size={20} />
               <span>Rời nhóm</span>

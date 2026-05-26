@@ -26,6 +26,7 @@ const PublicRoute = ({ element }) => {
 
 function App() {
   const { accessToken } = useSelector((state) => state.auth);
+  const mode = useSelector((state) => state.theme?.mode);
   const [api, contextHolder] = notification.useNotification();
 
   useEffect(() => {
@@ -41,6 +42,11 @@ function App() {
   }, [accessToken]);
 
   useSocket();
+
+  useEffect(() => {
+    if (!mode) return;
+    document.documentElement.setAttribute("data-theme", mode);
+  }, [mode]);
 
   return (
     <NotificationContext.Provider value={api}>

@@ -9,7 +9,7 @@ const MenuActions = ({ actions, minWidth = 160 }) => {
           type="button"
           onClick={() => action.onClick()}
           className={`flex items-center gap-2 w-full px-3 py-2 text-sm text-left text-[var(--color-text-primary)]
-            hover:bg-black/10 rounded ${action.danger ? "text-red-600" : ""}`}
+            hover:bg-[var(--color-hover)] rounded ${action.danger ? "text-red-600" : ""}`}
         >
           {action.icon}
           {action.label}

@@ -53,7 +53,7 @@ const UserProfileEditForm = ({ profile, onCancel, onSubmit }) => {
       className="flex flex-col h-full"
     >
       {/* Body */}
-      <div className="flex-1 px-4 py-4 space-y-4 overflow-y-auto">
+      <div className="flex-1 space-y-4 overflow-y-auto">
         <Form.Item
           label="Tên hiển thị"
           name="displayName"
@@ -91,11 +91,11 @@ const UserProfileEditForm = ({ profile, onCancel, onSubmit }) => {
       </div>
 
       {/* Footer */}
-      <div className="flex justify-end gap-2 px-4 py-3 border-t border-[var(--color-border)]">
+      <div className="flex justify-end gap-2 border-t border-[var(--color-border)]">
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 bg-[var(--color-chat)] hover:bg-black/10 rounded"
+          className="px-4 py-2 bg-[var(--color-chat)] text-[var(--color-text-primary)] hover:bg-[var(--color-hover)] rounded"
         >
           Hủy
         </button>

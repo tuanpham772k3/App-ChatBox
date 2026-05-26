@@ -29,7 +29,7 @@ const MessageDateDivider = ({ date }) => {
     <li className="sticky top-0 z-10 flex justify-center py-2 list-none">
       <time
         dateTime={messageDate.toISOString()}
-        className="py-1 px-4 bg-gray-400 backdrop-blur rounded-xl text-xs text-white shadow"
+        className="py-1 px-4 bg-[var(--color-status)] backdrop-blur rounded-xl text-xs text-white shadow"
       >
         {messageDate.toLocaleDateString([], {
           weekday: "short",

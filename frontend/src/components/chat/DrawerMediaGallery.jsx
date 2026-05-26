@@ -15,7 +15,7 @@ const DrawerMediaGallery = ({ open, onClose, images }) => {
         <div className="relative flex items-center justify-center">
           <button
             onClick={onClose}
-            className="lg:hidden absolute left-0 p-2 rounded-full hover:bg-gray-100"
+            className="lg:hidden absolute left-0 p-2 rounded-full hover:bg-[var(--color-hover)]"
           >
             <SlArrowLeft size={18} />
           </button>
@@ -46,10 +46,10 @@ const DrawerMediaGallery = ({ open, onClose, images }) => {
                 className="absolute top-1 right-1 flex items-center p-0.5 text-center rounded bg-[var(--color-chat)]
                 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition"
               >
-                <button className="p-1 rounded hover:bg-black/10">
+                <button className="p-1 rounded hover:bg-[var(--color-hover)]">
                   <Forward size={18} color="var(--color-text-primary)" />
                 </button>
-                <button className="p-1 rounded hover:bg-black/10">
+                <button className="p-1 rounded hover:bg-[var(--color-hover)]">
                   <Ellipsis size={18} color="var(--color-text-primary)" />
                 </button>
               </div>

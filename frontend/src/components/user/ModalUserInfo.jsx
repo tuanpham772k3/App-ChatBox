@@ -1,15 +1,6 @@
 import React, { useEffect, useState } from "react";
-import {
-  Checkbox,
-  Descriptions,
-  Form,
-  Input,
-  message,
-  Modal,
-  Radio,
-  Select,
-  Upload,
-} from "antd";
+import { Avatar, Button, Descriptions, Image, Modal, Upload } from "antd";
+import { Typography } from "antd";
 import ImgCrop from "antd-img-crop";
 import { CloseOutlined } from "@ant-design/icons";
 import { ArrowLeft, Camera, PencilLine } from "lucide-react";
@@ -17,6 +8,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchProfile } from "../../store/userSlice";
 import { useNotification } from "@/hooks/useNotification";
 import UserProfileEditForm from "./UserProfileEditForm";
+
+const { Title, Text } = Typography;
 
 const ModalUserInfo = ({ isOpen, onCancel }) => {
   const dispatch = useDispatch();
@@ -52,26 +45,17 @@ const ModalUserInfo = ({ isOpen, onCancel }) => {
       width="min(calc(100vw - 2rem), 25rem)"
       centered
       closeIcon={<CloseOutlined style={{ color: "var(--color-text-secondary)" }} />}
-      styles={{
-        content: {
-          backgroundColor: "var(--color-app)",
-          padding: 0,
-        },
-      }}
     >
       {mode === "view" && (
         <>
-          {/* Header */}
-          <div className="px-4 py-4 border-b border-[var(--color-border)]">
-            <h2 className="text-[var(--color-text-primary)] text-lg font-semibold">
-              Thông tin tài khoản
-            </h2>
-          </div>
+          <header className="border-b border-[var(--color-border)]">
+            <Title level={4}>Thông tin tài khoản</Title>
+          </header>
           {/* Body */}
-          <div className="flex flex-col">
+          <div className="mb-4 flex flex-col">
             {/* Ảnh */}
             <div className="relative flex flex-col border-b-4 border-[var(--color-border)]">
-              <img
+              <Image
                 src="https://24hstore.vn/upload_images/images/anh-bia-facebook-dep/anh-bia-facebook-dep_(1).jpg"
                 alt="Ảnh bìa"
                 className="h-50 object-cover"
@@ -79,83 +63,74 @@ const ModalUserInfo = ({ isOpen, onCancel }) => {
               <div className="h-20">
                 <div className="absolute bottom-5 flex items-center gap-4 px-4">
                   <div className="relative">
-                    <img
-                      src={profile?.avatarUrl.url}
-                      alt={profile?.username}
-                      className="w-20 h-20 rounded-full border-2 border-[var(--color-border)] object-cover"
-                    />
+                    <Avatar size={80} src={profile?.avatarUrl.url}>
+                      {profile?.username?.[0]}
+                    </Avatar>
                     <button
                       onClick={() => modalTransition("editAvatar")}
-                      className="absolute bottom-0 right-0 p-1 text-[var(--color-text-secondary)] bg-[var(--color-app)] hover:bg-black/10 rounded-full border border-[var(--color-border)]"
+                      className="absolute bottom-0 right-0 p-1 text-[var(--color-text-secondary)] bg-[var(--color-app)] hover:bg-[var(--color-hover)] rounded-full border border-[var(--color-border)]"
                     >
                       <Camera size={22} />
                     </button>
                   </div>
                   <div className="flex items-center gap-2">
-                    <h2 className="text-xl font-medium">{profile?.username}</h2>
-                    <button
+                    <h2 className="min-w-0 truncate text-xl font-medium">
+                      {profile?.username}
+                    </h2>
+                    <Button
+                      type="text"
+                      shape="circle"
+                      icon={<PencilLine size={16} />}
                       onClick={() => modalTransition("editInfo")}
-                      className="p-1 rounded-full hover:bg-black/10"
-                    >
-                      <PencilLine size={16} />
-                    </button>
+                    />
                   </div>
                 </div>
               </div>
             </div>
             {/* Info */}
-            <div className="flex flex-col gap-2 p-4">
+            <div className="flex flex-col gap-2">
               <h2 className="text-lg font-medium">Thông tin cá nhân</h2>
-              <div className="flex flex-col gap-2">
-                <div className="flex">
-                  <span className="w-30">Giới tính</span>
-                  <span className="font-medium text-[var(--color-text-primary)]">
-                    Nam
-                  </span>
-                </div>
-                <div className="flex">
-                  <span className="w-30">Ngày sinh</span>
-                  <span className="font-medium text-[var(--color-text-primary)]">
-                    07 tháng 07, 2003
-                  </span>
-                </div>
-                <div className="flex">
-                  <span className="w-30">Email</span>
-                  <span className="font-medium text-[var(--color-text-primary)]">
-                    {profile?.email}
-                  </span>
-                </div>
-                <div className="flex">
-                  <span className="w-30">Bio</span>
-                  <span>{profile?.bio}</span>
-                </div>
-              </div>
+              <Descriptions column={1}>
+                <Descriptions.Item label="Giới tính">Nam</Descriptions.Item>
+
+                <Descriptions.Item label="Ngày sinh">07 tháng 07, 2003</Descriptions.Item>
+
+                <Descriptions.Item label="Email">
+                  <Text copyable>{profile?.email}</Text>
+                </Descriptions.Item>
+
+                <Descriptions.Item label="Bio">{profile?.bio || "..."}</Descriptions.Item>
+              </Descriptions>
             </div>
           </div>
           {/* Footer */}
-          <div className="p-3 border-t border-[var(--color-border)]">
-            <button
+          <footer className="border-t border-[var(--color-border)]">
+            <Button
+              type="primary"
+              block
+              icon={<PencilLine size={18} />}
               onClick={() => modalTransition("editInfo")}
-              className="w-full flex justify-center items-center gap-2 py-1 bg-[var(--color-chat)] hover:bg-black/10 rounded"
             >
-              <PencilLine size={20} />
-              <span className="text-lg font-medium">Cập nhật</span>
-            </button>
-          </div>
+              Cập nhật
+            </Button>
+          </footer>
         </>
       )}
 
       {mode === "editInfo" && (
         <>
           {/* Header */}
-          <div className="flex items-center gap-4 p-4 border-b border-[var(--color-border)]">
-            <button className="p-2 hover:bg-[var(--color-chat)] rounded-full">
-              <ArrowLeft onClick={() => modalTransition("view")} />
-            </button>
+          <header className="flex items-center gap-4 mb-4 border-b border-[var(--color-border)]">
+            <Button
+              type="text"
+              shape="circle"
+              icon={<ArrowLeft size={18} />}
+              onClick={() => modalTransition("view")}
+            />
             <h2 className="text-[var(--color-text-primary)] text-lg font-semibold">
               Cập nhật thông tin cá nhân
             </h2>
-          </div>
+          </header>
           <UserProfileEditForm
             profile={profile}
             onCancel={() => modalTransition("view")}
@@ -166,19 +141,23 @@ const ModalUserInfo = ({ isOpen, onCancel }) => {
           />
         </>
       )}
+
       {mode === "editAvatar" && (
         <>
           {/* Header */}
-          <div className="flex items-center gap-4 p-4 border-b border-[var(--color-border)]">
-            <button className="p-2 hover:bg-[var(--color-chat)] rounded-full">
-              <ArrowLeft onClick={() => modalTransition("view")} />
-            </button>
+          <header className="mb-4 flex items-center gap-4 border-b border-[var(--color-border)]">
+            <Button
+              type="text"
+              shape="circle"
+              icon={<ArrowLeft size={18} />}
+              onClick={() => modalTransition("view")}
+            />
             <h2 className="text-[var(--color-text-primary)] text-lg font-semibold">
               Cập nhật ảnh đại diện
-            </h2>
-          </div>
+            </h2>{" "}
+          </header>
           {/* Đang làm */}
-          <div className="flex flex-col items-center justify-center py-6">
+          <div className="mb-4 flex flex-col items-center justify-center">
             <ImgCrop rotationSlider>
               <Upload
                 listType="picture-card"
@@ -207,15 +186,11 @@ const ModalUserInfo = ({ isOpen, onCancel }) => {
           </div>
 
           {/* Footer */}
-          <div className="flex justify-end gap-2 px-4 py-3 border-t border-[var(--color-border)]">
-            <button
-              onClick={() => modalTransition("view")}
-              className="px-4 py-2 bg-[var(--color-chat)] hover:bg-black/10 rounded"
-            >
-              Hủy
-            </button>
+          <footer className="pt-4 flex justify-end gap-2 border-t border-[var(--color-border)]">
+            <Button onClick={() => modalTransition("view")}>Hủy</Button>
 
-            <button
+            <Button
+              type="primary"
               disabled={!avatarFile}
               onClick={() => {
                 const formData = new FormData();
@@ -226,11 +201,10 @@ const ModalUserInfo = ({ isOpen, onCancel }) => {
 
                 modalTransition("view");
               }}
-              className="px-4 py-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white rounded disabled:opacity-50"
             >
               Cập nhật
-            </button>
-          </div>
+            </Button>
+          </footer>
         </>
       )}
     </Modal>
