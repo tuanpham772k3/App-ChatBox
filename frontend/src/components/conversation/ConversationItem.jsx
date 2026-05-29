@@ -1,7 +1,7 @@
 import React from "react";
 import { Ellipsis, Pin } from "lucide-react";
 import GroupAvatar from "@/components/ui/avatar/GroupAvatar";
-import PopoverConversationAction from "./PopoverConversationAction";
+import PopoverConversationAction from "./PopoverConversationActions";
 
 const ConversationItem = ({
   isActive,
@@ -75,9 +75,9 @@ const ConversationItem = ({
         </span>
       </button>
 
-      <div onClick={onSelect} className="flex shrink-0 flex-col items-end gap-1">
+      <div onClick={onSelect} className="min-w-7 flex shrink-0 flex-col items-end gap-1">
         {/* Top row */}
-        <div className="relative flex items-center justify-end">
+        <div className="relative w-full flex items-center justify-end">
           <time className="touch-hide whitespace-nowrap text-[11px] text-[var(--color-text-secondary)] hidden lg:block lg:group-hover:opacity-0 transition-opacity duration-150">
             {display.lastMsgTime}
           </time>
@@ -89,16 +89,7 @@ const ConversationItem = ({
               onMarkUnread={onMarkUnread}
               onClearHistory={onClearHistory}
               onRemove={onRemove}
-            >
-              <button
-                type="button"
-                onClick={(e) => e.stopPropagation()}
-                aria-label="Open conversation actions"
-                className="p-0.5 rounded-sm hover:bg-[var(--color-hover)] focus:bg-[var(--color-hover)] active:bg-[var(--color-active)] transition-colors"
-              >
-                <Ellipsis size={20} className="text-[var(--color-text-primary)]" />
-              </button>
-            </PopoverConversationAction>
+            />
           </div>
         </div>
 

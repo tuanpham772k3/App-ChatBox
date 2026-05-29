@@ -106,13 +106,7 @@ const Sidebar = ({ mode = "desktop", onClose }) => {
 
       {/* User Info */}
       <footer className="flex items-center gap-3 p-4 transition-all">
-        <PopoverUserActions userInfo={user}>
-          <img
-            src={user?.avatar || "/avatarA.jpg"}
-            alt={user?.username ? `${user.username} avatar` : "User avatar"}
-            className="w-12 h-12 shrink-0 rounded-full border border-[var(--color-border)] object-cover cursor-pointer"
-          />
-        </PopoverUserActions>
+        <PopoverUserActions userInfo={user} />
 
         <div className="flex-col items-start truncate">
           <p className="text-sm font-semibold text-[var(--color-text-primary)]">

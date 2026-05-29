@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { toggleTheme } from "@/store/themeSlice";
 import ModalUserInfo from "./ModalUserInfo";
 
-const PopoverUserActions = ({ children, userInfo }) => {
+const PopoverUserActions = ({ userInfo }) => {
   const dispatch = useDispatch();
   const mode = useSelector((state) => state.theme.mode);
   const [open, setOpen] = useState(false);
@@ -74,7 +74,16 @@ const PopoverUserActions = ({ children, userInfo }) => {
           </div>
         }
       >
-        {children}
+        <button
+          type="button"
+          className="w-12 h-12 rounded-full focus:ring-2 focus:ring-[var(--color-primary)]"
+        >
+          <img
+            src={userInfo?.avatar || "/avatarA.jpg"}
+            alt={userInfo?.username || "User avatar"}
+            className="w-full h-full rounded-full border border-[var(--color-border)] object-cover cursor-pointer"
+          />
+        </button>
       </Popover>
 
       <ModalUserInfo isOpen={openModal} onCancel={closeModalUserInfo} />

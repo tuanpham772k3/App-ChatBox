@@ -1,36 +1,6 @@
-import React, { useState } from "react";
-import {
-  Check,
-  CheckCheck,
-  Clock,
-  EllipsisVertical,
-  Pencil,
-  Trash,
-  TriangleAlert,
-} from "lucide-react";
-import { Popover } from "antd";
-import MenuActions from "@/components/ui/popover/MenuActions";
-
-const buildMessageActions = ({ onEdit, onDelete }) => [
-  {
-    key: "edit",
-    icon: <Pencil size={18} />,
-    label: "Chỉnh sửa tin nhắn",
-    onClick: onEdit,
-  },
-  {
-    key: "delete",
-    icon: <Trash size={18} />,
-    label: "Thu hồi tin nhắn",
-    danger: true,
-    onClick: onDelete,
-  },
-];
-
-const isMessageAtOrBeforePointer = (pointerAt, messageCreatedAt) => {
-  if (!pointerAt || !messageCreatedAt) return false;
-  return new Date(pointerAt).getTime() >= new Date(messageCreatedAt).getTime();
-};
+import React from "react";
+import { Check, CheckCheck, Clock, TriangleAlert } from "lucide-react";
+import PopoverMessageActions from "./PopoverMessageActions";
 
 const MessageItem = ({
   msg,
@@ -45,18 +15,6 @@ const MessageItem = ({
   onDeleteMessage,
   onEditClick,
 }) => {
-  const [open, setOpen] = useState(false); // State menu actions
-
-  const handleDelete = () => {
-    onDeleteMessage(msg._id);
-    setOpen(false);
-  };
-
-  const handleEdit = () => {
-    onEditClick(msg);
-    setOpen(false);
-  };
-
   const avatar = msg.senderId?.avatarUrl?.url || "/avatarA.jpg";
   const msgTimeDate = new Date(msg.createdAt);
   const msgTime = msgTimeDate.toLocaleTimeString([], {
@@ -70,6 +28,11 @@ const MessageItem = ({
     hour: "2-digit",
     minute: "2-digit",
   });
+
+  const isMessageAtOrBeforePointer = (pointerAt, messageCreatedAt) => {
+    if (!pointerAt || !messageCreatedAt) return false;
+    return new Date(pointerAt).getTime() >= new Date(messageCreatedAt).getTime();
+  };
 
   const getReceiptParticipants = (
     participants,
@@ -107,26 +70,21 @@ const MessageItem = ({
         )
       : [];
 
-  const messageActions = buildMessageActions({
-    onEdit: handleEdit,
-    onDelete: handleDelete,
-  });
-
   const MESSAGE_STATUS = {
     sending: {
-      icon: Clock,
+      Icon: Clock,
       label: "Đang gửi",
     },
     sent: {
-      icon: Check,
+      Icon: Check,
       label: "Đã gửi",
     },
     delivered: {
-      icon: CheckCheck,
+      Icon: CheckCheck,
       label: "Đã nhận",
     },
     failed: {
-      icon: TriangleAlert,
+      Icon: TriangleAlert,
       label: "Lỗi",
     },
   };
@@ -157,23 +115,11 @@ const MessageItem = ({
         {/* Ellipsis + Menu */}
         {isMine && !msg.isDeleted && (
           <div className="touch-always-visible self-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-150">
-            <Popover
-              trigger="click"
-              placement="bottom"
-              open={open}
-              onOpenChange={setOpen}
-              content={<MenuActions actions={messageActions} minWidth={160} />}
-            >
-              {/* Ellipsis */}
-              <button
-                type="button"
-                onClick={(e) => e.stopPropagation()}
-                aria-label="Open message actions"
-                className="p-1 bg-[var(--color-app)] text-[var(--color-text-primary)] rounded-full border border-[var(--color-border)] shadow-xs hover:bg-[var(--color-hover)] active:bg-[var(--color-active)]"
-              >
-                <EllipsisVertical size={18} />
-              </button>
-            </Popover>
+            <PopoverMessageActions
+              msg={msg}
+              onEditClick={onEditClick}
+              onDeleteMessage={onDeleteMessage}
+            />
           </div>
         )}
 
@@ -270,7 +216,7 @@ const MessageItem = ({
               {/* Trạng thái */}
               {statusConfig && (
                 <span className="flex items-center gap-1 p-1 bg-[var(--color-status)] rounded-lg text-xs font-medium text-white">
-                  <statusConfig.icon size={14} aria-hidden="true" />
+                  <statusConfig.Icon size={14} aria-hidden="true" />
                   <span>{statusConfig.label}</span>
                 </span>
               )}
