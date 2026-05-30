@@ -1,12 +1,11 @@
+import "../src/styles/globals.css";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import "../src/styles/globals.css";
-import App from "./App.jsx";
-import { store } from "../src/store/store";
 import { Provider, useSelector } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
-import { ConfigProvider } from "antd";
-import { theme as antdTheme } from "antd";
+import { store } from "../src/store/store";
+import { ConfigProvider, theme as antdTheme } from "antd";
+import App from "./App.jsx";
 
 const AppProvider = ({ children }) => {
   const mode = useSelector((state) => state.theme.mode);

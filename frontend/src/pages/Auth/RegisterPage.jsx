@@ -57,7 +57,7 @@ const RegisterPage = () => {
       <div className="container mx-auto min-h-screen flex items-center justify-center px-4 py-6">
         <Card className="w-full max-w-[25rem] shadow-lg">
           {/* Title */}
-          <Title level={3} className="text-center mb-4">
+          <Title level={3} className="text-center">
             Đăng ký
           </Title>
 
