@@ -91,11 +91,11 @@ const UserProfileEditForm = ({ profile, onCancel, onSubmit }) => {
       </div>
 
       {/* Footer */}
-      <div className="flex justify-end gap-2 border-t border-[var(--color-border)]">
+      <div className="flex justify-end gap-2 pt-2 border-t border-[var(--color-border)]">
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 bg-[var(--color-chat)] text-[var(--color-text-primary)] hover:bg-[var(--color-hover)] rounded"
+          className="px-4 py-2 bg-[var(--color-surface)] text-[var(--color-text-primary)] hover:bg-[var(--color-hover)] rounded"
         >
           Hủy
         </button>

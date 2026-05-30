@@ -1,14 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Button, Modal, Spin, Typography } from "antd";
 import { useDispatch } from "react-redux";
-import { CloseOutlined } from "@ant-design/icons";
+import { Modal, Spin } from "antd";
 import FriendItem from "@/components/ui/member/FriendItem";
+import SearchBar from "../ui/search/SearchBar";
 import { searchUsers } from "@/store/userSlice";
 import { createPrivateConversation } from "../../store/conversationsSlice";
 import { useNotification } from "@/hooks/useNotification";
-import SearchBar from "../ui/search/SearchBar";
-
-const { Title } = Typography;
 
 const ModalCreatePrivate = ({ isOpen, onCancel }) => {
   const dispatch = useDispatch();
@@ -35,12 +32,10 @@ const ModalCreatePrivate = ({ isOpen, onCancel }) => {
     }
   };
 
-  // Lấy danh sách user
   useEffect(() => {
     fetchUsers();
   }, [dispatch]);
 
-  // Tìm kiếm bạn bè khi searchText thay đổi
   useEffect(() => {
     const query = searchText.trim();
 
@@ -51,13 +46,10 @@ const ModalCreatePrivate = ({ isOpen, onCancel }) => {
     return () => clearTimeout(handler);
   }, [searchText, dispatch]);
 
-  // Hàm xử lý chọn/bỏ chọn bạn bè
   const toggleFriend = (friendId) => {
-    // Nếu click lại người đã chọn => bỏ chọn
     setSelectedFriend((prev) => (prev === friendId ? "" : friendId));
   };
 
-  // Xử lý tạo nhóm chat 1-1
   const handleCreatePrivate = async () => {
     try {
       if (selectedFriend.length === 0) {
@@ -68,10 +60,8 @@ const ModalCreatePrivate = ({ isOpen, onCancel }) => {
         return;
       }
 
-      // Create conversation
       await dispatch(createPrivateConversation(selectedFriend)).unwrap();
 
-      // Reset state
       setSelectedFriend("");
       setSearchText("");
       onCancel(null);
@@ -87,24 +77,14 @@ const ModalCreatePrivate = ({ isOpen, onCancel }) => {
     <Modal
       open={isOpen}
       onCancel={onCancel}
-      footer={null}
       width="min(calc(100vw - 2rem), 25rem)"
-      centered
-      closeIcon={<CloseOutlined style={{ color: "var(--color-text-secondary)" }} />}
-      styles={{
-        content: {
-          backgroundColor: "var(--color-app)",
-          padding: 0,
-        },
-      }}
+      onOk={handleCreatePrivate}
+      confirmLoading={loading}
+      okText="Tạo"
+      cancelText="Hủy"
+      title="Tạo chat riêng tư"
     >
-      {/* Header */}
-      <header className="p-4 border-b border-[var(--color-border)]">
-        <Title level={4}>Private chat</Title>
-      </header>
-
-      {/* Body */}
-      <div className="flex flex-col gap-2 p-4">
+      <div className="space-y-4 border-y-1 border-[var(--color-border)] py-4">
         {/* Search */}
         <SearchBar
           value={searchText}
@@ -112,7 +92,7 @@ const ModalCreatePrivate = ({ isOpen, onCancel }) => {
           placeholder="Tìm kiếm thành viên..."
         />
 
-        {/* ====== Friends List ====== */}
+        {/* Friends List */}
         <ul className="max-h-[min(60vh,25rem)] flex flex-col gap-1 overflow-y-auto custom-scrollbar">
           {loading ? (
             <span className="w-full text-center mt-8">
@@ -135,13 +115,6 @@ const ModalCreatePrivate = ({ isOpen, onCancel }) => {
             />
           ))}
         </ul>
-      </div>
-      {/* Footer */}
-      <div className="p-4 flex justify-end gap-3 border-t border-[var(--color-border)]">
-        <Button onClick={onCancel}>Hủy</Button>
-        <Button onClick={handleCreatePrivate} type="primary">
-          Nhắn tin
-        </Button>
       </div>
     </Modal>
   );

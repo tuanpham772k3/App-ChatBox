@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Button, Modal, Spin } from "antd";
-import { CloseOutlined } from "@ant-design/icons";
+import { Modal, Spin } from "antd";
 import { useDispatch } from "react-redux";
+import SearchBar from "../ui/search/SearchBar";
 import FriendItem from "@/components/ui/member/FriendItem";
 import { searchUsers } from "@/store/userSlice";
-import { useNotification } from "@/hooks/useNotification";
 import { addMemberToGroup } from "@/store/conversationsSlice";
-import SearchBar from "../ui/search/SearchBar";
+import { useNotification } from "@/hooks/useNotification";
 
 const ModalAddMembers = ({ isOpen, onCancel, conversationId }) => {
   const dispatch = useDispatch();
@@ -90,25 +89,14 @@ const ModalAddMembers = ({ isOpen, onCancel, conversationId }) => {
     <Modal
       open={isOpen}
       onCancel={onCancel}
-      footer={null}
       width="min(calc(100vw - 2rem), 25rem)"
-      centered
-      closeIcon={<CloseOutlined style={{ color: "var(--color-text-secondary)" }} />}
-      styles={{
-        content: {
-          backgroundColor: "var(--color-app)",
-          padding: 0,
-        },
-      }}
+      onOk={handleAddMembersToGroup}
+      confirmLoading={loading}
+      okText="Thêm"
+      cancelText="Hủy"
+      title="Thêm thành viên"
     >
-      {/* ====== Header ====== */}
-      <div className="p-4 border-b border-[var(--color-border)]">
-        <h2 className="text-[var(--color-text-primary)] text-lg font-semibold">
-          Thêm thành viên
-        </h2>
-      </div>
-      {/* ====== Body ====== */}
-      <div className="flex flex-col gap-2 p-4">
+      <div className="flex flex-col gap-2 border-y-1 border-[var(--color-border)] py-4">
         {/* Search */}
         <SearchBar
           value={searchText}
@@ -137,13 +125,6 @@ const ModalAddMembers = ({ isOpen, onCancel, conversationId }) => {
             ))
           )}
         </div>
-      </div>
-      {/* ====== Footer ====== */}
-      <div className="p-4 flex justify-end gap-3 border-t border-[var(--color-border)]">
-        <Button onClick={onCancel}>Hủy</Button>
-        <Button onClick={handleAddMembersToGroup} type="primary">
-          Thêm
-        </Button>
       </div>
     </Modal>
   );

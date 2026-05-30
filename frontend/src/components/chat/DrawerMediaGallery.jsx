@@ -43,8 +43,8 @@ const DrawerMediaGallery = ({ open, onClose, images }) => {
 
               {/* Action */}
               <div
-                className="absolute top-1 right-1 flex items-center p-0.5 text-center rounded bg-[var(--color-chat)]
-                opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition"
+                className="absolute top-1 right-1 flex items-center p-0.5 text-center rounded bg-[var(--color-surface)]
+                opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
               >
                 <button className="p-1 rounded hover:bg-[var(--color-hover)]">
                   <Forward size={18} color="var(--color-text-primary)" />

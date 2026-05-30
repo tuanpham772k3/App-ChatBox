@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Avatar, Button, Descriptions, Image, Modal, Upload } from "antd";
 import { Typography } from "antd";
 import ImgCrop from "antd-img-crop";
-import { CloseOutlined } from "@ant-design/icons";
 import { ArrowLeft, Camera, PencilLine } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProfile } from "../../store/userSlice";
@@ -43,8 +42,6 @@ const ModalUserInfo = ({ isOpen, onCancel }) => {
       onCancel={onCancel}
       footer={null}
       width="min(calc(100vw - 2rem), 25rem)"
-      centered
-      closeIcon={<CloseOutlined style={{ color: "var(--color-text-secondary)" }} />}
     >
       {mode === "view" && (
         <>

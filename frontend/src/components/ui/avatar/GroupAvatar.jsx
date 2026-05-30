@@ -38,7 +38,8 @@ const GroupAvatar = ({ users, size = 48 }) => {
 
       {users.length >= 5 && (
         <div
-          className="absolute bottom-0 right-0 flex items-center justify-center rounded-full bg-[var(--color-chat)] text-[10px] font-semibold border-2 border-[var(--color-app)]"
+          className="absolute bottom-0 right-0 flex items-center justify-center rounded-full bg-[var(--color-surface)]
+          text-[var(--color-text-secondary)] text-[10px] font-semibold border-2 border-[var(--color-app)]"
           style={{ width: itemSize, height: itemSize }}
         >
           {membersCount}

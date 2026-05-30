@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Button, Modal, Spin } from "antd";
+import { Modal, Spin } from "antd";
 import { Camera } from "lucide-react";
-import { CloseOutlined } from "@ant-design/icons";
 import { useDispatch } from "react-redux";
 import { searchUsers } from "@/store/userSlice";
 import { createGroupConversation } from "@/store/conversationsSlice";
@@ -9,7 +8,6 @@ import FriendItem from "@/components/ui/member/FriendItem";
 import { useNotification } from "@/hooks/useNotification";
 import SearchBar from "../ui/search/SearchBar";
 
-// Component chính
 const ModalCreateGroup = ({ isOpen, onCancel }) => {
   const dispatch = useDispatch();
 
@@ -106,50 +104,37 @@ const ModalCreateGroup = ({ isOpen, onCancel }) => {
     <Modal
       open={isOpen}
       onCancel={onCancel}
-      footer={null}
       width="min(calc(100vw - 2rem), 31.25rem)"
-      centered
-      closeIcon={<CloseOutlined style={{ color: "var(--color-text-secondary)" }} />}
-      styles={{
-        content: {
-          backgroundColor: "var(--color-app)",
-          padding: 0,
-        },
-      }}
+      onOk={handleCreateGroup}
+      confirmLoading={loading}
+      okText="Tạo"
+      cancelText="Hủy"
+      title="Tạo nhóm chat"
     >
-      {/* Header */}
-      <div className="px-4 py-4 border-b border-[var(--color-border)]">
-        <h2 className="text-[var(--color-text-primary)] text-lg font-semibold">
-          Group chat
-        </h2>
-      </div>
-      {/* Body */}
-      <div className="flex flex-col px-4">
-        <div className="py-4 border-b border-[var(--color-border)]">
-          {/* Input */}
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-14 h-14 flex items-center justify-center border border-[var(--color-border)] rounded-full cursor-pointer">
-              <Camera className="text-[var(--color-text-secondary)] text-xl" />
-            </div>
-            <div className="min-w-0 flex-1 sm:pe-20 p-2 text-[var(--color-text-primary)] border-b-2 border-[var(--color-border)] focus-within:border-blue-500">
-              <input
-                placeholder="Nhập tên nhóm..."
-                value={groupName}
-                onChange={(e) => setGroupName(e.target.value)}
-                className="w-full placeholder-[var(--color-text-secondary)]"
-              />
-            </div>
+      <div className="space-y-4 border-y-1 border-[var(--color-border)] py-4">
+        {/* Input */}
+        <div className="flex items-center gap-3">
+          <div className="w-14 h-14 flex items-center justify-center border border-[var(--color-border)] rounded-full cursor-pointer">
+            <Camera size={26} />
           </div>
-
-          {/* Search */}
-          <SearchBar
-            value={searchText}
-            onChange={setSearchText}
-            placeholder={"Tìm kiếm thành viên..."}
-          />
+          <div className="min-w-0 flex-1 sm:pe-20 p-2 text-[var(--color-text-primary)] border-b-2 border-[var(--color-border)] focus-within:border-blue-500">
+            <input
+              placeholder="Nhập tên nhóm..."
+              value={groupName}
+              onChange={(e) => setGroupName(e.target.value)}
+              className="w-full placeholder-[var(--color-text-secondary)]"
+            />
+          </div>
         </div>
 
-        {/* ====== Friends List ====== */}
+        {/* Search */}
+        <SearchBar
+          value={searchText}
+          onChange={setSearchText}
+          placeholder={"Tìm kiếm thành viên..."}
+        />
+
+        {/* Friends List */}
         <ul className="max-h-[min(60vh,25rem)] flex flex-col gap-1 overflow-y-auto custom-scrollbar">
           {loading ? (
             <div className="w-full text-center mt-8">
@@ -172,14 +157,6 @@ const ModalCreateGroup = ({ isOpen, onCancel }) => {
             />
           ))}
         </ul>
-      </div>
-
-      {/* Footer */}
-      <div className="p-4 flex justify-end gap-3 border-t border-[var(--color-border)]">
-        <Button onClick={onCancel}>Hủy</Button>
-        <Button onClick={handleCreateGroup} type="primary">
-          Tạo nhóm
-        </Button>
       </div>
     </Modal>
   );

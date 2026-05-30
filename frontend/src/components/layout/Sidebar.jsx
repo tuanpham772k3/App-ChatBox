@@ -4,7 +4,6 @@ import {
   ChartNoAxesCombined,
   Files,
   LayoutDashboard,
-  X,
   MessageCircleMore,
   Phone,
   Settings,
@@ -85,7 +84,7 @@ const Sidebar = ({ mode = "desktop", onClose }) => {
                 className={`group flex w-full items-center gap-6 p-2 rounded-xl text-left transition-colors text-[var(--color-text-primary)] ${
                   active
                     ? "bg-[var(--color-primary-focus)] text-white shadow-xl"
-                    : "hover:bg-[var(--color-primary)] hover:text-white hover:shadow-xl"
+                    : "hover:bg-[var(--color-primary-hover)] hover:text-white hover:shadow-xl"
                 }`}
               >
                 <Icon

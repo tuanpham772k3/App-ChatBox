@@ -228,7 +228,6 @@ const MessageInput = ({
           }}
           type="text"
           placeholder="Type a message..."
-          className="min-w-0 flex-1 bg-[var(--color-app)] rounded-full p-2 text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)] placeholder:text-xs focus:outline-none"
         />
 
         {/* ===== SEND BUTTON ===== */}

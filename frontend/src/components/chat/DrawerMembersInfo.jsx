@@ -69,7 +69,7 @@ const DrawerMembersInfo = ({
           <button
             onClick={onOpenAddMembers}
             className="w-full flex items-center justify-center gap-2 py-2 font-medium text-base text-[var(--color-text-primary)]
-        bg-[var(--color-chat)] hover:bg-[var(--color-hover)] rounded"
+        bg-[var(--color-surface)] hover:bg-[var(--color-hover)] rounded"
           >
             <UserPlus size={16} />
             <p>Thêm thành viên</p>
