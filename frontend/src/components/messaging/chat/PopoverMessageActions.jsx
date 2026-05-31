@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Popover } from "antd";
 import { EllipsisVertical, Pencil, Trash } from "lucide-react";
-import MenuActions from "../ui/popover/MenuActions";
+import MenuActions from "../../ui/popover/MenuActions";
 
 const PopoverMessageActions = ({ msg, onEditClick, onDeleteMessage }) => {
   const [open, setOpen] = useState(false);

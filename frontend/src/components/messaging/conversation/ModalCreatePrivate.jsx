@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { Modal, Spin } from "antd";
 import UserSelectItem from "@/components/ui/user/UserSelectItem";
-import SearchBar from "../ui/search/SearchBar";
-import { createPrivateConversation } from "../../store/conversationsSlice";
+import SearchBar from "../../ui/search/SearchBar";
+import { createPrivateConversation } from "../../../store/conversationsSlice";
 import { useNotification } from "@/hooks/useNotification";
 import userApi from "@/services/userApi";
 

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Popover } from "antd";
 import { BrushCleaning, Ellipsis, MailCheck, Pin, PinOff, Trash } from "lucide-react";
-import MenuActions from "../ui/popover/MenuActions";
+import MenuActions from "../../ui/popover/MenuActions";
 
 const PopoverConversationActions = ({
   isPinned,

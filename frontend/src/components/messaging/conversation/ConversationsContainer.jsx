@@ -9,10 +9,10 @@ import {
   markConversationAsUnread,
   setActiveConversationId,
   togglePinConversation,
-} from "../../store/conversationsSlice";
+} from "../../../store/conversationsSlice";
 import ConversationHeader from "./ConversationHeader";
 import ConversationItem from "./ConversationItem";
-import { getDisplayInfo } from "../../utils/conversationHelper";
+import { getDisplayInfo } from "../../../utils/conversationHelper";
 import { useNotification } from "@/hooks/useNotification";
 import ModalCreateGroup from "./ModalCreateGroup";
 import ModalCreatePrivate from "./ModalCreatePrivate";

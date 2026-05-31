@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Modal, Spin } from "antd";
 import { useDispatch } from "react-redux";
-import SearchBar from "../ui/search/SearchBar";
+import SearchBar from "../../ui/search/SearchBar";
 import UserSelectItem from "@/components/ui/user/UserSelectItem";
 import { addMemberToGroup } from "@/store/conversationsSlice";
 import { useNotification } from "@/hooks/useNotification";

@@ -5,7 +5,7 @@ import { useDispatch } from "react-redux";
 import { createGroupConversation } from "@/store/conversationsSlice";
 import UserSelectItem from "@/components/ui/user/UserSelectItem";
 import { useNotification } from "@/hooks/useNotification";
-import SearchBar from "../ui/search/SearchBar";
+import SearchBar from "../../ui/search/SearchBar";
 import userApi from "@/services/userApi";
 
 const ModalCreateGroup = ({ isOpen, onCancel }) => {

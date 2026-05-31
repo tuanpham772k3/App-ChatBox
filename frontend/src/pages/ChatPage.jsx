@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Drawer, Grid } from "antd";
 import Sidebar from "@/components/layout/Sidebar";
-import ConversationContainer from "@/components/conversation/ConversationsContainer";
-import ChatWindow from "@/components/chat/ChatWindow";
+import ConversationContainer from "@/components/messaging/conversation/ConversationsContainer";
+import ChatWindow from "@/components/messaging/chat/ChatWindow";
 
 const { useBreakpoint } = Grid;
 
@@ -19,7 +19,10 @@ const ChatPage = () => {
   }, [screens.md]);
 
   return (
-    <main className="min-h-screen h-dvh flex overflow-hidden" aria-label="Chat application">
+    <main
+      className="min-h-screen h-dvh flex overflow-hidden"
+      aria-label="Chat application"
+    >
       <aside className="shrink-0" aria-label="Primary navigation">
         <Sidebar />
       </aside>
