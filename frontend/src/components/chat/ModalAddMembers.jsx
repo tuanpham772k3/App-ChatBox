@@ -2,17 +2,17 @@ import React, { useEffect, useState } from "react";
 import { Modal, Spin } from "antd";
 import { useDispatch } from "react-redux";
 import SearchBar from "../ui/search/SearchBar";
-import FriendItem from "@/components/ui/member/FriendItem";
-import { searchUsers } from "@/store/userSlice";
+import UserSelectItem from "@/components/ui/user/UserSelectItem";
 import { addMemberToGroup } from "@/store/conversationsSlice";
 import { useNotification } from "@/hooks/useNotification";
+import userApi from "@/services/userApi";
 
 const ModalAddMembers = ({ isOpen, onCancel, conversationId }) => {
   const dispatch = useDispatch();
 
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [selectedFriends, setSelectedFriends] = useState([]);
+  const [selectedUsers, setSelectedUsers] = useState([]);
   const [searchText, setSearchText] = useState("");
 
   const notification = useNotification();
@@ -20,7 +20,7 @@ const ModalAddMembers = ({ isOpen, onCancel, conversationId }) => {
   const fetchUsers = async (query = "") => {
     try {
       setLoading(true);
-      const users = await dispatch(searchUsers(query)).unwrap();
+      const users = await userApi.searchUsers(query);
       setResults(users);
     } catch (error) {
       notification.error({
@@ -32,7 +32,6 @@ const ModalAddMembers = ({ isOpen, onCancel, conversationId }) => {
     }
   };
 
-  // Lấy danh sách user
   useEffect(() => {
     fetchUsers();
   }, [dispatch]);
@@ -48,21 +47,19 @@ const ModalAddMembers = ({ isOpen, onCancel, conversationId }) => {
     return () => clearTimeout(handler);
   }, [searchText, dispatch]);
 
-  // Hàm xử lý chọn/bỏ chọn bạn bè
-  const toggleFriend = (friendId) => {
-    // Nếu click lại người đã chọn => bỏ chọn
-    setSelectedFriends((prev) => {
-      if (prev.includes(friendId)) {
-        return prev.filter((id) => id !== friendId);
+  const toggleUser = (userId) => {
+    setSelectedUsers((prev) => {
+      if (prev.includes(userId)) {
+        return prev.filter((id) => id !== userId);
       } else {
-        return [...prev, friendId];
+        return [...prev, userId];
       }
     });
   };
 
   const handleAddMembersToGroup = async () => {
     try {
-      if (selectedFriends.length === 0) {
+      if (selectedUsers.length === 0) {
         notification.warning({
           message: "No members selected",
           description: "Please select at least one member to add to the group",
@@ -71,10 +68,10 @@ const ModalAddMembers = ({ isOpen, onCancel, conversationId }) => {
       }
 
       await dispatch(
-        addMemberToGroup({ conversationId, memberIds: selectedFriends })
+        addMemberToGroup({ conversationId, memberIds: selectedUsers })
       ).unwrap();
 
-      setSelectedFriends([]);
+      setSelectedUsers([]);
       setSearchText("");
       onCancel();
     } catch (error) {
@@ -104,7 +101,7 @@ const ModalAddMembers = ({ isOpen, onCancel, conversationId }) => {
           placeholder={"Tìm kiếm thành viên..."}
         />
 
-        {/* Friends List */}
+        {/* User List */}
         <div className="max-h-[min(60vh,25rem)] overflow-y-auto custom-scrollbar">
           {loading ? (
             <div className="w-full text-center mt-8">
@@ -115,12 +112,12 @@ const ModalAddMembers = ({ isOpen, onCancel, conversationId }) => {
               Không tìm thấy kết quả
             </div>
           ) : (
-            results.map((friend) => (
-              <FriendItem
-                key={friend._id}
-                friend={friend}
-                isSelected={selectedFriends.includes(friend._id)}
-                onToggle={() => toggleFriend(friend._id)}
+            results.map((user) => (
+              <UserSelectItem
+                key={user._id}
+                user={user}
+                isSelected={selectedUsers.includes(user._id)}
+                onToggle={() => toggleUser(user._id)}
               />
             ))
           )}

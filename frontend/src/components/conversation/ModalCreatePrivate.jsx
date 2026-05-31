@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { Modal, Spin } from "antd";
-import FriendItem from "@/components/ui/member/FriendItem";
+import UserSelectItem from "@/components/ui/user/UserSelectItem";
 import SearchBar from "../ui/search/SearchBar";
-import { searchUsers } from "@/store/userSlice";
 import { createPrivateConversation } from "../../store/conversationsSlice";
 import { useNotification } from "@/hooks/useNotification";
+import userApi from "@/services/userApi";
 
 const ModalCreatePrivate = ({ isOpen, onCancel }) => {
   const dispatch = useDispatch();
 
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [selectedFriend, setSelectedFriend] = useState("");
+  const [selectedUser, setSelectedUser] = useState("");
   const [searchText, setSearchText] = useState("");
 
   const notification = useNotification();
@@ -20,7 +20,7 @@ const ModalCreatePrivate = ({ isOpen, onCancel }) => {
   const fetchUsers = async (query = "") => {
     try {
       setLoading(true);
-      const users = await dispatch(searchUsers(query)).unwrap();
+      const users = await userApi.searchUsers(query);
       setResults(users);
     } catch (error) {
       notification.error({
@@ -46,13 +46,13 @@ const ModalCreatePrivate = ({ isOpen, onCancel }) => {
     return () => clearTimeout(handler);
   }, [searchText, dispatch]);
 
-  const toggleFriend = (friendId) => {
-    setSelectedFriend((prev) => (prev === friendId ? "" : friendId));
+  const toggleUser = (userId) => {
+    setSelectedUser((prev) => (prev === userId ? "" : userId));
   };
 
   const handleCreatePrivate = async () => {
     try {
-      if (selectedFriend.length === 0) {
+      if (selectedUser.length === 0) {
         notification.warning({
           message: "No members selected",
           description: "Please select one member to create a private chat.",
@@ -60,9 +60,9 @@ const ModalCreatePrivate = ({ isOpen, onCancel }) => {
         return;
       }
 
-      await dispatch(createPrivateConversation(selectedFriend)).unwrap();
+      await dispatch(createPrivateConversation(selectedUser)).unwrap();
 
-      setSelectedFriend("");
+      setSelectedUser("");
       setSearchText("");
       onCancel(null);
     } catch (error) {
@@ -92,7 +92,7 @@ const ModalCreatePrivate = ({ isOpen, onCancel }) => {
           placeholder="Tìm kiếm thành viên..."
         />
 
-        {/* Friends List */}
+        {/* User List */}
         <ul className="max-h-[min(60vh,25rem)] flex flex-col gap-1 overflow-y-auto custom-scrollbar">
           {loading ? (
             <span className="w-full text-center mt-8">
@@ -106,12 +106,12 @@ const ModalCreatePrivate = ({ isOpen, onCancel }) => {
             )
           )}
 
-          {results.map((friend) => (
-            <FriendItem
-              key={friend._id}
-              friend={friend}
-              isSelected={selectedFriend === friend._id}
-              onToggle={() => toggleFriend(friend._id)}
+          {results.map((user) => (
+            <UserSelectItem
+              key={user._id}
+              user={user}
+              isSelected={selectedUser === user._id}
+              onToggle={() => toggleUser(user._id)}
             />
           ))}
         </ul>

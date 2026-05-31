@@ -2,18 +2,18 @@ import React, { useEffect, useState } from "react";
 import { Modal, Spin } from "antd";
 import { Camera } from "lucide-react";
 import { useDispatch } from "react-redux";
-import { searchUsers } from "@/store/userSlice";
 import { createGroupConversation } from "@/store/conversationsSlice";
-import FriendItem from "@/components/ui/member/FriendItem";
+import UserSelectItem from "@/components/ui/user/UserSelectItem";
 import { useNotification } from "@/hooks/useNotification";
 import SearchBar from "../ui/search/SearchBar";
+import userApi from "@/services/userApi";
 
 const ModalCreateGroup = ({ isOpen, onCancel }) => {
   const dispatch = useDispatch();
 
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [selectedFriends, setSelectedFriends] = useState([]);
+  const [selectedUsers, setSelectedUsers] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [groupName, setGroupName] = useState("");
 
@@ -22,7 +22,7 @@ const ModalCreateGroup = ({ isOpen, onCancel }) => {
   const fetchUsers = async (query = "") => {
     try {
       setLoading(true);
-      const users = await dispatch(searchUsers(query)).unwrap();
+      const users = await userApi.searchUsers(query);
       setResults(users);
     } catch (error) {
       notification.error({
@@ -51,14 +51,14 @@ const ModalCreateGroup = ({ isOpen, onCancel }) => {
   }, [searchText, dispatch]);
 
   // Hàm xử lý chọn/bỏ chọn bạn bè
-  const toggleFriend = (friendId) => {
-    setSelectedFriends((prev) => {
-      if (prev.includes(friendId)) {
+  const toggleUser = (userId) => {
+    setSelectedUsers((prev) => {
+      if (prev.includes(userId)) {
         // Nếu đã chọn thì bỏ chọn
-        return prev.filter((id) => id !== friendId);
+        return prev.filter((id) => id !== userId);
       } else {
         // Nếu chưa chọn thì thêm vào
-        return [...prev, friendId];
+        return [...prev, userId];
       }
     });
   };
@@ -66,7 +66,7 @@ const ModalCreateGroup = ({ isOpen, onCancel }) => {
   // Xử lý khi nhấn nút "Tạo nhóm"
   const handleCreateGroup = async () => {
     try {
-      if (selectedFriends.length < 2) {
+      if (selectedUsers.length < 2) {
         notification.warning({
           message: "No members selected",
           description: "Please select at least two members to create a group.",
@@ -84,11 +84,11 @@ const ModalCreateGroup = ({ isOpen, onCancel }) => {
 
       // Create conversation
       await dispatch(
-        createGroupConversation({ name: groupName, memberIds: selectedFriends })
+        createGroupConversation({ name: groupName, memberIds: selectedUsers })
       ).unwrap();
 
       // Reset state
-      setSelectedFriends([]);
+      setSelectedUsers([]);
       setGroupName("");
       setSearchText("");
       onCancel(null);
@@ -134,7 +134,7 @@ const ModalCreateGroup = ({ isOpen, onCancel }) => {
           placeholder={"Tìm kiếm thành viên..."}
         />
 
-        {/* Friends List */}
+        {/* User List */}
         <ul className="max-h-[min(60vh,25rem)] flex flex-col gap-1 overflow-y-auto custom-scrollbar">
           {loading ? (
             <div className="w-full text-center mt-8">
@@ -148,12 +148,12 @@ const ModalCreateGroup = ({ isOpen, onCancel }) => {
             )
           )}
 
-          {results.map((friend) => (
-            <FriendItem
-              key={friend._id}
-              friend={friend}
-              isSelected={selectedFriends.includes(friend._id)}
-              onToggle={() => toggleFriend(friend._id)}
+          {results.map((user) => (
+            <UserSelectItem
+              key={user._id}
+              user={user}
+              isSelected={selectedUsers.includes(user._id)}
+              onToggle={() => toggleUser(user._id)}
             />
           ))}
         </ul>

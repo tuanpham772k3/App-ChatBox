@@ -13,7 +13,7 @@ import { logoutUser } from "@/store/authSlice";
 import { clearMessages } from "@/store/messagesSlice";
 import { disconnectSocket, emitEvent } from "@/lib/socket";
 import { useNotification } from "@/hooks/useNotification";
-import PopoverUserActions from "@/components/user/PopoverUserActions";
+import PopoverUserActions from "@/components/profile/PopoverUserActions";
 
 const Sidebar = ({ mode = "desktop", onClose }) => {
   const dispatch = useDispatch();

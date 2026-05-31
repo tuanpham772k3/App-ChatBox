@@ -56,7 +56,7 @@ const userSlice = createSlice({
     error: null,
   },
   reducers: {
-    clearUserState: (state) => {
+    clearUserProfile: (state) => {
       state.profile = null;
       state.error = null;
     },
@@ -91,5 +91,5 @@ const userSlice = createSlice({
   },
 });
 
-export const { clearUser, clearSearchResults } = userSlice.actions;
+export const { clearUserProfile } = userSlice.actions;
 export default userSlice.reducer;
