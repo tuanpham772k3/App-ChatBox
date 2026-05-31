@@ -17,7 +17,7 @@ import { useNotification } from "@/hooks/useNotification";
 import ModalCreateGroup from "./ModalCreateGroup";
 import ModalCreatePrivate from "./ModalCreatePrivate";
 
-const ConversationContainer = ({ activeChatId, onSelectChat, onOpenSidebar }) => {
+const ConversationContainer = ({ activeChatId, onSelectChat }) => {
   const dispatch = useDispatch();
 
   const currentUserId = useSelector((state) => state.auth.user?.id);
@@ -150,7 +150,6 @@ const ConversationContainer = ({ activeChatId, onSelectChat, onOpenSidebar }) =>
           searchValue={searchInput}
           onSearchChange={setSearchInput}
           onOpenModal={setModal}
-          onOpenSidebar={onOpenSidebar}
         />
 
         {/* ---LIST CONVERSATIONS--- */}

@@ -1,11 +1,15 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Popover, Switch } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleTheme } from "@/store/themeSlice";
+import { useLogout } from "@/hooks/useLogout";
 import ModalUserInfo from "./ModalUserInfo";
 
 const PopoverUserActions = ({ userInfo }) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const logout = useLogout();
   const mode = useSelector((state) => state.theme.mode);
   const [open, setOpen] = useState(false);
   const [openModal, setOpenModal] = useState(false);
@@ -14,7 +18,16 @@ const PopoverUserActions = ({ userInfo }) => {
     setOpenModal(true);
     setOpen(false);
   };
-  const closeModalUserInfo = () => setOpenModal(false);
+
+  const goToProfile = () => {
+    navigate("/profile");
+    setOpen(false);
+  };
+
+  const handleLogout = async () => {
+    setOpen(false);
+    await logout();
+  };
 
   return (
     <>
@@ -27,7 +40,7 @@ const PopoverUserActions = ({ userInfo }) => {
           <div className="w-[180px]">
             <header className="border-b border-[var(--color-border)]">
               <h2 className="px-3 pb-2 text-lg font-medium text-[var(--color-text-primary)]">
-                {userInfo.username}
+                {userInfo?.username}
               </h2>
             </header>
 
@@ -46,19 +59,30 @@ const PopoverUserActions = ({ userInfo }) => {
               </div>
 
               <button
+                type="button"
                 className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left text-[var(--color-text-primary)]
             hover:bg-[var(--color-hover)] rounded"
               >
                 Nâng cấp tài khoản
               </button>
               <button
+                type="button"
                 onClick={openModalUserInfo}
                 className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left text-[var(--color-text-primary)]
             hover:bg-[var(--color-hover)] rounded"
               >
-                Hồ sơ
+                Xem hồ sơ
               </button>
               <button
+                type="button"
+                onClick={goToProfile}
+                className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left text-[var(--color-text-primary)]
+            hover:bg-[var(--color-hover)] rounded"
+              >
+                Chỉnh sửa hồ sơ
+              </button>
+              <button
+                type="button"
                 className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left text-[var(--color-text-primary)]
             hover:bg-[var(--color-hover)] rounded"
               >
@@ -67,7 +91,11 @@ const PopoverUserActions = ({ userInfo }) => {
             </div>
 
             <footer className="pt-1 border-t border-[var(--color-border)]">
-              <button className="w-full px-3 py-2 text-left text-sm text-red-500 hover:bg-[var(--color-hover)] rounded">
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="w-full px-3 py-2 text-left text-sm text-red-500 hover:bg-[var(--color-hover)] rounded"
+              >
                 Đăng xuất
               </button>
             </footer>
@@ -79,14 +107,14 @@ const PopoverUserActions = ({ userInfo }) => {
           className="w-12 h-12 rounded-full focus:ring-2 focus:ring-[var(--color-primary)]"
         >
           <img
-            src={userInfo?.avatar || "/avatarA.jpg"}
+            src={userInfo?.avatarUrl?.url || "/avatarA.jpg"}
             alt={userInfo?.username || "User avatar"}
             className="w-full h-full rounded-full border border-[var(--color-border)] object-cover cursor-pointer"
           />
         </button>
       </Popover>
 
-      <ModalUserInfo isOpen={openModal} onCancel={closeModalUserInfo} />
+      <ModalUserInfo isOpen={openModal} onCancel={() => setOpenModal(false)} />
     </>
   );
 };

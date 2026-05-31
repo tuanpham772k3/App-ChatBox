@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Card, Form, Input, Button, Upload } from "antd";
-import { User, Phone, Home, FileText } from "lucide-react";
+import { Menu, User, Phone, Home, FileText } from "lucide-react";
 import { AiOutlineCloudUpload } from "react-icons/ai";
 import { useNotification } from "@/hooks/useNotification";
+import { useLayout } from "@/contexts/LayoutContext";
 import { editProfile, fetchProfile } from "@/store/userSlice";
 
 const { TextArea } = Input;
@@ -11,6 +12,7 @@ const { TextArea } = Input;
 const ProfilePage = () => {
   const dispatch = useDispatch();
   const { profile, loading } = useSelector((state) => state.user);
+  const { openMobileSidebar } = useLayout();
 
   const [form] = Form.useForm();
   const [avatarFile, setAvatarFile] = useState(null);
@@ -86,11 +88,31 @@ const ProfilePage = () => {
 
   // Khi chưa có dữ liệu
   if (loading || !profile) {
-    return <div className="text-center mt-10">Đang tải hồ sơ...</div>;
+    return (
+      <div className="flex-1 flex items-center justify-center text-[var(--color-text-secondary)]">
+        Đang tải hồ sơ...
+      </div>
+    );
   }
 
   return (
-    <Card
+    <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+      <header className="h-16 sm:h-20 flex items-center gap-3 px-4 border-b border-[var(--color-border)] shrink-0 lg:hidden">
+        <button
+          type="button"
+          aria-label="Open sidebar"
+          onClick={openMobileSidebar}
+          className="flex size-10 shrink-0 items-center justify-center rounded-full text-[var(--color-text-secondary)] hover:bg-[var(--color-hover)] active:bg-[var(--color-active)] transition-colors"
+        >
+          <Menu size={22} />
+        </button>
+        <h1 className="min-w-0 truncate font-bold text-2xl text-[var(--color-primary)] text-shadow-sm">
+          Hồ sơ
+        </h1>
+      </header>
+
+      <div className="flex-1 overflow-y-auto p-4">
+        <Card
       title={
         <div className="flex items-center gap-2">
           <User size={20} />
@@ -184,6 +206,8 @@ const ProfilePage = () => {
         </Form.Item>
       </Form>
     </Card>
+      </div>
+    </div>
   );
 };
 

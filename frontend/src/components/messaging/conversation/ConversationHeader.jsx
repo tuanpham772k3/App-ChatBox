@@ -1,13 +1,10 @@
 import React, { useState } from "react";
 import { Menu, Search, UserRound, UsersRound } from "lucide-react";
 import SearchBar from "@/components/ui/search/SearchBar";
+import { useLayout } from "@/contexts/LayoutContext";
 
-const ConversationHeader = ({
-  searchValue,
-  onSearchChange,
-  onOpenModal,
-  onOpenSidebar,
-}) => {
+const ConversationHeader = ({ searchValue, onSearchChange, onOpenModal }) => {
+  const { openMobileSidebar } = useLayout();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   return (
@@ -28,7 +25,7 @@ const ConversationHeader = ({
             <button
               type="button"
               aria-label="Open sidebar"
-              onClick={onOpenSidebar}
+              onClick={openMobileSidebar}
               className="flex lg:hidden size-10 shrink-0 items-center justify-center rounded-full text-[var(--color-text-secondary)] hover:bg-[var(--color-hover)] active:bg-[var(--color-active)] transition-colors"
             >
               <Menu size={22} />

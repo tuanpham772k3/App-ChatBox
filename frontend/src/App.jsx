@@ -1,5 +1,5 @@
 import { createContext, useEffect } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { notification } from "antd";
 
@@ -7,6 +7,8 @@ import LoginPage from "@/pages/Auth/LoginPage";
 import RegisterPage from "@/pages/Auth/RegisterPage";
 import ProfilePage from "@/pages/ProfilePage";
 import ChatPage from "@/pages/ChatPage";
+import CommunityPage from "@/pages/CommunityPage";
+import MainLayout from "@/layouts/MainLayout";
 
 import { useSocket } from "@/hooks/useSocket";
 
@@ -14,14 +16,14 @@ import { connectSocket, disconnectSocket, initSocket } from "./lib/socket";
 
 export const NotificationContext = createContext(null);
 
-const PrivateRoute = ({ element }) => {
+const PrivateRoute = () => {
   const { accessToken } = useSelector((state) => state.auth);
-  return !accessToken ? <Navigate to="/login" /> : element;
+  return accessToken ? <Outlet /> : <Navigate to="/login" />;
 };
 
-const PublicRoute = ({ element }) => {
+const PublicRoute = () => {
   const { accessToken } = useSelector((state) => state.auth);
-  return accessToken ? <Navigate to="/" replace /> : element;
+  return accessToken ? <Navigate to="/messages" replace /> : <Outlet />;
 };
 
 function App() {
@@ -53,12 +55,20 @@ function App() {
       {contextHolder}
       <Routes>
         {/* Public */}
-        <Route path="/login" element={<PublicRoute element={<LoginPage />} />} />
-        <Route path="/register" element={<PublicRoute element={<RegisterPage />} />} />
+        <Route element={<PublicRoute />}>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+        </Route>
 
         {/* Private */}
-        <Route path="/profile" element={<PrivateRoute element={<ProfilePage />} />} />
-        <Route path="/" element={<PrivateRoute element={<ChatPage />} />} />
+        <Route element={<PrivateRoute />}>
+          <Route element={<MainLayout />}>
+            <Route index element={<Navigate to="/messages" replace />} />
+            <Route path="/messages" element={<ChatPage />} />
+            <Route path="/community" element={<CommunityPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+          </Route>
+        </Route>
       </Routes>
     </NotificationContext.Provider>
   );
