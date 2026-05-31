@@ -93,7 +93,7 @@ const ModalAddMembers = ({ isOpen, onCancel, conversationId }) => {
       cancelText="Hủy"
       title="Thêm thành viên"
     >
-      <div className="flex flex-col gap-2 border-y-1 border-[var(--color-border)] py-4">
+      <div className="max-h-[60vh] flex flex-col gap-2 border-y-1 border-[var(--color-border)] py-4">
         {/* Search */}
         <SearchBar
           value={searchText}
@@ -102,7 +102,7 @@ const ModalAddMembers = ({ isOpen, onCancel, conversationId }) => {
         />
 
         {/* User List */}
-        <div className="max-h-[min(60vh,25rem)] overflow-y-auto custom-scrollbar">
+        <div className="flex-1 min-h-0 flex flex-col gap-1 overflow-y-auto custom-scrollbar">
           {loading ? (
             <div className="w-full text-center mt-8">
               <Spin />

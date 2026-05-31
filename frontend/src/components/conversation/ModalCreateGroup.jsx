@@ -111,51 +111,53 @@ const ModalCreateGroup = ({ isOpen, onCancel }) => {
       cancelText="Hủy"
       title="Tạo nhóm chat"
     >
-      <div className="space-y-4 border-y-1 border-[var(--color-border)] py-4">
-        {/* Input */}
-        <div className="flex items-center gap-3">
-          <div className="w-14 h-14 flex items-center justify-center border border-[var(--color-border)] rounded-full cursor-pointer">
-            <Camera size={26} />
+      <div className="flex flex-col max-h-[60vh] border-y border-[var(--color-border)] py-4">
+        {/* Header Content */}
+        <div className="space-y-2 shrink-0">
+          {/* Input */}
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 flex items-center justify-center bg-[var(--color-surface)] hover:bg-[var(--color-hover)] active:bg-[var(--color-active)] border border-[var(--color-border)] rounded-full cursor-pointer">
+              <Camera size={26} />
+            </div>
+
+            <div className="min-w-0 flex-1 p-2 text-[var(--color-text-primary)] border-b-2 border-[var(--color-border)] focus-within:border-blue-500">
+              <input
+                placeholder="Nhập tên nhóm..."
+                value={groupName}
+                onChange={(e) => setGroupName(e.target.value)}
+                className="w-full placeholder-[var(--color-text-secondary)]"
+              />
+            </div>
           </div>
-          <div className="min-w-0 flex-1 sm:pe-20 p-2 text-[var(--color-text-primary)] border-b-2 border-[var(--color-border)] focus-within:border-blue-500">
-            <input
-              placeholder="Nhập tên nhóm..."
-              value={groupName}
-              onChange={(e) => setGroupName(e.target.value)}
-              className="w-full placeholder-[var(--color-text-secondary)]"
-            />
-          </div>
+
+          {/* Search */}
+          <SearchBar
+            value={searchText}
+            onChange={setSearchText}
+            placeholder="Tìm kiếm thành viên..."
+          />
         </div>
 
-        {/* Search */}
-        <SearchBar
-          value={searchText}
-          onChange={setSearchText}
-          placeholder={"Tìm kiếm thành viên..."}
-        />
-
         {/* User List */}
-        <ul className="max-h-[min(60vh,25rem)] flex flex-col gap-1 overflow-y-auto custom-scrollbar">
+        <ul className="flex-1 min-h-0 flex flex-col gap-1 mt-2 overflow-y-auto custom-scrollbar">
           {loading ? (
             <div className="w-full text-center mt-8">
               <Spin />
             </div>
+          ) : results.length === 0 ? (
+            <div className="text-center py-8 text-[var(--color-text-secondary)]">
+              Không tìm thấy kết quả
+            </div>
           ) : (
-            results.length === 0 && (
-              <div className="text-center py-8 text-[var(--color-text-secondary)]">
-                Không tìm thấy kết quả
-              </div>
-            )
+            results.map((user) => (
+              <UserSelectItem
+                key={user._id}
+                user={user}
+                isSelected={selectedUsers.includes(user._id)}
+                onToggle={() => toggleUser(user._id)}
+              />
+            ))
           )}
-
-          {results.map((user) => (
-            <UserSelectItem
-              key={user._id}
-              user={user}
-              isSelected={selectedUsers.includes(user._id)}
-              onToggle={() => toggleUser(user._id)}
-            />
-          ))}
         </ul>
       </div>
     </Modal>
