@@ -17,8 +17,8 @@ import PopoverUserActions from "@/components/profile/PopoverUserActions";
 
 const Sidebar = ({ mode = "desktop", onClose }) => {
   const dispatch = useDispatch();
-  const conversations = useSelector((state) => state.conversations.conversations) || [];
-  const user = useSelector((state) => state.auth.user) || {};
+  const conversations = useSelector((state) => state.conversations.conversations);
+  const user = useSelector((state) => state.auth.user);
   const notification = useNotification();
   const isMobile = mode === "mobile";
 

@@ -1,19 +1,17 @@
-import { Button, Card, Checkbox, Form, Input, Typography } from "antd";
-import { useDispatch } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
-import { registerUser } from "@/store/authSlice";
-import { useNotification } from "@/hooks/useNotification";
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Button, Card, Checkbox, Form, Input, Typography } from "antd";
+import { useNotification } from "@/hooks/useNotification";
+import authApi from "@/services/authApi";
 
-const { Text, Title } = Typography;
+const { Title } = Typography;
 
 const RegisterPage = () => {
   const [form] = Form.useForm();
-  const dispatch = useDispatch();
+
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
 
   const notification = useNotification();
 
@@ -31,7 +29,7 @@ const RegisterPage = () => {
     setLoading(true);
 
     try {
-      await dispatch(registerUser(info)).unwrap();
+      await authApi.register(info);
 
       notification.success({
         message: "Đăng ký thành công!",
@@ -41,8 +39,6 @@ const RegisterPage = () => {
       form.resetFields();
       navigate("/login");
     } catch (err) {
-      setError(err.message || "Có lỗi xảy ra");
-
       notification.error({
         message: "Đăng ký thất bại",
         description: err.message || "Có lỗi xảy ra",
@@ -143,15 +139,6 @@ const RegisterPage = () => {
             <Form.Item name="remember" valuePropName="checked">
               <Checkbox disabled={loading}>Chấp nhận điều khoản & điều kiện</Checkbox>
             </Form.Item>
-
-            {/* Hiển thị lỗi */}
-            <div className="mb-2">
-              {error && (
-                <Text type="danger" className="text-sm italic">
-                  * {error}
-                </Text>
-              )}
-            </div>
 
             <Form.Item>
               <Button

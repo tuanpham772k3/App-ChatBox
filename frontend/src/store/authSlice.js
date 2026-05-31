@@ -4,19 +4,6 @@ import authApi from "../services/authApi";
 const savedToken = localStorage.getItem("accessToken");
 const savedUser = JSON.parse(localStorage.getItem("user"));
 
-// Register
-export const registerUser = createAsyncThunk(
-  "auth/register",
-  async (payload, { rejectWithValue }) => {
-    try {
-      const res = await authApi.register(payload);
-      return res; // { user }
-    } catch (err) {
-      return rejectWithValue(err);
-    }
-  }
-);
-
 // Login
 export const loginUser = createAsyncThunk(
   "auth/login",
@@ -63,12 +50,12 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // login
       .addCase(loginUser.fulfilled, (state, action) => {
         state.user = action.payload.user;
         state.accessToken = action.payload.accessToken;
         localStorage.setItem("accessToken", action.payload.accessToken);
         localStorage.setItem("user", JSON.stringify(action.payload.user));
-        state.loading = false;
       })
 
       // logout

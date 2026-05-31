@@ -13,7 +13,6 @@ const LoginPage = () => {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
 
   const notification = useNotification();
 
@@ -32,8 +31,6 @@ const LoginPage = () => {
 
       navigate("/");
     } catch (error) {
-      setError(error.message || "Có lỗi xảy ra");
-
       notification.error({
         message: "Đăng nhập thất bại",
         description: error.message || "Có lỗi xảy ra",
@@ -105,11 +102,6 @@ const LoginPage = () => {
               >
                 Quên mật khẩu?
               </Link>
-            </div>
-
-            {/* Hiển thị lỗi */}
-            <div className="mb-2">
-              {error && <p className="text-sm italic text-red-500">* {error}</p>}
             </div>
 
             <Form.Item>
