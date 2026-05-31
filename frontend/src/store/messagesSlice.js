@@ -37,34 +37,8 @@ export const fetchConversationMessages = createAsyncThunk(
   "messages/fetchByConversation",
   async ({ conversationId, cursor }, { rejectWithValue }) => {
     try {
-      const res = await messagesApi.getConversationMessages(conversationId, cursor);
+      const res = await messagesApi.getConversationMessages({ conversationId, cursor });
       return res; // { messages, nextCursor, hasMore }
-    } catch (err) {
-      return rejectWithValue(err);
-    }
-  }
-);
-
-// Xóa tin nhắn (xóa mềm)
-export const deleteMessageById = createAsyncThunk(
-  "messages/delete",
-  async (messageId, { rejectWithValue }) => {
-    try {
-      const message = await messagesApi.deleteMessageById(messageId);
-      return message;
-    } catch (err) {
-      return rejectWithValue(err);
-    }
-  }
-);
-
-// Chỉnh sửa tin nhắn
-export const editMessageById = createAsyncThunk(
-  "messages/edit",
-  async ({ messageId, newContent }, { rejectWithValue }) => {
-    try {
-      const message = await messagesApi.editMessageById(messageId, newContent);
-      return message;
     } catch (err) {
       return rejectWithValue(err);
     }

@@ -4,7 +4,8 @@ import { Image, MapPin, Mic, Navigation, Send, Smile } from "lucide-react";
 import { Input, Upload } from "antd";
 import { emitEvent } from "@/lib/socket";
 import { useNotification } from "@/hooks/useNotification";
-import { createNewMessage, editMessageById } from "@/store/messagesSlice";
+import { createNewMessage } from "@/store/messagesSlice";
+import messagesApi from "@/services/messagesApi";
 
 const MessageInput = ({
   currentUserId,
@@ -91,7 +92,7 @@ const MessageInput = ({
       if (!content.trim()) return;
       if (content.trim() === originalContent.trim()) return;
 
-      await dispatch(editMessageById({ messageId: id, newContent: content })).unwrap();
+      await messagesApi.editMessageById({ messageId: id, newContent: content });
 
       setEditingMessage({
         id: null,

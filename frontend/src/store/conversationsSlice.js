@@ -54,21 +54,6 @@ export const getConversations = createAsyncThunk(
 );
 
 /**
- * Lấy chi tiết 1 hội thoại theo ID
- */
-export const getConversationById = createAsyncThunk(
-  "conversations/getById",
-  async (conversationId, { rejectWithValue }) => {
-    try {
-      const conversation = await conversationApi.getConversationById(conversationId);
-      return conversation;
-    } catch (err) {
-      return rejectWithValue(err);
-    }
-  }
-);
-
-/**
  * Thêm 1 thành viên mới vào nhóm chat
  */
 export const addMemberToGroup = createAsyncThunk(
@@ -461,9 +446,7 @@ const conversationsSlice = createSlice({
         if (!conv) return;
 
         conv.participants = conv.participants.map((p) =>
-          p.userId?._id === userId
-            ? { ...p, unreadCount, lastReadAt: null }
-            : p
+          p.userId?._id === userId ? { ...p, unreadCount, lastReadAt: null } : p
         );
       })
 

@@ -15,12 +15,9 @@ import { emitEvent } from "@/lib/socket";
 
 import MessageItem from "./MessageItem";
 import { useNotification } from "@/hooks/useNotification";
-import {
-  clearMessages,
-  deleteMessageById,
-  fetchConversationMessages,
-} from "@/store/messagesSlice";
+import { clearMessages, fetchConversationMessages } from "@/store/messagesSlice";
 import { syncReadStatusRealtime } from "@/store/conversationsSlice";
+import messagesApi from "@/services/messagesApi";
 
 const MessageDateDivider = ({ date }) => {
   const messageDate = new Date(date);
@@ -160,7 +157,7 @@ const Messages = ({
   // ===== Actions =====
   const handleDeleteMessage = async (messageId) => {
     try {
-      await dispatch(deleteMessageById(messageId)).unwrap();
+      await messagesApi.deleteMessageById(messageId);
     } catch (error) {
       notification.error({
         message: "Gỡ tin nhắn thất bại",

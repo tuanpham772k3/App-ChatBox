@@ -20,7 +20,7 @@ const messagesApi = {
    * @param {number} page - Trang hiện tại (mặc định 1)
    * @param {number} limit - Số tin nhắn trên mỗi trang (mặc định 20)
    */
-  getConversationMessages: (conversationId, cursor) => {
+  getConversationMessages: ({ conversationId, cursor }) => {
     const params = cursor ? { before: cursor, limit: 20 } : { limit: 20 };
     return instance.get(`/messages/${conversationId}`, { params });
   },
@@ -40,7 +40,7 @@ const messagesApi = {
    * @param {string} messageId - ID của tin nhắn
    * @param {string} content - Nội dung mới của tin nhắn
    */
-  editMessageById: (messageId, newContent) => {
+  editMessageById: ({ messageId, newContent }) => {
     return instance.put(`/messages/${messageId}`, {
       content: newContent,
     });
