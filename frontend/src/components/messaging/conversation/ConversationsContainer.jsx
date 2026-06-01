@@ -142,7 +142,9 @@ const ConversationContainer = ({ activeChatId, onSelectChat }) => {
   return (
     <>
       <section
-        className="flex flex-col w-full bg-[var(--color-app)] border-r border-[var(--color-border)] overflow-hidden"
+        className={`min-w-0 ${
+          activeChatId ? "hidden md:flex" : "flex"
+        } flex-col flex-1 md:flex-none md:w-[min(42vw,22.5rem)] bg-[var(--color-app)] border-r border-[var(--color-border)]`}
         aria-labelledby="conversations-heading"
       >
         {/* --- HEADER --- */}
@@ -158,55 +160,59 @@ const ConversationContainer = ({ activeChatId, onSelectChat }) => {
             <Spin />
           </div>
         ) : (
-          <div className="flex-1 px-3 py-6 overflow-y-auto scrollbar-thin scrollbar-thumb-[var(--color-border)] scrollbar-track-transparent">
-            {/* Title */}
-            <header className="flex items-center gap-2 px-2 mb-2 text-sm text-[var(--color-text-secondary)]">
+          <section className="min-w-0 flex-1 flex flex-col py-6 overflow-hidden">
+            <header className="flex items-center gap-2 px-4 mb-2 text-sm text-[var(--color-text-secondary)]">
               <MessageSquareText size={14} aria-hidden="true" />
               <h2 id="conversations-heading">All Message</h2>
             </header>
 
-            {/* List conversations */}
-            <ul className="flex flex-col gap-1 min-w-0">
-              {filteredConversations.length === 0 ? (
-                <li className="text-center text-[var(--color-text-secondary)] mt-8">
-                  Chưa có cuộc trò chuyện nào
-                </li>
-              ) : (
-                <>
-                  {filteredConversations.map((conversation) => {
-                    const displayInfo = getDisplayInfo(conversation, currentUserId) || {};
+            <div className="flex-1 overflow-y-auto custom-scrollbar">
+              <ul className="flex flex-col gap-1 px-2">
+                {filteredConversations.length === 0 ? (
+                  <li className="text-center text-[var(--color-text-secondary)] mt-8">
+                    Chưa có cuộc trò chuyện nào
+                  </li>
+                ) : (
+                  <>
+                    {filteredConversations.map((conversation) => {
+                      const displayInfo =
+                        getDisplayInfo(conversation, currentUserId) || {};
 
-                    // status
-                    const partnerStatus = displayInfo.partnerId
-                      ? statusUsers[displayInfo.partnerId] || displayInfo.partner?.userId
-                      : null;
+                      // status
+                      const partnerStatus = displayInfo.partnerId
+                        ? statusUsers[displayInfo.partnerId] ||
+                          displayInfo.partner?.userId
+                        : null;
 
-                    const isOnline =
-                      !displayInfo.isGroup && partnerStatus?.presence === "online";
+                      const isOnline =
+                        !displayInfo.isGroup && partnerStatus?.presence === "online";
 
-                    return (
-                      // CONVERSATION ITEM
-                      <ConversationItem
-                        key={conversation._id}
-                        isActive={activeChatId === conversation._id}
-                        display={displayInfo}
-                        onSelect={() => handleSelectConversation(conversation._id)}
-                        onRemove={() => removeConversationForMe(conversation._id)}
-                        onTogglePin={() => handleTogglePinConversation(conversation._id)}
-                        onMarkUnread={() =>
-                          handleMarkConversationUnread(conversation._id)
-                        }
-                        onClearHistory={() =>
-                          handleClearConversationHistory(conversation._id)
-                        }
-                        isOnline={isOnline}
-                      />
-                    );
-                  })}
-                </>
-              )}
-            </ul>
-          </div>
+                      return (
+                        // CONVERSATION ITEM
+                        <ConversationItem
+                          key={conversation._id}
+                          isActive={activeChatId === conversation._id}
+                          display={displayInfo}
+                          onSelect={() => handleSelectConversation(conversation._id)}
+                          onRemove={() => removeConversationForMe(conversation._id)}
+                          onTogglePin={() =>
+                            handleTogglePinConversation(conversation._id)
+                          }
+                          onMarkUnread={() =>
+                            handleMarkConversationUnread(conversation._id)
+                          }
+                          onClearHistory={() =>
+                            handleClearConversationHistory(conversation._id)
+                          }
+                          isOnline={isOnline}
+                        />
+                      );
+                    })}
+                  </>
+                )}
+              </ul>
+            </div>
+          </section>
         )}
       </section>
 

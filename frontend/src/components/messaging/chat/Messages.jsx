@@ -206,7 +206,7 @@ const Messages = ({
       <ul
         ref={containerRef}
         aria-label="Messages"
-        className="h-full flex-1 px-4 py-4 space-y-0.5 bg-[var(--color-chat)] overflow-y-auto custom-scrollbar"
+        className="h-full px-4 py-4 bg-[var(--color-chat)] overflow-y-auto custom-scrollbar"
       >
         {/* Sentinel for loading older messages */}
         <li ref={topRef} aria-hidden="true" className="h-px" />
@@ -257,4 +257,4 @@ const Messages = ({
   );
 };
 
-export default React.memo(Messages);
+export default Messages;

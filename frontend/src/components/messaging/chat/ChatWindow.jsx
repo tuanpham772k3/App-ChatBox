@@ -160,11 +160,12 @@ const ChatWindow = ({ activeChatId, onBack }) => {
   if (!activeChatId || !currentConversation) return <ChatEmptyState />;
 
   return (
-    <article
-      className="flex flex-col flex-1 bg-[var(--color-app)] overflow-hidden"
-      aria-label={`Conversation with ${displayInfo.displayName || "selected contact"}`}
+    <section
+      className={`min-w-0 flex-1 flex-col bg-[var(--color-app)] ${
+        activeChatId ? "flex" : "hidden md:flex"
+      }`}
+      aria-label="Active conversation"
     >
-      {/* --- Header --- */}
       <ChatHeader
         onBack={onBack}
         onOpenConversationInfo={() => setOpenDrawer(DRAWER.INFO)}
@@ -175,12 +176,14 @@ const ChatWindow = ({ activeChatId, onBack }) => {
         isOnline={isOnline}
       />
 
-      <Messages
-        currentUserId={currentUserId}
-        activeChatId={activeChatId}
-        currentConversation={currentConversation}
-        setEditingMessage={setEditingMessage}
-      />
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <Messages
+          currentUserId={currentUserId}
+          activeChatId={activeChatId}
+          currentConversation={currentConversation}
+          setEditingMessage={setEditingMessage}
+        />
+      </div>
 
       <MessageInput
         currentUserId={currentUserId}
@@ -240,7 +243,7 @@ const ChatWindow = ({ activeChatId, onBack }) => {
         currentUser={displayInfo?.currentUser}
         members={displayInfo?.participants}
       />
-    </article>
+    </section>
   );
 };
 
