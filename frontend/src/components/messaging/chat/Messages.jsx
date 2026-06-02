@@ -41,7 +41,7 @@ const MessageDateDivider = ({ date }) => {
 
 const Messages = ({
   currentUserId,
-  activeChatId,
+  conversationId,
   currentConversation,
   setEditingMessage,
 }) => {
@@ -64,7 +64,7 @@ const Messages = ({
 
   // ===== Load initial messages =====
   useEffect(() => {
-    if (!activeChatId) return;
+    if (!conversationId) return;
 
     dispatch(clearMessages());
 
@@ -73,15 +73,15 @@ const Messages = ({
 
     dispatch(
       fetchConversationMessages({
-        conversationId: activeChatId,
+        conversationId: conversationId,
         cursor: null,
       })
     );
-  }, [activeChatId, dispatch]);
+  }, [conversationId, dispatch]);
 
   // ===== Read pointer: server is source of truth, client emits latest seen message =====
   useEffect(() => {
-    if (!activeChatId || !currentUserId || messages.length === 0) return;
+    if (!conversationId || !currentUserId || messages.length === 0) return;
 
     const latestMessage = messages[messages.length - 1];
     if (!latestMessage?._id || latestMessage.isTemp) return;
@@ -93,12 +93,12 @@ const Messages = ({
 
     dispatch(
       syncReadStatusRealtime({
-        conversationId: activeChatId,
+        conversationId: conversationId,
         userId: currentUserId,
         lastReadAt: latestMessage.createdAt,
       })
     );
-  }, [activeChatId, currentUserId, dispatch, messages]);
+  }, [conversationId, currentUserId, dispatch, messages]);
 
   // ===== Auto scroll =====
   useEffect(() => {
@@ -126,7 +126,7 @@ const Messages = ({
   useEffect(() => {
     if (!inView) return;
     if (!hasMore || loading) return;
-    if (!activeChatId) return;
+    if (!conversationId) return;
 
     const el = containerRef.current;
     if (!el) return;
@@ -135,7 +135,7 @@ const Messages = ({
 
     dispatch(
       fetchConversationMessages({
-        conversationId: activeChatId,
+        conversationId: conversationId,
         cursor,
       })
     )

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useParams } from "react-router-dom";
 import { MessageSquareText } from "lucide-react";
 import { Spin } from "antd";
 import {
@@ -7,7 +8,6 @@ import {
   deleteConversationForMe,
   getConversations,
   markConversationAsUnread,
-  setActiveConversationId,
   togglePinConversation,
 } from "../../../store/conversationsSlice";
 import ConversationHeader from "./ConversationHeader";
@@ -17,8 +17,10 @@ import { useNotification } from "@/hooks/useNotification";
 import ModalCreateGroup from "./ModalCreateGroup";
 import ModalCreatePrivate from "./ModalCreatePrivate";
 
-const ConversationContainer = ({ activeChatId, onSelectChat }) => {
+const ConversationContainer = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const activeConversationId = useParams().conversationId;
 
   const currentUserId = useSelector((state) => state.auth.user?.id);
   const { conversations, statusUsers, loading } = useSelector(
@@ -41,11 +43,10 @@ const ConversationContainer = ({ activeChatId, onSelectChat }) => {
       });
   }, [dispatch]);
 
-  const handleSelectConversation = (conversationId) => {
-    if (activeChatId === conversationId) return;
+  const handleSelectConversation = (nextConversationId) => {
+    if (activeConversationId === nextConversationId) return;
 
-    onSelectChat(conversationId);
-    dispatch(setActiveConversationId(conversationId));
+    navigate(`/messages/${nextConversationId}`);
   };
 
   // Xóa hội thoại phía tôi
@@ -53,8 +54,8 @@ const ConversationContainer = ({ activeChatId, onSelectChat }) => {
     dispatch(deleteConversationForMe(conversationId))
       .unwrap()
       .then(() => {
-        if (activeChatId === conversationId) {
-          onSelectChat(null);
+        if (activeConversationId === conversationId) {
+          navigate("/messages", { replace: true });
         }
         notification.success({
           message: "Đã xóa hội thoại",
@@ -94,8 +95,8 @@ const ConversationContainer = ({ activeChatId, onSelectChat }) => {
     dispatch(clearConversationHistory({ conversationId, userId: currentUserId }))
       .unwrap()
       .then(() => {
-        if (activeChatId === conversationId) {
-          onSelectChat(null);
+        if (activeConversationId === conversationId) {
+          navigate("/messages", { replace: true });
         }
         notification.success({ message: "Đã xóa lịch sử trò chuyện" });
       })
@@ -143,7 +144,7 @@ const ConversationContainer = ({ activeChatId, onSelectChat }) => {
     <>
       <section
         className={`min-w-0 ${
-          activeChatId ? "hidden md:flex" : "flex"
+          activeConversationId ? "hidden md:flex" : "flex"
         } flex-col flex-1 md:flex-none md:w-[min(42vw,22.5rem)] bg-[var(--color-app)] border-r border-[var(--color-border)]`}
         aria-labelledby="conversations-heading"
       >
@@ -191,7 +192,7 @@ const ConversationContainer = ({ activeChatId, onSelectChat }) => {
                         // CONVERSATION ITEM
                         <ConversationItem
                           key={conversation._id}
-                          isActive={activeChatId === conversation._id}
+                          isActive={activeConversationId === conversation._id}
                           display={displayInfo}
                           onSelect={() => handleSelectConversation(conversation._id)}
                           onRemove={() => removeConversationForMe(conversation._id)}

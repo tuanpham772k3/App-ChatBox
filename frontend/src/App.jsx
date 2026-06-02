@@ -5,10 +5,14 @@ import { notification } from "antd";
 
 import LoginPage from "@/pages/Auth/LoginPage";
 import RegisterPage from "@/pages/Auth/RegisterPage";
-import ProfilePage from "@/pages/ProfilePage";
-import ChatPage from "@/pages/ChatPage";
-import CommunityPage from "@/pages/CommunityPage";
+
 import MainLayout from "@/layouts/MainLayout";
+import MessagingLayout from "@/layouts/MessagingLayout";
+
+import ChatEmptyState from "@/pages/ChatEmptyState";
+import ChatWindow from "@/pages/ChatWindow";
+import ProfilePage from "@/pages/ProfilePage";
+import CommunityPage from "@/pages/CommunityPage";
 
 import { useSocket } from "@/hooks/useSocket";
 
@@ -64,7 +68,12 @@ function App() {
         <Route element={<PrivateRoute />}>
           <Route element={<MainLayout />}>
             <Route index element={<Navigate to="/messages" replace />} />
-            <Route path="/messages" element={<ChatPage />} />
+
+            <Route path="/messages" element={<MessagingLayout />}>
+              <Route index element={<ChatEmptyState />} />
+              <Route path=":conversationId" element={<ChatWindow />} />
+            </Route>
+
             <Route path="/community" element={<CommunityPage />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>

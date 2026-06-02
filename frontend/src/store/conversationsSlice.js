@@ -203,7 +203,6 @@ const conversationsSlice = createSlice({
   name: "conversations",
   initialState: {
     conversations: [],
-    activeConversationId: null,
     typingUsers: {},
     statusUsers: {},
     images: [],
@@ -212,10 +211,6 @@ const conversationsSlice = createSlice({
   },
 
   reducers: {
-    setActiveConversationId: (state, action) => {
-      state.activeConversationId = action.payload;
-    },
-
     // Thêm hội thoại realtime
     addConversation: (state, action) => {
       const newConv = action.payload;
@@ -475,7 +470,6 @@ const conversationsSlice = createSlice({
 });
 
 export const {
-  setActiveConversationId,
   addConversation,
   removeConversationRealtime,
   updateConversationLastMessage,

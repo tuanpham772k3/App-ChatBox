@@ -9,7 +9,7 @@ import messagesApi from "@/services/messagesApi";
 
 const MessageInput = ({
   currentUserId,
-  activeChatId,
+  conversationId,
   editingMessage,
   setEditingMessage,
 }) => {
@@ -41,7 +41,7 @@ const MessageInput = ({
       // 2. Tạo message text
       await dispatch(
         createNewMessage({
-          conversationId: activeChatId,
+          conversationId: conversationId,
           content: text,
           senderId: { _id: currentUserId }, // Để xử lý redux thunk
           tempId,
@@ -127,10 +127,10 @@ const MessageInput = ({
       setText(value);
     }
 
-    if (!activeChatId) return;
+    if (!conversationId) return;
 
     emitEvent("typing_start", {
-      conversationId: activeChatId,
+      conversationId: conversationId,
     });
 
     // Clear timeout cũ (nếu có)
@@ -141,7 +141,7 @@ const MessageInput = ({
     // Set timeout mới cho typing_stop
     typingTimeoutRef.current = setTimeout(() => {
       emitEvent("typing_stop", {
-        conversationId: activeChatId,
+        conversationId: conversationId,
       });
     }, 1000);
   };

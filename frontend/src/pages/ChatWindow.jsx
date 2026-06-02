@@ -1,14 +1,16 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import ChatHeader from "./ChatHeader";
-import MessageInput from "./MessageInput";
-import Messages from "./Messages";
-import ChatEmptyState from "./ChatEmptyState";
-import DrawerConversationInfo from "./DrawerConversationInfo";
-import DrawerMembersInfo from "./DrawerMembersInfo";
-import DrawerMediaGallery from "./DrawerMediaGallery";
-import ModalRemoveMembers from "./ModalRemoveMembers";
-import ModalAddMembers from "./ModalAddMembers";
+import { useNavigate, useParams } from "react-router-dom";
+
+import ChatHeader from "../components/messaging/chat/ChatHeader";
+import MessageInput from "../components/messaging/chat/MessageInput";
+import Messages from "../components/messaging/chat/Messages";
+import DrawerConversationInfo from "../components/messaging/chat/DrawerConversationInfo";
+import DrawerMembersInfo from "../components/messaging/chat/DrawerMembersInfo";
+import DrawerMediaGallery from "../components/messaging/chat/DrawerMediaGallery";
+import ModalRemoveMembers from "../components/messaging/chat/ModalRemoveMembers";
+import ModalAddMembers from "../components/messaging/chat/ModalAddMembers";
+
 import {
   clearConversationHistory,
   getConversationImages,
@@ -17,7 +19,7 @@ import {
 } from "@/store/conversationsSlice";
 import { getDisplayInfo } from "@/utils/conversationHelper";
 import { emitEvent } from "@/lib/socket";
-import ModalLeaveGroup from "./ModalLeaveGroup";
+import ModalLeaveGroup from "../components/messaging/chat/ModalLeaveGroup";
 import { useNotification } from "@/hooks/useNotification";
 
 const MODAL = {
@@ -32,8 +34,11 @@ const DRAWER = {
   MEDIA: "media",
 };
 
-const ChatWindow = ({ activeChatId, onBack }) => {
+const ChatWindow = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const activeConversationId = useParams().conversationId;
 
   const currentUserId = useSelector((state) => state.auth.user?.id);
   const { conversations, typingUsers, statusUsers, images } = useSelector(
@@ -50,18 +55,18 @@ const ChatWindow = ({ activeChatId, onBack }) => {
   });
   const notification = useNotification();
 
-  const currentConversation = conversations.find((c) => c._id === activeChatId);
+  const currentConversation = conversations.find((c) => c._id === activeConversationId);
 
   const typingNames = useMemo(() => {
-    if (!activeChatId) return [];
+    if (!activeConversationId) return [];
     if (!currentConversation) return [];
 
-    const typingMap = typingUsers[activeChatId] || {};
+    const typingMap = typingUsers[activeConversationId] || {};
 
     return currentConversation.participants
       .filter((p) => typingMap[p.userId._id] && p.userId._id !== currentUserId)
       .map((p) => p.userId.username);
-  }, [typingUsers, currentConversation, currentUserId]);
+  }, [activeConversationId, typingUsers, currentConversation, currentUserId]);
 
   const displayInfo = useMemo(
     () => getDisplayInfo(currentConversation, currentUserId) || {},
@@ -75,10 +80,10 @@ const ChatWindow = ({ activeChatId, onBack }) => {
   const isOnline = partnerStatus?.presence === "online";
 
   const handleTogglePinConversation = () => {
-    if (!activeChatId || !currentUserId) return;
+    if (!activeConversationId || !currentUserId) return;
     dispatch(
       togglePinConversation({
-        conversationId: activeChatId,
+        conversationId: activeConversationId,
         userId: currentUserId,
       })
     )
@@ -92,10 +97,10 @@ const ChatWindow = ({ activeChatId, onBack }) => {
   };
 
   const handleClearHistory = () => {
-    if (!activeChatId || !currentUserId) return;
+    if (!activeConversationId || !currentUserId) return;
     dispatch(
       clearConversationHistory({
-        conversationId: activeChatId,
+        conversationId: activeConversationId,
         userId: currentUserId,
       })
     )
@@ -114,13 +119,13 @@ const ChatWindow = ({ activeChatId, onBack }) => {
   };
 
   const handleLeaveGroup = () => {
-    if (!activeChatId) return;
-    dispatch(leaveGroup(activeChatId))
+    if (!activeConversationId) return;
+    dispatch(leaveGroup(activeConversationId))
       .unwrap()
       .then(() => {
+        navigate("/messages/empty", { replace: true });
         notification.success({ message: "Rời nhóm thành công" });
         setOpenModal(null);
-        onBack?.();
       })
       .catch((err) => {
         notification.error({
@@ -130,44 +135,57 @@ const ChatWindow = ({ activeChatId, onBack }) => {
       });
   };
 
+  const handleBackToConversations = () => {
+    navigate("/messages", { replace: true });
+  };
+
   useEffect(() => {
-    if (openDrawer === DRAWER.INFO && activeChatId) {
+    setOpenDrawer(null);
+    setOpenModal(null);
+    setSelectedMemberId(null);
+    setEditingMessage({
+      id: null,
+      content: "",
+      originalContent: "",
+    });
+  }, [activeConversationId]);
+
+  useEffect(() => {
+    if (openDrawer === DRAWER.INFO && activeConversationId) {
       dispatch(
         getConversationImages({
-          conversationId: activeChatId,
+          conversationId: activeConversationId,
           limit: 8,
         })
       )
         .unwrap()
         .catch(console.error);
     }
-  }, [openDrawer, activeChatId, dispatch]);
+  }, [openDrawer, activeConversationId, dispatch]);
 
   useEffect(() => {
-    if (!activeChatId || !activeChatId) return;
+    if (!activeConversationId) return;
 
     emitEvent("join_conversation", {
-      conversationId: activeChatId,
+      conversationId: activeConversationId,
     });
 
     return () => {
       emitEvent("leave_conversation", {
-        conversationId: activeChatId,
+        conversationId: activeConversationId,
       });
     };
-  }, [activeChatId, activeChatId]);
-
-  if (!activeChatId || !currentConversation) return <ChatEmptyState />;
+  }, [activeConversationId]);
 
   return (
     <section
       className={`min-w-0 flex-1 flex-col bg-[var(--color-app)] ${
-        activeChatId ? "flex" : "hidden md:flex"
+        activeConversationId ? "flex" : "hidden md:flex"
       }`}
       aria-label="Active conversation"
     >
       <ChatHeader
-        onBack={onBack}
+        onBack={handleBackToConversations}
         onOpenConversationInfo={() => setOpenDrawer(DRAWER.INFO)}
         onOpenAddMembers={() => setOpenModal(MODAL.ADD)}
         onOpenMembersInfo={() => setOpenDrawer(DRAWER.MEMBERS)}
@@ -179,7 +197,7 @@ const ChatWindow = ({ activeChatId, onBack }) => {
       <div className="flex-1 min-h-0 overflow-hidden">
         <Messages
           currentUserId={currentUserId}
-          activeChatId={activeChatId}
+          conversationId={activeConversationId}
           currentConversation={currentConversation}
           setEditingMessage={setEditingMessage}
         />
@@ -187,7 +205,7 @@ const ChatWindow = ({ activeChatId, onBack }) => {
 
       <MessageInput
         currentUserId={currentUserId}
-        activeChatId={activeChatId}
+        conversationId={activeConversationId}
         editingMessage={editingMessage}
         setEditingMessage={setEditingMessage}
       />
@@ -225,13 +243,13 @@ const ChatWindow = ({ activeChatId, onBack }) => {
       <ModalAddMembers
         isOpen={openModal === MODAL.ADD}
         onCancel={() => setOpenModal(null)}
-        conversationId={activeChatId}
+        conversationId={activeConversationId}
       />
 
       <ModalRemoveMembers
         isOpen={openModal === MODAL.REMOVE}
         onCancel={() => setOpenModal(null)}
-        conversationId={activeChatId}
+        conversationId={activeConversationId}
         memberId={selectedMemberId}
       />
 
@@ -239,7 +257,7 @@ const ChatWindow = ({ activeChatId, onBack }) => {
         isOpen={openModal === MODAL.LEAVE}
         onClose={() => setOpenModal(null)}
         onLeave={handleLeaveGroup}
-        conversationId={activeChatId}
+        conversationId={activeConversationId}
         currentUser={displayInfo?.currentUser}
         members={displayInfo?.participants}
       />
