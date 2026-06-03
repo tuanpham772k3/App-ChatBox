@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { UsersRound } from "lucide-react";
 import { HiOutlineUserGroup } from "react-icons/hi2";
 import ConversationHeader from "../messaging/conversation/ConversationHeader";
@@ -7,6 +7,7 @@ import ModalCreateGroup from "../messaging/conversation/ModalCreateGroup";
 import ModalCreatePrivate from "../messaging/conversation/ModalCreatePrivate";
 
 const CommunityPanel = ({ isDetailOpen }) => {
+  const location = useLocation();
   const [searchInput, setSearchInput] = useState("");
   const [modal, setModal] = useState(null); // "group" | "private" | null
 
@@ -31,14 +32,15 @@ const CommunityPanel = ({ isDetailOpen }) => {
             <li>
               <NavLink
                 to="/community/friends"
-                className={({ isActive }) =>
-                  `flex w-full items-center gap-4 p-5 text-sm text-[var(--color-text-primary)] rounded-lg
-                active:bg-[var(--color-active)] ${
-                  isActive
-                    ? "bg-[var(--color-primary-focus)]/10"
-                    : "hover:bg-[var(--color-hover)]"
-                }`
-                }
+                className={({ isActive }) => {
+                  const isFriendActive = isActive || location.pathname === "/community";
+                  return `flex w-full items-center gap-4 p-5 text-sm text-[var(--color-text-primary)] rounded-lg
+                  active:bg-[var(--color-active)] ${
+                    isFriendActive
+                      ? "bg-[var(--color-primary-focus)]/10"
+                      : "hover:bg-[var(--color-hover)]"
+                  }`;
+                }}
               >
                 <UsersRound size={20} />
                 <span>Danh sách bạn bè</span>
