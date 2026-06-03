@@ -179,7 +179,7 @@ const ChatWindow = () => {
 
   return (
     <section
-      className={`min-w-0 flex-1 flex-col bg-[var(--color-app)] ${
+      className={`min-w-0 min-h-0 flex-1 flex-col bg-[var(--color-app)] ${
         activeConversationId ? "flex" : "hidden md:flex"
       }`}
       aria-label="Active conversation"
@@ -194,7 +194,7 @@ const ChatWindow = () => {
         isOnline={isOnline}
       />
 
-      <div className="flex-1 overflow-hidden">
+      <div className="min-h-0 flex-1 overflow-hidden">
         <Messages
           currentUserId={currentUserId}
           conversationId={activeConversationId}

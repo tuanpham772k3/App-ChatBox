@@ -26,10 +26,7 @@ const MainLayout = () => {
 
   return (
     <LayoutProvider value={layoutValue}>
-      <main
-        className="min-h-screen h-dvh flex overflow-hidden"
-        aria-label="Application"
-      >
+      <main className="min-h-screen h-dvh flex overflow-hidden" aria-label="Application">
         <aside className="shrink-0" aria-label="Primary navigation">
           <Sidebar />
         </aside>
@@ -47,7 +44,7 @@ const MainLayout = () => {
           <Sidebar mode="mobile" onClose={() => setIsSidebarOpen(false)} />
         </Drawer>
 
-        <div className="min-w-0 flex-1 flex flex-col overflow-hidden">
+        <div className="min-w-0 min-h-0 flex-1 flex overflow-hidden">
           <Outlet />
         </div>
       </main>

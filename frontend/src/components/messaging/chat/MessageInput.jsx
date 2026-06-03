@@ -148,7 +148,7 @@ const MessageInput = ({
 
   return (
     <form
-      className="flex flex-col p-2 sm:p-4 border-t border-[var(--color-border)]"
+      className="shrink-0 flex flex-col p-2 sm:p-4 border-t border-[var(--color-border)]"
       aria-label="Message composer"
       onSubmit={(e) => {
         e.preventDefault();
