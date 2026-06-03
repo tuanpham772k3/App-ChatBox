@@ -194,7 +194,7 @@ const ChatWindow = () => {
         isOnline={isOnline}
       />
 
-      <div className="flex-1 min-h-0 overflow-hidden">
+      <div className="flex-1 overflow-hidden">
         <Messages
           currentUserId={currentUserId}
           conversationId={activeConversationId}

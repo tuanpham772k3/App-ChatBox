@@ -8,11 +8,13 @@ import RegisterPage from "@/pages/Auth/RegisterPage";
 
 import MainLayout from "@/layouts/MainLayout";
 import MessagingLayout from "@/layouts/MessagingLayout";
+import CommunityLayout from "@/layouts/CommunityLayout";
 
 import ChatEmptyState from "@/pages/ChatEmptyState";
 import ChatWindow from "@/pages/ChatWindow";
+import CommunityFriends from "./pages/CommunityFriends";
+import CommunityGroups from "./pages/CommunityGroups";
 import ProfilePage from "@/pages/ProfilePage";
-import CommunityPage from "@/pages/CommunityPage";
 
 import { useSocket } from "@/hooks/useSocket";
 
@@ -74,7 +76,10 @@ function App() {
               <Route path=":conversationId" element={<ChatWindow />} />
             </Route>
 
-            <Route path="/community" element={<CommunityPage />} />
+            <Route path="/community" element={<CommunityLayout />}>
+              <Route path="friends" element={<CommunityFriends />} />
+              <Route path="groups" element={<CommunityGroups />} />
+            </Route>
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
         </Route>

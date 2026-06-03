@@ -1,0 +1,218 @@
+import React, { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { SlArrowLeft } from "react-icons/sl";
+import {
+  UsersRound,
+  Search,
+  ArrowUpDown,
+  ListFilter,
+  ChevronDown,
+  MoreHorizontal,
+} from "lucide-react";
+import UserAvatar from "@/components/ui/avatar/UserAvatar";
+
+/* ─── Sample data ────────────────────────────────────────────── */
+const FRIEND_GROUPS = [
+  {
+    label: "Bạn mới",
+    friends: [{ id: 1, name: "Hô Bên", avatarUrl: null, tag: null }],
+  },
+  {
+    label: "B",
+    friends: [
+      { id: 2, name: "Ba", avatarUrl: null, tag: null },
+      { id: 3, name: "Bin", avatarUrl: null, tag: null },
+      { id: 4, name: "Bluismine", avatarUrl: null, tag: "Bạn bè" },
+      { id: 5, name: "Bùi", avatarUrl: null, tag: null },
+      { id: 6, name: "Bùi Liên Khanh", avatarUrl: null, tag: null },
+    ],
+  },
+];
+
+const TOTAL_FRIENDS = 68;
+
+/** Yellow pill shown under friend name */
+const FriendTag = ({ label }) => (
+  <span className="flex items-center gap-1 text-xs text-[var(--color-text-secondary)]">
+    <span className="w-2.5 h-2.5 rounded-sm bg-yellow-400 shrink-0" />
+    {label}
+  </span>
+);
+
+/** Single friend row */
+const FriendRow = ({ friend }) => (
+  <li className="flex items-center">
+    <button
+      className="flex-1 flex items-center gap-3 px-3 py-2.5 rounded-xl
+        hover:bg-[var(--color-hover)] active:bg-[var(--color-active)]
+        text-left transition-colors"
+    >
+      <UserAvatar name={friend.name} avatarUrl={friend.avatarUrl} id={friend.id} />
+      <div className="flex flex-col min-w-0">
+        <span className="text-sm font-semibold text-[var(--color-text-primary)] truncate">
+          {friend.name}
+        </span>
+        {friend.tag && <FriendTag label={friend.tag} />}
+      </div>
+    </button>
+
+    <button
+      aria-label={`Tùy chọn cho ${friend.name}`}
+      className="shrink-0 p-2 mr-1 rounded-full
+        hover:bg-[var(--color-hover)] active:bg-[var(--color-active)]
+        text-[var(--color-text-secondary)] transition-colors"
+    >
+      <MoreHorizontal size={18} />
+    </button>
+  </li>
+);
+
+/** Alphabetical group (e.g. "B" or "Bạn mới") */
+const FriendGroup = ({ label, friends }) => (
+  <li>
+    <p className="text-xs font-semibold text-[var(--color-text-secondary)] px-3 pt-3 pb-1.5">
+      {label}
+    </p>
+    <ul className="flex flex-col gap-0.5">
+      {friends.map((f) => (
+        <FriendRow key={f.id} friend={f} />
+      ))}
+    </ul>
+  </li>
+);
+
+/* ─── Main component ─────────────────────────────────────────── */
+const CommunityFriends = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [search, setSearch] = useState("");
+
+  const isCommunityFriends = location.pathname === "/community/friends";
+
+  /** Filter groups/friends by search query */
+  const visibleGroups = FRIEND_GROUPS.map((group) => ({
+    ...group,
+    friends: group.friends.filter((f) =>
+      f.name.toLowerCase().includes(search.toLowerCase())
+    ),
+  })).filter((g) => g.friends.length > 0);
+
+  return (
+    <section
+      className={`min-w-0 ${
+        isCommunityFriends ? "flex" : "hidden md:flex"
+      } flex-1 flex-col bg-[var(--color-app)]`}
+      aria-label="Friends list"
+    >
+      {/* ── Header ── */}
+      <header
+        className="h-16 sm:h-20 flex items-center gap-3 px-4
+          border-b border-[var(--color-border)]"
+      >
+        {/* Back button (mobile only) */}
+        <button
+          type="button"
+          onClick={() => navigate("/community", { replace: true })}
+          aria-label="Back to community panel"
+          className="md:hidden shrink-0 p-2 rounded-full
+            text-[var(--color-text-primary)]
+            hover:bg-[var(--color-hover)] active:bg-[var(--color-active)]"
+        >
+          <SlArrowLeft size={18} />
+        </button>
+
+        {/* Title */}
+        <div className="flex items-center gap-3">
+          <UsersRound size={22} className="shrink-0 text-[var(--color-text-primary)]" />
+          <h2 className="truncate text-sm md:text-base font-semibold text-[var(--color-text-primary)]">
+            Danh sách bạn bè
+          </h2>
+        </div>
+      </header>
+
+      {/* ── Body ── */}
+      <div
+        className="flex flex-col flex-1 overflow-hidden px-3 sm:px-4 py-1 bg-[var(--color-chat)]
+        text-[var(--color-text-primary)]"
+      >
+        {/* Friend count */}
+        <p className="text-sm font-medium py-3 px-1">Bạn bè ({TOTAL_FRIENDS})</p>
+
+        {/* Card */}
+        <div className="flex flex-col flex-1 overflow-hidden bg-[var(--color-app)] rounded-xl">
+          {/* Search + Sort + Filter row */}
+          <div className="flex flex-wrap items-center gap-2 px-4 pt-4 pb-3">
+            {/* Search input */}
+            <div className="relative flex-1 min-w-[120px]">
+              <Search
+                size={15}
+                aria-hidden="true"
+                className="absolute left-3 top-1/2 -translate-y-1/2
+                  text-[var(--color-text-secondary)] pointer-events-none"
+              />
+              <input
+                type="search"
+                placeholder="Tìm bạn"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-9 pr-3 py-[7px] text-sm rounded-full
+                  border border-[var(--color-border)]
+                  bg-[var(--color-chat)] text-[var(--color-text-primary)]
+                  placeholder:text-[var(--color-text-secondary)]
+                  focus:outline-none focus:border-blue-400
+                  transition-colors"
+              />
+            </div>
+
+            {/* Sort */}
+            <button
+              className="flex items-center gap-1.5 px-3 py-[7px] text-sm rounded-lg
+                border border-[var(--color-border)]
+                bg-[var(--color-chat)] text-[var(--color-text-primary)]
+                hover:bg-[var(--color-hover)] active:bg-[var(--color-active)]
+                whitespace-nowrap transition-colors"
+            >
+              <ArrowUpDown size={14} aria-hidden="true" />
+              <span>Tên (A-Z)</span>
+              <ChevronDown size={13} className="opacity-60" aria-hidden="true" />
+            </button>
+
+            {/* Filter */}
+            <button
+              className="flex items-center gap-1.5 px-3 py-[7px] text-sm rounded-lg
+                border border-[var(--color-border)]
+                bg-[var(--color-chat)] text-[var(--color-text-primary)]
+                hover:bg-[var(--color-hover)] active:bg-[var(--color-active)]
+                whitespace-nowrap transition-colors"
+            >
+              <ListFilter size={14} aria-hidden="true" />
+              <span>Tất cả</span>
+              <ChevronDown size={13} className="opacity-60" aria-hidden="true" />
+            </button>
+          </div>
+
+          {/* Scrollable friend list */}
+          <div className="flex-1 overflow-y-auto custom-scrollbar px-2 pb-4">
+            {visibleGroups.length > 0 ? (
+              <ul className="flex flex-col">
+                {visibleGroups.map((group) => (
+                  <FriendGroup
+                    key={group.label}
+                    label={group.label}
+                    friends={group.friends}
+                  />
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-center text-[var(--color-text-secondary)] py-8">
+                Không tìm thấy bạn bè nào.
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default CommunityFriends;
