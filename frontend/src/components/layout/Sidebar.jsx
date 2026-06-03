@@ -36,8 +36,8 @@ const Sidebar = ({ mode = "desktop", onClose }) => {
         isMobile ? "flex shadow-2xl" : "hidden lg:flex"
       }`}
     >
-      <header className="h-16 sm:h-20 flex items-center gap-3 px-4 border-b border-[var(--color-border)] transition-all">
-        <img src={"/message.svg.png"} alt="" className="w-8 h-8 shrink-0" />
+      <header className="shrink-0 h-16 sm:h-20 flex items-center gap-3 px-4 border-b border-[var(--color-border)] transition-all">
+        <img src={"/message.svg.png"} alt="" className="w-8 h-8" />
         <p className="text-2xl font-bold text-shadow-sm text-[var(--color-text-primary)]">
           Chatbox
         </p>

@@ -8,7 +8,10 @@ const ConversationHeader = ({ searchValue, onSearchChange, onOpenModal }) => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   return (
-    <header className="h-16 sm:h-20 flex items-center justify-between gap-3 px-4 border-b border-[var(--color-border)]">
+    <header
+      className="shrink-0 h-16 sm:h-20 flex items-center justify-between gap-3 px-4
+    border-b border-[var(--color-border)]"
+    >
       {isSearchOpen ? (
         <SearchBar
           value={searchValue}

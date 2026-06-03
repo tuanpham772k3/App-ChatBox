@@ -18,7 +18,7 @@ const ChatHeader = ({
       : typingNames.join(", ");
 
   return (
-    <header className="h-16 sm:h-20 transition-all flex items-center justify-between gap-2 px-3 sm:px-4 border-b border-[var(--color-border)]">
+    <header className="shrink-0 h-16 sm:h-20 transition-all flex items-center justify-between gap-2 px-3 sm:px-4 border-b border-[var(--color-border)]">
       <div className="min-w-0 flex-1 flex items-center gap-4 sm:gap-3">
         {/* Back button (only visible on mobile) */}
         <button
