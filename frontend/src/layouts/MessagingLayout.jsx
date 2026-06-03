@@ -4,12 +4,10 @@ import ConversationContainer from "@/components/messaging/conversation/Conversat
 
 const MessagingLayout = () => {
   return (
-    <div className="min-h-0 min-w-0 flex flex-1">
+    <div className="h-full flex">
       <ConversationContainer />
 
-      <div className="min-h-0 min-w-0 flex flex-1 overflow-hidden">
-        <Outlet />
-      </div>
+      <Outlet />
     </div>
   );
 };

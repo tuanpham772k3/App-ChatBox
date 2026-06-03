@@ -44,7 +44,7 @@ const MainLayout = () => {
           <Sidebar mode="mobile" onClose={() => setIsSidebarOpen(false)} />
         </Drawer>
 
-        <div className="min-w-0 min-h-0 flex-1 flex overflow-hidden">
+        <div className="min-w-0 min-h-0 flex-1 overflow-hidden">
           <Outlet />
         </div>
       </main>

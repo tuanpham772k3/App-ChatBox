@@ -145,7 +145,8 @@ const ConversationContainer = () => {
       <section
         className={`min-w-0 ${
           activeConversationId ? "hidden md:flex" : "flex"
-        } flex-col flex-1 md:flex-none md:w-[min(42vw,22.5rem)] bg-[var(--color-app)] border-r border-[var(--color-border)]`}
+        } flex-col flex-1 md:flex-none md:w-[min(42vw,22.5rem)]
+        bg-[var(--color-app)] border-r border-[var(--color-border)]`}
         aria-labelledby="conversations-heading"
       >
         {/* --- HEADER --- */}

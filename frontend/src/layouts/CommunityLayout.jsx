@@ -8,7 +8,7 @@ const CommunityLayout = () => {
   const isCommunityHome = location.pathname === "/community";
 
   return (
-    <div className="flex flex-1">
+    <div className="h-full flex">
       <CommunityPanel isDetailOpen={!isCommunityHome} />
 
       {isCommunityHome ? <CommunityFriends /> : <Outlet />}
