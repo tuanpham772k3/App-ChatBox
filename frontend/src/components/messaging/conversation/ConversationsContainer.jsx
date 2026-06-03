@@ -157,7 +157,7 @@ const ConversationContainer = () => {
 
         {/* ---LIST CONVERSATIONS--- */}
         {loading ? (
-          <div className="w-full h-full grid place-items-center">
+          <div className="flex-1 flex items-center justify-center">
             <Spin />
           </div>
         ) : (
