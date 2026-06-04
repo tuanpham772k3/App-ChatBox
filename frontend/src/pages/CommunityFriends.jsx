@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { Spin } from "antd";
 import { SlArrowLeft } from "react-icons/sl";
 import {
   UsersRound,
@@ -12,6 +13,7 @@ import {
 import UserAvatar from "@/components/ui/avatar/UserAvatar";
 import { useNotification } from "@/hooks/useNotification";
 import userApi from "@/services/userApi";
+import PopoverFriendActions from "@/components/community/PopoverFriendAction";
 
 /** Yellow pill shown under friend name */
 const FriendTag = ({ label }) => (
@@ -23,12 +25,8 @@ const FriendTag = ({ label }) => (
 
 /** Single friend row */
 const FriendRow = ({ friend }) => (
-  <li className="flex items-center">
-    <button
-      className="flex-1 flex items-center gap-3 px-3 py-2.5 rounded-xl
-        hover:bg-[var(--color-hover)] active:bg-[var(--color-active)]
-        text-left transition-colors"
-    >
+  <li className="group flex items-center hover:bg-[var(--color-hover)] rounded-xl transition-colors cursor-pointer">
+    <button className="flex-1 flex items-center gap-3 px-3 py-2.5 text-left">
       <UserAvatar name={friend?.username} avatarUrl={friend?.avatar?.url} />
       <div className="flex flex-col min-w-0">
         <span className="text-sm font-semibold text-[var(--color-text-primary)] truncate">
@@ -38,14 +36,12 @@ const FriendRow = ({ friend }) => (
       </div>
     </button>
 
-    <button
-      aria-label={`Tùy chọn cho ${friend?.username}`}
-      className="shrink-0 p-2 mr-1 rounded-full
-        hover:bg-[var(--color-hover)] active:bg-[var(--color-active)]
-        text-[var(--color-text-secondary)] transition-colors"
+    <div
+      className="touch-always-visible self-center mr-4 opacity-100 sm:opacity-0 sm:group-hover:opacity-100
+     transition-opacity duration-150"
     >
-      <MoreHorizontal size={18} />
-    </button>
+      <PopoverFriendActions />
+    </div>
   </li>
 );
 
@@ -215,7 +211,11 @@ const CommunityFriends = () => {
 
           {/* Scrollable friend list */}
           <div className="flex-1 overflow-y-auto custom-scrollbar px-2 pb-4">
-            {visibleGroups.length > 0 ? (
+            {loading ? (
+              <div className="h-full flex items-center justify-center">
+                <Spin />
+              </div>
+            ) : visibleGroups.length > 0 ? (
               <ul className="flex flex-col">
                 {visibleGroups.map((group) => (
                   <FriendGroup
