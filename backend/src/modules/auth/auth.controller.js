@@ -125,7 +125,7 @@ const login = async (req, res, next) => {
           id: user._id,
           username: user.username,
           email: user.email,
-          avatar: user.avatarUrl.url,
+          avatarUrl: user.avatar.url,
         },
       },
     });

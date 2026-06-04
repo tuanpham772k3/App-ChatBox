@@ -15,6 +15,7 @@ import {
   UsersRound,
 } from "lucide-react";
 import GroupAvatar from "@/components/ui/avatar/GroupAvatar";
+import UserAvatar from "@/components/ui/avatar/UserAvatar";
 
 const DrawerConversationInfo = ({
   open,
@@ -56,10 +57,10 @@ const DrawerConversationInfo = ({
           {displayInfo.isGroup ? (
             <GroupAvatar users={displayInfo.participants || []} size={60} />
           ) : (
-            <img
-              src={displayInfo.displayAvatar}
-              alt={displayInfo.displayName}
-              className="w-16 h-16 rounded-full border-2 border-[var(--color-border)]"
+            <UserAvatar
+              name={displayInfo.displayName}
+              avatarUrl={displayInfo.displayAvatar}
+              size={60}
             />
           )}
 

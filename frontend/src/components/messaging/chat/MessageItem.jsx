@@ -1,6 +1,7 @@
 import React from "react";
 import { Check, CheckCheck, Clock, TriangleAlert } from "lucide-react";
 import PopoverMessageActions from "./PopoverMessageActions";
+import UserAvatar from "@/components/ui/avatar/UserAvatar";
 
 const MessageItem = ({
   msg,
@@ -15,7 +16,6 @@ const MessageItem = ({
   onDeleteMessage,
   onEditClick,
 }) => {
-  const avatar = msg.senderId?.avatarUrl?.url || "/avatarA.jpg";
   const msgTimeDate = new Date(msg.createdAt);
   const msgTime = msgTimeDate.toLocaleTimeString([], {
     hour: "2-digit",
@@ -103,13 +103,12 @@ const MessageItem = ({
       >
         {/* --- Avatar ---*/}
         {showAvatar ? (
-          <img
-            src={avatar}
-            alt={msg.senderId?.username}
-            className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full object-cover cursor-pointer border border-[var(--color-border)]"
+          <UserAvatar
+            name={msg.senderId?.username || "Người dùng"}
+            avatarUrl={msg.senderId?.avatar?.url}
           />
         ) : (
-          <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12" />
+          <div className="w-10 h-10 shrink-0" />
         )}
 
         {/* Ellipsis + Menu */}
@@ -193,11 +192,11 @@ const MessageItem = ({
           {readers.length > 0 ? (
             <div className="flex gap-1">
               {readers.map((p) => (
-                <img
+                <UserAvatar
                   key={p.userId?._id}
-                  src={p.userId?.avatarUrl?.url || "/avatarA.jpg"}
-                  alt={p.userId?.username || "Người dùng"}
-                  className="w-4 h-4 rounded-full object-cover"
+                  name={p.userId?.username || "Người dùng"}
+                  avatarUrl={p.userId?.avatar?.url}
+                  size={24}
                 />
               ))}
             </div>

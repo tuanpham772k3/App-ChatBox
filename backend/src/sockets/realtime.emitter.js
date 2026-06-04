@@ -6,7 +6,7 @@ const buildLastMessagePayload = (conversationId, message) => {
       senderId: {
         _id: message.senderId?._id,
         username: message.senderId?.username,
-        avatarUrl: message.senderId?.avatarUrl,
+        avatarUrl: message.senderId?.avatar?.url,
       },
       type: message.type,
       content: message.content || message.file?.filename || message.type || "",

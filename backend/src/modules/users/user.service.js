@@ -10,7 +10,7 @@ const UserService = {
     // 1. Nếu không có keyword → trả về danh sách gợi ý (mới hoạt động gần đây)
     if (!keyword || keyword.trim() === "") {
       const suggestedUsers = await User.find({ _id: { $ne: userId } })
-        .select("_id username avatarUrl bio lastActiveAt")
+        .select("_id username avatar bio lastActiveAt")
         .sort({ lastActiveAt: -1 }) // user hoạt động gần nhất trước
         .limit(20);
 
@@ -25,7 +25,7 @@ const UserService = {
       _id: { $ne: userId }, //Loại chính mình
       username: regex,
     })
-      .select("_id username avatarUrl bio lastActiveAt")
+      .select("_id username avatar bio lastActiveAt")
       .sort({ lastActiveAt: -1 })
       .limit(10);
 

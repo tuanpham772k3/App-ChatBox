@@ -1,7 +1,8 @@
 import React from "react";
-import { Ellipsis, Pin } from "lucide-react";
+import { Pin } from "lucide-react";
 import GroupAvatar from "@/components/ui/avatar/GroupAvatar";
 import PopoverConversationAction from "./PopoverConversationActions";
+import UserAvatar from "@/components/ui/avatar/UserAvatar";
 
 const ConversationItem = ({
   isActive,
@@ -34,10 +35,10 @@ const ConversationItem = ({
           {display.isGroup ? (
             <GroupAvatar users={display.participants} size={50} />
           ) : (
-            <img
-              src={display.displayAvatar}
-              alt={display.displayName}
-              className="w-12 h-12 rounded-full object-cover border-1 border-[var(--color-border)]"
+            <UserAvatar
+              name={display.displayName || "Người dùng"}
+              avatarUrl={display.displayAvatar}
+              size={50}
             />
           )}
 

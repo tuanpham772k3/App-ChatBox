@@ -2,6 +2,7 @@ import React from "react";
 import { PanelRight, Search, UserPlus, UsersRound, Video } from "lucide-react";
 import { SlArrowLeft } from "react-icons/sl";
 import GroupAvatar from "@/components/ui/avatar/GroupAvatar";
+import UserAvatar from "@/components/ui/avatar/UserAvatar";
 
 const ChatHeader = ({
   onBack,
@@ -36,10 +37,10 @@ const ChatHeader = ({
             <GroupAvatar users={displayInfo.participants} size={48} />
           ) : (
             <>
-              <img
-                src={displayInfo.displayAvatar}
-                alt={displayInfo.displayName}
-                className="w-12 h-12 shrink-0 rounded-full border-2 border-[var(--color-border)]"
+              <UserAvatar
+                name={displayInfo.displayName}
+                avatarUrl={displayInfo.displayAvatar}
+                size={48}
               />
               {isOnline && (
                 <span

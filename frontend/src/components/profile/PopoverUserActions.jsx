@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { toggleTheme } from "@/store/themeSlice";
 import { useLogout } from "@/hooks/useLogout";
 import ModalUserInfo from "./ModalUserInfo";
+import UserAvatar from "../ui/avatar/UserAvatar";
 
 const PopoverUserActions = ({ userInfo }) => {
   const dispatch = useDispatch();
@@ -106,10 +107,10 @@ const PopoverUserActions = ({ userInfo }) => {
           type="button"
           className="w-12 h-12 rounded-full focus:ring-2 focus:ring-[var(--color-primary)]"
         >
-          <img
-            src={userInfo?.avatarUrl?.url || "/avatarA.jpg"}
-            alt={userInfo?.username || "User avatar"}
-            className="w-full h-full rounded-full border border-[var(--color-border)] object-cover cursor-pointer"
+          <UserAvatar
+            avatarUrl={userInfo?.avatar?.url}
+            name={userInfo?.username}
+            size={48}
           />
         </button>
       </Popover>

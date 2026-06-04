@@ -52,7 +52,7 @@ const MessageService = {
         senderId,
         clientMessageId,
       })
-        .populate("senderId", "username email avatarUrl")
+        .populate("senderId", "username email avatar")
         .lean();
 
       if (existing) {
@@ -77,7 +77,7 @@ const MessageService = {
         : null,
     });
 
-    await message.populate("senderId", "username email avatarUrl");
+    await message.populate("senderId", "username email avatar");
 
     // Cập nhật conversation.lastMessage và tăng unreadCount cho participants khác
     await Conversation.findOneAndUpdate(
@@ -152,7 +152,7 @@ const MessageService = {
 
     // 2. Lấy danh sách tin nhắn (không bao gồm tin nhắn đã xóa)
     const messages = await Message.find(query)
-      .populate("senderId", "username email avatarUrl")
+      .populate("senderId", "username email avatar")
       .sort({ createdAt: -1 }) // Sắp xếp từ mới nhất đến cũ nhất
       .limit(limit)
       .lean();
@@ -179,7 +179,7 @@ const MessageService = {
   deleteMessageById: async (messageId, userId) => {
     const message = await Message.findById(messageId).populate(
       "senderId",
-      "username email avatarUrl"
+      "username email avatar"
     );
 
     if (!message) {
@@ -232,7 +232,7 @@ const MessageService = {
   editMessageById: async (messageId, userId, newContent) => {
     const message = await Message.findById(messageId).populate(
       "senderId",
-      "username email avatarUrl"
+      "username email avatar"
     );
 
     if (!message) {
@@ -274,7 +274,7 @@ const MessageService = {
 
   getMessageRealtimeData: async (messageId) => {
     const message = await Message.findById(messageId)
-      .populate("senderId", "username email avatarUrl")
+      .populate("senderId", "username email avatar")
       .lean();
     if (!message) {
       throw new AppError("Message not found", 404);
@@ -292,7 +292,7 @@ const MessageService = {
 
   getMessageDeleteRealtimeData: async (messageId) => {
     const message = await Message.findById(messageId)
-      .populate("senderId", "username email avatarUrl")
+      .populate("senderId", "username email avatar")
       .lean();
     if (!message) {
       throw new AppError("Message not found", 404);
@@ -300,7 +300,7 @@ const MessageService = {
 
     const conversation = await Conversation.findById(message.conversationId)
       .select("participants lastMessage")
-      .populate("lastMessage.senderId", "username avatarUrl")
+      .populate("lastMessage.senderId", "username avatar")
       .lean();
     if (!conversation) {
       throw new AppError("Conversation not found", 404);

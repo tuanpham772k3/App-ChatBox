@@ -39,7 +39,7 @@ const GroupRow = ({ group }) => (
         hover:bg-[var(--color-hover)] active:bg-[var(--color-active)]
         text-left transition-colors"
     >
-      <UserAvatar name={group.name} avatarUrl={group.avatarUrl} id={group.id} />
+      <UserAvatar name={group.name} avatarUrl={group.avatarUrl} />
       <div className="flex flex-col min-w-0">
         <span className="text-sm font-semibold text-[var(--color-text-primary)] truncate">
           {group.name}

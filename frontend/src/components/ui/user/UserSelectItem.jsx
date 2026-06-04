@@ -1,4 +1,5 @@
-import { Avatar, Checkbox } from "antd";
+import { Checkbox } from "antd";
+import UserAvatar from "../avatar/UserAvatar";
 
 const UserSelectItem = ({ user, isSelected, onToggle }) => {
   return (
@@ -13,7 +14,7 @@ const UserSelectItem = ({ user, isSelected, onToggle }) => {
       />
 
       <div className="min-w-0 flex items-center gap-2">
-        <Avatar src={user?.avatarUrl.url} alt={user.username} size={40} />
+        <UserAvatar avatarUrl={user?.avatar?.url} name={user.username} size={40} />
         <span className="truncate text-sm font-medium text-[var(--color-text-primary)]">
           {user?.username}
         </span>

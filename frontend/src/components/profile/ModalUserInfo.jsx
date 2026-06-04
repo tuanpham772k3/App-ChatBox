@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Avatar, Button, Descriptions, Image, Modal, Upload } from "antd";
+import { Button, Descriptions, Image, Modal, Upload } from "antd";
 import { Typography } from "antd";
 import ImgCrop from "antd-img-crop";
 import { ArrowLeft, Camera, PencilLine } from "lucide-react";
@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchProfile } from "../../store/userSlice";
 import { useNotification } from "@/hooks/useNotification";
 import UserProfileEditForm from "./UserProfileEditForm";
+import UserAvatar from "../ui/avatar/UserAvatar";
 
 const { Title, Text } = Typography;
 
@@ -60,9 +61,11 @@ const ModalUserInfo = ({ isOpen, onCancel }) => {
               <div className="h-20">
                 <div className="absolute bottom-5 flex items-center gap-4 px-4">
                   <div className="relative">
-                    <Avatar size={80} src={profile?.avatarUrl.url}>
-                      {profile?.username?.[0]}
-                    </Avatar>
+                    <UserAvatar
+                      name={profile?.username || "Người dùng"}
+                      avatarUrl={profile?.avatar?.url}
+                      size={72}
+                    />
                     <button
                       onClick={() => modalTransition("editAvatar")}
                       className="absolute bottom-0 right-0 p-1 text-[var(--color-text-secondary)] bg-[var(--color-app)] hover:bg-[var(--color-hover)] rounded-full border border-[var(--color-border)]"

@@ -17,7 +17,7 @@ const mapParticipants = (participants, currentUserId) => {
     return {
       id: p.userId?._id,
       name: p.userId?._id === currentUserId ? "Bạn" : p.userId?.username || "Người dùng",
-      avatarUrl: p.userId?.avatarUrl?.url || "/avatarA.jpg",
+      avatarUrl: p.userId?.avatar?.url || null,
       role: p.role,
     };
   });
@@ -92,9 +92,7 @@ export const getDisplayInfo = (conversation, currentUserId) => {
     currentUser,
     participants: mappedParticipants,
     displayName: isGroup ? name : partner?.userId?.username || "Người dùng",
-    displayAvatar: isGroup
-      ? null
-      : partner?.userId?.avatarUrl?.url || "/avatar-default.jpg",
+    displayAvatar: isGroup ? null : partner?.userId?.avatar?.url || null,
     lastMsgSender: lastMsg.sender,
     lastMsgContent: lastMsg.content,
     lastMsgTime: lastMsg.time,

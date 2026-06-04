@@ -24,13 +24,12 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
-    avatarUrl: {
+    avatar: {
       url: {
         type: String,
-        default:
-          "https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg",
-      }, // URL hiển thị
-      public_id: { type: String }, // ID để xóa/replace ảnh trên Cloudinary
+        default: null,
+      },
+      public_id: { type: String, default: null }, // ID để xóa/replace ảnh trên Cloudinary
     },
     bio: {
       type: String,

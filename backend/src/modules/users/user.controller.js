@@ -10,6 +10,7 @@ const getProfile = async (req, res, next) => {
     const user = await User.findById(userId).select(
       "-passwordHash -refreshTokenHash -refreshTokenExpiresAt"
     );
+
     if (!user) {
       return res.status(401).json({
         message: "User not found",
@@ -38,8 +39,8 @@ const updateProfile = async (req, res, next) => {
     if (req.file) {
       // Xóa avatar cũ nếu có
       const currentUser = await User.findById(userId);
-      if (currentUser.avatarUrl?.public_id) {
-        await cloudinary.uploader.destroy(currentUser.avatarUrl.public_id);
+      if (currentUser.avatar?.public_id) {
+        await cloudinary.uploader.destroy(currentUser.avatar.public_id);
       }
 
       // Upload avatar mới
@@ -61,7 +62,7 @@ const updateProfile = async (req, res, next) => {
     }
 
     const updateFields = { username, bio };
-    if (avatarData) updateFields.avatarUrl = avatarData;
+    if (avatarData) updateFields.avatar = avatarData;
 
     const user = await User.findByIdAndUpdate(
       userId,

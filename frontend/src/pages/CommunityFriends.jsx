@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { SlArrowLeft } from "react-icons/sl";
 import {
@@ -10,6 +10,8 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 import UserAvatar from "@/components/ui/avatar/UserAvatar";
+import { useNotification } from "@/hooks/useNotification";
+import userApi from "@/services/userApi";
 
 /* ─── Sample data ────────────────────────────────────────────── */
 const FRIEND_GROUPS = [
@@ -47,17 +49,17 @@ const FriendRow = ({ friend }) => (
         hover:bg-[var(--color-hover)] active:bg-[var(--color-active)]
         text-left transition-colors"
     >
-      <UserAvatar name={friend.name} avatarUrl={friend.avatarUrl} id={friend.id} />
+      <UserAvatar name={friend.username} avatarUrl={friend.avatarUrl} />
       <div className="flex flex-col min-w-0">
         <span className="text-sm font-semibold text-[var(--color-text-primary)] truncate">
-          {friend.name}
+          {friend.username}
         </span>
         {friend.tag && <FriendTag label={friend.tag} />}
       </div>
     </button>
 
     <button
-      aria-label={`Tùy chọn cho ${friend.name}`}
+      aria-label={`Tùy chọn cho ${friend.username}`}
       className="shrink-0 p-2 mr-1 rounded-full
         hover:bg-[var(--color-hover)] active:bg-[var(--color-active)]
         text-[var(--color-text-secondary)] transition-colors"
@@ -75,7 +77,7 @@ const FriendGroup = ({ label, friends }) => (
     </p>
     <ul className="flex flex-col gap-0.5">
       {friends.map((f) => (
-        <FriendRow key={f.id} friend={f} />
+        <FriendRow key={f._id} friend={f} />
       ))}
     </ul>
   </li>
@@ -86,16 +88,54 @@ const CommunityFriends = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [search, setSearch] = useState("");
+  const [friends, setFriends] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const notification = useNotification();
 
   const isCommunityFriends = location.pathname === "/community/friends";
 
-  /** Filter groups/friends by search query */
-  const visibleGroups = FRIEND_GROUPS.map((group) => ({
-    ...group,
-    friends: group.friends.filter((f) =>
-      f.name.toLowerCase().includes(search.toLowerCase())
-    ),
-  })).filter((g) => g.friends.length > 0);
+  const visibleGroups = useMemo(() => {
+    const filtered = friends.filter((friend) =>
+      friend.username.toLowerCase().includes(search.toLowerCase())
+    );
+
+    return Object.values(
+      filtered.reduce((groups, friend) => {
+        const label = friend.username[0].toUpperCase();
+
+        if (!groups[label]) {
+          groups[label] = {
+            label,
+            friends: [],
+          };
+        }
+
+        groups[label].friends.push(friend);
+
+        return groups;
+      }, {})
+    );
+  }, [friends, search]);
+
+  const fetchUsers = async (query = "") => {
+    try {
+      setLoading(true);
+      const users = await userApi.searchUsers(query);
+      setFriends(users);
+    } catch (error) {
+      notification.error({
+        message: "Không thể tải danh sách người dùng",
+        description: error.message || "Vui lòng thử lại sau",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   return (
     <section

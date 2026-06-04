@@ -2,6 +2,7 @@ import React from "react";
 import { Drawer } from "antd";
 import { Key, Trash, UserPlus } from "lucide-react";
 import { SlArrowLeft } from "react-icons/sl";
+import UserAvatar from "@/components/ui/avatar/UserAvatar";
 
 const DrawerMembersInfo = ({
   open,
@@ -85,20 +86,20 @@ const DrawerMembersInfo = ({
           <ul className="flex flex-col gap-1">
             {sortedMembers.map((member) => (
               <li
-                key={member.id}
+                key={member?.id}
                 className="flex items-center px-4 py-3 hover:bg-[var(--color-hover)] rounded group"
               >
                 <div className="min-w-0 flex-1 flex items-center gap-2">
                   {/* Avatar */}
                   <div className="relative">
-                    <img
-                      src={member.avatarUrl}
-                      alt={member.name}
-                      className="w-12 h-12 rounded-full object-cover border-2 border-[var(--color-border)]"
+                    <UserAvatar
+                      avatarUrl={member?.avatarUrl}
+                      name={member?.name}
+                      size={40}
                     />
 
                     {/* Key */}
-                    {member.role === "owner" && (
+                    {member?.role === "owner" && (
                       <div className="absolute bottom-0 right-0 w-4 h-4 bg-zinc-600 rounded-full flex items-center justify-center">
                         <Key size={12} className="text-yellow-300 transform rotate-180" />
                       </div>
@@ -107,16 +108,16 @@ const DrawerMembersInfo = ({
                   {/* Tên & vai trò */}
                   <div className="min-w-0 flex flex-col justify-center">
                     <h3 className="truncate text-sm font-medium text-[var(--color-text-primary)]">
-                      {member.name}
+                      {member?.name}
                     </h3>
 
-                    {member.role === "owner" && (
+                    {member?.role === "owner" && (
                       <span className="text-xs text-[var(--color-text-secondary)]">
                         Trưởng nhóm
                       </span>
                     )}
 
-                    {member.role === "admin" && (
+                    {member?.role === "admin" && (
                       <span className="text-xs text-[var(--color-text-secondary)]">
                         Quản trị viên
                       </span>
@@ -127,7 +128,7 @@ const DrawerMembersInfo = ({
                 {/* Chức năng xóa thành viên */}
                 {canShowDeleteIcon(member) && (
                   <button
-                    onClick={() => onRemoveMember(member.id)}
+                    onClick={() => onRemoveMember(member?.id)}
                     className="p-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition rounded hover:bg-[var(--color-hover)]"
                   >
                     <Trash size={18} color="red" />
