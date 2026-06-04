@@ -162,14 +162,14 @@ const ConversationContainer = () => {
             <Spin />
           </div>
         ) : (
-          <section className="min-w-0 flex-1 flex flex-col py-6 overflow-hidden">
-            <header className="flex items-center gap-2 px-4 mb-2 text-sm text-[var(--color-text-secondary)]">
-              <MessageSquareText size={14} aria-hidden="true" />
-              <h2 id="conversations-heading">All Message</h2>
-            </header>
+          <div className="min-w-0 flex pt-6 overflow-hidden">
+            <section className="flex-1 flex flex-col overflow-y-auto custom-scrollbar">
+              <header className="flex items-center gap-2 px-4 mb-2 text-sm text-[var(--color-text-secondary)]">
+                <MessageSquareText size={14} aria-hidden="true" />
+                <h2 id="conversations-heading">All Message</h2>
+              </header>
 
-            <div className="flex-1 overflow-y-auto custom-scrollbar">
-              <ul className="flex flex-col gap-1 px-2">
+              <ul className="flex-1 flex flex-col gap-1 px-2">
                 {filteredConversations.length === 0 ? (
                   <li className="text-center text-[var(--color-text-secondary)] mt-8">
                     Chưa có cuộc trò chuyện nào
@@ -213,8 +213,8 @@ const ConversationContainer = () => {
                   </>
                 )}
               </ul>
-            </div>
-          </section>
+            </section>
+          </div>
         )}
       </section>
 
