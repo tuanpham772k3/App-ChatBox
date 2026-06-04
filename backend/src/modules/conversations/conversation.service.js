@@ -133,6 +133,7 @@ const ConversationService = {
 
     const query = {
       isActive: true,
+      "lastMessage.messageId": { $ne: null },
       participants: {
         $elemMatch: {
           userId: userId,
@@ -141,7 +142,7 @@ const ConversationService = {
       },
     };
 
-    // Tìm tất cả conversation mà user tham gia chưa xóa phía mình(deletedAt: null)
+    // Tìm tất cả conversation có (deletedAt: null)
     const conversations = await Conversation.find(query)
       .populate("participants.userId", "username email avatar bio presence lastSeenAt")
       .populate("lastMessage.senderId", "username avatar")
@@ -150,7 +151,7 @@ const ConversationService = {
       .limit(limit)
       .lean();
 
-    // 2. Total conversation
+    // Total conversation
     const total = await Conversation.countDocuments(query);
 
     return {
