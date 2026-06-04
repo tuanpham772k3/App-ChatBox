@@ -20,7 +20,7 @@ const ModalAddMembers = ({ isOpen, onCancel, conversationId }) => {
   const fetchUsers = async (query = "") => {
     try {
       setLoading(true);
-      const users = await userApi.searchUsers(query);
+      const users = await userApi.getUsers(query);
       setResults(users);
     } catch (error) {
       notification.error({

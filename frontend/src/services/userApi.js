@@ -5,7 +5,7 @@ const userApi = {
    * Lấy thông tin hồ sơ người dùng hiện tại
    * GET /user/profile
    */
-  getProfile: () => {
+  getUserProfile: () => {
     return instance.get("/user/profile");
   },
 
@@ -13,7 +13,7 @@ const userApi = {
    * Cập nhật hồ sơ người dùng
    * PUT /user/profile
    */
-  updateProfile: (formData) => {
+  updateUserProfile: (formData) => {
     return instance.put("/user/profile", formData);
   },
 
@@ -21,7 +21,7 @@ const userApi = {
    * Tìm kiếm hoặc gợi ý người dùng
    * GET /user/search?keyword=
    */
-  searchUsers: (keyword) => {
+  getUsers: (keyword) => {
     return instance.get("/user/search", {
       params: { keyword },
     });

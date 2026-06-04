@@ -13,26 +13,6 @@ import UserAvatar from "@/components/ui/avatar/UserAvatar";
 import { useNotification } from "@/hooks/useNotification";
 import userApi from "@/services/userApi";
 
-/* ─── Sample data ────────────────────────────────────────────── */
-const FRIEND_GROUPS = [
-  {
-    label: "Bạn mới",
-    friends: [{ id: 1, name: "Hô Bên", avatarUrl: null, tag: null }],
-  },
-  {
-    label: "B",
-    friends: [
-      { id: 2, name: "Ba", avatarUrl: null, tag: null },
-      { id: 3, name: "Bin", avatarUrl: null, tag: null },
-      { id: 4, name: "Bluismine", avatarUrl: null, tag: "Bạn bè" },
-      { id: 5, name: "Bùi", avatarUrl: null, tag: null },
-      { id: 6, name: "Bùi Liên Khanh", avatarUrl: null, tag: null },
-    ],
-  },
-];
-
-const TOTAL_FRIENDS = 68;
-
 /** Yellow pill shown under friend name */
 const FriendTag = ({ label }) => (
   <span className="flex items-center gap-1 text-xs text-[var(--color-text-secondary)]">
@@ -49,17 +29,17 @@ const FriendRow = ({ friend }) => (
         hover:bg-[var(--color-hover)] active:bg-[var(--color-active)]
         text-left transition-colors"
     >
-      <UserAvatar name={friend.username} avatarUrl={friend.avatarUrl} />
+      <UserAvatar name={friend?.username} avatarUrl={friend?.avatar?.url} />
       <div className="flex flex-col min-w-0">
         <span className="text-sm font-semibold text-[var(--color-text-primary)] truncate">
-          {friend.username}
+          {friend?.username}
         </span>
-        {friend.tag && <FriendTag label={friend.tag} />}
+        {friend?.tag && <FriendTag label={friend?.tag} />}
       </div>
     </button>
 
     <button
-      aria-label={`Tùy chọn cho ${friend.username}`}
+      aria-label={`Tùy chọn cho ${friend?.username}`}
       className="shrink-0 p-2 mr-1 rounded-full
         hover:bg-[var(--color-hover)] active:bg-[var(--color-active)]
         text-[var(--color-text-secondary)] transition-colors"
@@ -95,6 +75,8 @@ const CommunityFriends = () => {
 
   const isCommunityFriends = location.pathname === "/community/friends";
 
+  const TOTAL_FRIENDS = friends.length;
+
   const visibleGroups = useMemo(() => {
     const filtered = friends.filter((friend) =>
       friend.username.toLowerCase().includes(search.toLowerCase())
@@ -121,7 +103,7 @@ const CommunityFriends = () => {
   const fetchUsers = async (query = "") => {
     try {
       setLoading(true);
-      const users = await userApi.searchUsers(query);
+      const users = await userApi.getUsers(query);
       setFriends(users);
     } catch (error) {
       notification.error({

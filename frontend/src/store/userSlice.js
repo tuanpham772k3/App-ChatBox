@@ -10,7 +10,7 @@ export const fetchProfile = createAsyncThunk(
   "user/fetchProfile",
   async (_, { rejectWithValue }) => {
     try {
-      const res = await userApi.getProfile();
+      const res = await userApi.getUserProfile();
       return res; // user
     } catch (err) {
       return rejectWithValue(err);
@@ -23,7 +23,7 @@ export const editProfile = createAsyncThunk(
   "user/editProfile",
   async (payload, { rejectWithValue }) => {
     try {
-      const res = await userApi.updateProfile(payload);
+      const res = await userApi.updateUserProfile(payload);
       return res; // user
     } catch (err) {
       return rejectWithValue(err);
@@ -32,11 +32,11 @@ export const editProfile = createAsyncThunk(
 );
 
 // Tìm kiếm hoặc gợi ý người dùng
-export const searchUsers = createAsyncThunk(
-  "user/searchUsers",
+export const getUsers = createAsyncThunk(
+  "user/getUsers",
   async (keyword = "", { rejectWithValue }) => {
     try {
-      const res = await userApi.searchUsers(keyword);
+      const res = await userApi.getUsers(keyword);
       return res; // users
     } catch (err) {
       return rejectWithValue(err);

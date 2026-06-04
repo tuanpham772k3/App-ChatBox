@@ -3,7 +3,7 @@ const User = require("./user.model.js");
 const UserService = require("./user.service.js");
 
 // lấy thông tin người dùng
-const getProfile = async (req, res, next) => {
+const getUserProfile = async (req, res, next) => {
   try {
     const userId = req.user.userId;
 
@@ -28,7 +28,7 @@ const getProfile = async (req, res, next) => {
 };
 
 // cập nhật hồ sơ
-const updateProfile = async (req, res, next) => {
+const updateUserProfile = async (req, res, next) => {
   try {
     const userId = req.user.userId;
     const { username, bio } = req.body;
@@ -90,12 +90,12 @@ const updateProfile = async (req, res, next) => {
 /**
  * Tìm kiếm người dùng
  */
-const searchUsers = async (req, res, next) => {
+const getUsers = async (req, res, next) => {
   try {
     const { userId } = req.user;
     const { keyword } = req.query;
 
-    const users = await UserService.searchUsers(keyword, userId);
+    const users = await UserService.getUsers(keyword, userId);
 
     return res.status(200).json({
       success: true,
@@ -107,7 +107,7 @@ const searchUsers = async (req, res, next) => {
 };
 
 module.exports = {
-  getProfile,
-  updateProfile,
-  searchUsers,
+  getUserProfile,
+  updateUserProfile,
+  getUsers,
 };
