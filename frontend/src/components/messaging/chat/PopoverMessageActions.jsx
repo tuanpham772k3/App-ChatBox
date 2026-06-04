@@ -18,13 +18,13 @@ const PopoverMessageActions = ({ msg, onEditClick, onDeleteMessage }) => {
 
   const messageActions = [
     {
-      key: "edit",
+      id: "edit",
       Icon: Pencil,
       label: "Chỉnh sửa tin nhắn",
       onClick: handleEdit,
     },
     {
-      key: "delete",
+      id: "delete",
       Icon: Trash,
       label: "Thu hồi tin nhắn",
       danger: true,

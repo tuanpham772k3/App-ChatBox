@@ -8,14 +8,14 @@ const MenuActions = ({ actions, minWidth = 160 }) => {
 
         return (
           <button
-            key={action.key}
+            key={action.id}
             type="button"
             onClick={(e) => {
               e.stopPropagation();
               action.onClick();
             }}
             className={`flex items-center gap-2 w-full px-3 py-2 text-sm text-left text-[var(--color-text-primary)]
-            hover:bg-[var(--color-hover)] rounded ${action.danger ? "text-red-600" : ""}`}
+            hover:bg-[var(--color-hover)] rounded ${action.danger ? "text-red-400" : ""}`}
           >
             {Icon && <Icon size={18} />}
             {action.label}

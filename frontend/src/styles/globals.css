@@ -14,8 +14,11 @@
   --color-app: #ffffff;
   --color-chat: #f1f5f9;
   --color-surface: #f8fafc;
+
+  /* Behavior */
   --color-hover: #f1f5f9;
-  --color-active: #e2e8f0;
+  --color-hover-elevated: #e2e8f0;
+  --color-active: #cbd5e1;
   --color-disabled: #e5e7eb;
   --color-status: #9ca3af;
 
@@ -41,8 +44,10 @@
   --color-chat: #111111;
   --color-surface: #181818;
 
+  /* Behavior */
   --color-hover: #242424;
-  --color-active: #2e2e2e;
+  --color-hover-elevated: #303030;
+  --color-active: #404040;
   --color-disabled: #262626;
   --color-status: #525252;
 

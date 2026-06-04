@@ -14,7 +14,7 @@ const PopoverConversationActions = ({
 
   const conversationActions = [
     {
-      key: "pin",
+      id: "pin",
       Icon: isPinned ? PinOff : Pin,
       label: isPinned ? "Bỏ ghim hội thoại" : "Ghim hội thoại",
       onClick: () => {
@@ -23,7 +23,7 @@ const PopoverConversationActions = ({
       },
     },
     {
-      key: "mark_unread",
+      id: "mark_unread",
       Icon: MailCheck,
       label: "Đánh dấu chưa đọc",
       onClick: () => {
@@ -32,7 +32,7 @@ const PopoverConversationActions = ({
       },
     },
     {
-      key: "clear_history",
+      id: "clear_history",
       Icon: BrushCleaning,
       label: "Xóa lịch sử trò chuyện",
       onClick: () => {
@@ -41,7 +41,7 @@ const PopoverConversationActions = ({
       },
     },
     {
-      key: "delete",
+      id: "delete",
       Icon: Trash,
       label: "Xóa hội thoại",
       danger: true,
@@ -64,7 +64,9 @@ const PopoverConversationActions = ({
         type="button"
         onClick={(e) => e.stopPropagation()}
         aria-label="Open conversation actions"
-        className="p-1 bg-[var(--color-app)] text-[var(--color-text-primary)] rounded-full border border-[var(--color-border)] shadow-xs hover:bg-[var(--color-hover)] active:bg-[var(--color-active)] transition-colors"
+        className="p-1 bg-transparent text-[var(--color-text-primary)] rounded-sm
+        border border-[var(--color-border)] shadow-xs
+        hover:bg-[var(--color-hover-elevated)] active:bg-[var(--color-active)] transition-colors"
       >
         <Ellipsis size={18} />
       </button>
