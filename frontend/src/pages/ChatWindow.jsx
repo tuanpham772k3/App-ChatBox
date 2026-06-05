@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import ChatHeader from "../components/messaging/chat/ChatHeader";
 import MessageInput from "../components/messaging/chat/MessageInput";
@@ -13,6 +13,7 @@ import ModalAddMembers from "../components/messaging/chat/ModalAddMembers";
 
 import {
   clearConversationHistory,
+  getConversationDetail,
   getConversationImages,
   leaveGroup,
   togglePinConversation,
@@ -37,11 +38,12 @@ const DRAWER = {
 const ChatWindow = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const activeConversationId = useParams().conversationId;
 
   const currentUserId = useSelector((state) => state.auth.user?.id);
-  const { conversations, typingUsers, statusUsers, images } = useSelector(
+  const { currentConversation, typingUsers, statusUsers, images } = useSelector(
     (state) => state.conversations
   );
 
@@ -53,9 +55,8 @@ const ChatWindow = () => {
     content: "",
     originalContent: "",
   });
-  const notification = useNotification();
 
-  const currentConversation = conversations.find((c) => c._id === activeConversationId);
+  const notification = useNotification();
 
   const typingNames = useMemo(() => {
     if (!activeConversationId) return [];
@@ -78,6 +79,12 @@ const ChatWindow = () => {
     : null;
 
   const isOnline = partnerStatus?.presence === "online";
+
+  useEffect(() => {
+    if (!activeConversationId) return;
+
+    dispatch(getConversationDetail(activeConversationId)).unwrap().catch(console.error);
+  }, [activeConversationId, dispatch]);
 
   const handleTogglePinConversation = () => {
     if (!activeConversationId || !currentUserId) return;
@@ -136,7 +143,11 @@ const ChatWindow = () => {
   };
 
   const handleBackToConversations = () => {
-    navigate("/messages", { replace: true });
+    if (location.pathname.startsWith("/community")) {
+      navigate("/community");
+    } else {
+      navigate("/chat");
+    }
   };
 
   useEffect(() => {

@@ -1,19 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useDispatch } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Spin } from "antd";
 import { SlArrowLeft } from "react-icons/sl";
-import {
-  UsersRound,
-  Search,
-  ArrowUpDown,
-  ListFilter,
-  ChevronDown,
-  MoreHorizontal,
-} from "lucide-react";
-import UserAvatar from "@/components/ui/avatar/UserAvatar";
-import { useNotification } from "@/hooks/useNotification";
+import { UsersRound, Search, ArrowUpDown, ListFilter, ChevronDown } from "lucide-react";
 import userApi from "@/services/userApi";
+import UserAvatar from "@/components/ui/avatar/UserAvatar";
 import PopoverFriendActions from "@/components/community/PopoverFriendAction";
+import { createPrivateConversation } from "@/store/conversationsSlice";
+import { useNotification } from "@/hooks/useNotification";
 
 /** Yellow pill shown under friend name */
 const FriendTag = ({ label }) => (
@@ -24,9 +19,12 @@ const FriendTag = ({ label }) => (
 );
 
 /** Single friend row */
-const FriendRow = ({ friend }) => (
+const FriendRow = ({ friend, onOpenChat }) => (
   <li className="group flex items-center hover:bg-[var(--color-hover)] rounded-xl transition-colors cursor-pointer">
-    <button className="flex-1 flex items-center gap-3 px-3 py-2.5 text-left">
+    <button
+      onClick={() => onOpenChat(friend)}
+      className="flex-1 flex items-center gap-3 px-3 py-2.5 text-left"
+    >
       <UserAvatar name={friend?.username} avatarUrl={friend?.avatar?.url} />
       <div className="flex flex-col min-w-0">
         <span className="text-sm font-semibold text-[var(--color-text-primary)] truncate">
@@ -46,14 +44,14 @@ const FriendRow = ({ friend }) => (
 );
 
 /** Alphabetical group (e.g. "B" or "Bạn mới") */
-const FriendGroup = ({ label, friends }) => (
+const FriendGroup = ({ label, friends, onOpenChat }) => (
   <li>
     <p className="text-xs font-semibold text-[var(--color-text-secondary)] px-3 pt-3 pb-1.5">
       {label}
     </p>
     <ul className="flex flex-col gap-0.5">
       {friends.map((f) => (
-        <FriendRow key={f._id} friend={f} />
+        <FriendRow key={f._id} friend={f} onOpenChat={onOpenChat} />
       ))}
     </ul>
   </li>
@@ -61,6 +59,7 @@ const FriendGroup = ({ label, friends }) => (
 
 /* ─── Main component ─────────────────────────────────────────── */
 const CommunityFriends = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   const [search, setSearch] = useState("");
@@ -96,6 +95,10 @@ const CommunityFriends = () => {
     );
   }, [friends, search]);
 
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
   const fetchUsers = async (query = "") => {
     try {
       setLoading(true);
@@ -111,9 +114,18 @@ const CommunityFriends = () => {
     }
   };
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+  const handleOpenChat = async (friend) => {
+    try {
+      const conversation = await dispatch(createPrivateConversation(friend._id)).unwrap();
+
+      navigate(`/community/chat/${conversation._id}`);
+    } catch (error) {
+      notification.error({
+        message: "Không thể mở cuộc trò chuyện",
+        description: error.message,
+      });
+    }
+  };
 
   return (
     <section
@@ -222,6 +234,7 @@ const CommunityFriends = () => {
                     key={group.label}
                     label={group.label}
                     friends={group.friends}
+                    onOpenChat={handleOpenChat}
                   />
                 ))}
               </ul>

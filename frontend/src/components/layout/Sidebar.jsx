@@ -19,8 +19,13 @@ const navItems = [
   { label: "Analytics", icon: ChartNoAxesCombined, path: "/analytics", disable: true },
   { label: "Files", icon: Files, path: "/files", disable: true },
   { label: "Call", icon: Phone, path: "/call", disable: true },
-  { label: "Messages", icon: MessageCircleMore, path: "/messages", disable: false },
-  { label: "Community", icon: HiOutlineUserGroup, path: "/community", disable: false },
+  { label: "Messages", icon: MessageCircleMore, path: "/chat", disable: false },
+  {
+    label: "Community",
+    icon: HiOutlineUserGroup,
+    path: "/community/friends",
+    disable: false,
+  },
   { label: "Settings", icon: Settings, path: "/settings", disable: true },
 ];
 

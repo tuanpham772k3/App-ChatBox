@@ -1,21 +1,24 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
-import { MessageSquareText } from "lucide-react";
 import { Spin } from "antd";
+import { MessageSquareText } from "lucide-react";
+
 import {
   clearConversationHistory,
   deleteConversationForMe,
   getConversations,
   markConversationAsUnread,
   togglePinConversation,
-} from "../../../store/conversationsSlice";
+} from "@/store/conversationsSlice";
+
 import ConversationHeader from "./ConversationHeader";
 import ConversationItem from "./ConversationItem";
-import { getDisplayInfo } from "../../../utils/conversationHelper";
-import { useNotification } from "@/hooks/useNotification";
 import ModalCreateGroup from "./ModalCreateGroup";
 import ModalCreatePrivate from "./ModalCreatePrivate";
+
+import { getDisplayInfo } from "@/utils/conversationHelper";
+import { useNotification } from "@/hooks/useNotification";
 
 const ConversationContainer = () => {
   const dispatch = useDispatch();
@@ -46,7 +49,7 @@ const ConversationContainer = () => {
   const handleSelectConversation = (nextConversationId) => {
     if (activeConversationId === nextConversationId) return;
 
-    navigate(`/messages/${nextConversationId}`);
+    navigate(`/chat/${nextConversationId}`);
   };
 
   // Xóa hội thoại phía tôi

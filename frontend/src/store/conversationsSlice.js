@@ -53,14 +53,24 @@ export const getConversations = createAsyncThunk(
   }
 );
 
+// Lấy chi tiết hội thoại
+export const getConversationDetail = createAsyncThunk(
+  "conversations/getDetail",
+  async (conversationId, { rejectWithValue }) => {
+    try {
+      const conversation = await conversationApi.getConversationById(conversationId);
+      return conversation;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
 /**
  * Thêm 1 thành viên mới vào nhóm chat
  */
 export const addMemberToGroup = createAsyncThunk(
   "conversations/addMemberToGroup",
-  /**
-   * payload: { conversationId, userId }
-   */
   async ({ conversationId, memberIds }, { rejectWithValue }) => {
     try {
       const conversation = await conversationApi.addMemberToGroup({
@@ -203,6 +213,7 @@ const conversationsSlice = createSlice({
   name: "conversations",
   initialState: {
     conversations: [],
+    currentConversation: null,
     typingUsers: {},
     statusUsers: {},
     images: [],
@@ -356,6 +367,14 @@ const conversationsSlice = createSlice({
       .addCase(getConversations.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+
+      /** -----GET DETAIL CONVERSATIONS----- */
+      .addCase(getConversationDetail.pending, (state, action) => {
+        state.currentConversation = null;
+      })
+      .addCase(getConversationDetail.fulfilled, (state, action) => {
+        state.currentConversation = action.payload || [];
       })
 
       /** -----ADD MEMBER TO GROUP----- */

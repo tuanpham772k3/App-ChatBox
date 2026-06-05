@@ -69,9 +69,9 @@ function App() {
         {/* Private */}
         <Route element={<PrivateRoute />}>
           <Route element={<MainLayout />}>
-            <Route index element={<Navigate to="/messages" replace />} />
+            <Route index element={<Navigate to="/chat" replace />} />
 
-            <Route path="/messages" element={<MessagingLayout />}>
+            <Route path="/chat" element={<MessagingLayout />}>
               <Route index element={<ChatEmptyState />} />
               <Route path=":conversationId" element={<ChatWindow />} />
             </Route>
@@ -79,6 +79,7 @@ function App() {
             <Route path="/community" element={<CommunityLayout />}>
               <Route path="friends" element={<CommunityFriends />} />
               <Route path="groups" element={<CommunityGroups />} />
+              <Route path="chat/:conversationId" element={<ChatWindow />} />
             </Route>
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
