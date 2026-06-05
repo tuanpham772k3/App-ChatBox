@@ -23,7 +23,7 @@ const navItems = [
   {
     label: "Community",
     icon: HiOutlineUserGroup,
-    path: "/community/friends",
+    path: "/community",
     disable: false,
   },
   { label: "Settings", icon: Settings, path: "/settings", disable: true },
