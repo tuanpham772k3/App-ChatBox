@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { SlArrowLeft } from "react-icons/sl";
 import { HiOutlineUserGroup } from "react-icons/hi2";
@@ -9,19 +9,12 @@ import {
   ChevronDown,
   MoreHorizontal,
 } from "lucide-react";
-import UserAvatar from "@/components/ui/avatar/UserAvatar";
-
-/* ─── Sample data ────────────────────────────────────────────── */
-const GROUPS = [
-  { id: 1, name: "Xét tốt nghiệp tháng 6", avatarUrl: null, tag: null },
-  { id: 2, name: "Đa cấp", avatarUrl: null, tag: "Công việc" },
-  { id: 3, name: "NHÓM QUẢN LÝ DỰ ÁN, PHẦN MỀM", avatarUrl: null, tag: null },
-  { id: 4, name: "TOEIC", avatarUrl: null, tag: "Bạn bè" },
-  { id: 5, name: "REACT", avatarUrl: null, tag: "học tập" },
-  { id: 6, name: "CNTT", avatarUrl: null, tag: null },
-];
-
-const TOTAL_GROUPS = 68;
+import { useDispatch, useSelector } from "react-redux";
+import { getConversations } from "@/store/conversationsSlice";
+import { useNotification } from "@/hooks/useNotification";
+import GroupAvatar from "@/components/ui/avatar/GroupAvatar";
+import PopoverGroupActions from "@/components/community/PopoverGroupActions";
+import { Spin } from "antd";
 
 /** Yellow pill shown under friend name */
 const GroupTag = ({ label }) => (
@@ -32,14 +25,13 @@ const GroupTag = ({ label }) => (
 );
 
 /** Single group row */
-const GroupRow = ({ group }) => (
-  <li className="flex items-center">
+const GroupRow = ({ group, onOpenChat }) => (
+  <li className="group flex items-center hover:bg-[var(--color-hover)] rounded-xl transition-colors cursor-pointer">
     <button
-      className="flex-1 flex items-center gap-3 px-3 py-2.5 rounded-xl
-        hover:bg-[var(--color-hover)] active:bg-[var(--color-active)]
-        text-left transition-colors"
+      onClick={() => onOpenChat(group._id)}
+      className="flex-1 flex items-center gap-3 px-3 py-2.5 text-left"
     >
-      <UserAvatar name={group.name} avatarUrl={group.avatarUrl} />
+      <GroupAvatar users={group.participants} size={48} />
       <div className="flex flex-col min-w-0">
         <span className="text-sm font-semibold text-[var(--color-text-primary)] truncate">
           {group.name}
@@ -48,29 +40,51 @@ const GroupRow = ({ group }) => (
       </div>
     </button>
 
-    <button
-      aria-label={`Tùy chọn cho ${group.name}`}
-      className="shrink-0 p-2 mr-1 rounded-full
-        hover:bg-[var(--color-hover)] active:bg-[var(--color-active)]
-        text-[var(--color-text-secondary)] transition-colors"
+    <div
+      className="touch-always-visible self-center mr-4
+      opacity-100 sm:opacity-0 sm:group-hover:opacity-100
+      transition-opacity duration-150"
     >
-      <MoreHorizontal size={18} />
-    </button>
+      <PopoverGroupActions />
+    </div>
   </li>
 );
 
 /* ─── Main component ─────────────────────────────────────────── */
 const CommunityGroups = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const { conversations, loading } = useSelector((state) => state.conversations);
+
   const [search, setSearch] = useState("");
+
+  const notification = useNotification();
 
   const isCommunityGroups = location.pathname === "/community/groups";
 
   /** Filter groups/friends by search query */
-  const visibleGroups = GROUPS.filter((group) =>
-    group.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const visibleGroups = conversations
+    .filter((c) => c.type === "group")
+    .filter((c) => c.name.toLowerCase().includes(search.toLowerCase()));
+
+  const TOTAL_GROUPS = visibleGroups.length;
+
+  useEffect(() => {
+    dispatch(getConversations())
+      .unwrap()
+      .catch((err) => {
+        notification.error({
+          message: "Lấy danh sách hội thoại thất bại",
+          description: err.message || "Có lỗi xảy ra",
+        });
+      });
+  }, [dispatch]);
+
+  const handleOpenChat = (conversationId) => {
+    navigate(`/community/chat/${conversationId}`);
+  };
 
   return (
     <section
@@ -170,15 +184,19 @@ const CommunityGroups = () => {
 
           {/* Scrollable friend list */}
           <div className="flex-1 overflow-y-auto custom-scrollbar px-2 pb-4">
-            {visibleGroups.length > 0 ? (
+            {loading ? (
+              <div className="h-full flex items-center justify-center">
+                <Spin />
+              </div>
+            ) : visibleGroups.length > 0 ? (
               <ul className="flex flex-col gap-2">
                 {visibleGroups.map((group) => (
-                  <GroupRow key={group.id} group={group} />
+                  <GroupRow key={group._id} group={group} onOpenChat={handleOpenChat} />
                 ))}
               </ul>
             ) : (
               <p className="text-sm text-center text-[var(--color-text-secondary)] py-8">
-                Không tìm thấy bạn bè nào.
+                Không tìm thấy nhóm nào.
               </p>
             )}
           </div>

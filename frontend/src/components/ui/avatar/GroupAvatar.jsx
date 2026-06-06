@@ -9,9 +9,9 @@ const POSITIONS = [
 ];
 
 const GroupAvatar = ({ users, size = 48 }) => {
-  const visibleCount = users.length >= 5 ? 3 : users.length;
-  const visibleUsers = users.slice(0, visibleCount);
-  const membersCount = users.length;
+  const visibleCount = users?.length >= 5 ? 3 : users?.length;
+  const visibleUsers = users?.slice(0, visibleCount);
+  const membersCount = users?.length;
 
   const itemSize = size / 1.9;
   return (
@@ -24,9 +24,9 @@ const GroupAvatar = ({ users, size = 48 }) => {
 
         return (
           <UserAvatar
-            key={user.id}
-            avatarUrl={user.avatarUrl}
-            name={user.name}
+            key={user?.id || user.userId?._id}
+            avatarUrl={user?.avatarUrl || user?.userId?.avatar?.url}
+            name={user?.name || user?.userId?.username}
             className="absolute"
             size={itemSize}
             style={pos}

@@ -60,7 +60,7 @@ const DrawerConversationInfo = ({
             <UserAvatar
               name={displayInfo.displayName}
               avatarUrl={displayInfo.displayAvatar}
-              size={60}
+              size={56}
             />
           )}
 

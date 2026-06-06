@@ -6,7 +6,7 @@ import { SlArrowLeft } from "react-icons/sl";
 import { UsersRound, Search, ArrowUpDown, ListFilter, ChevronDown } from "lucide-react";
 import userApi from "@/services/userApi";
 import UserAvatar from "@/components/ui/avatar/UserAvatar";
-import PopoverFriendActions from "@/components/community/PopoverFriendAction";
+import PopoverFriendActions from "@/components/community/PopoverFriendActions";
 import { createPrivateConversation } from "@/store/conversationsSlice";
 import { useNotification } from "@/hooks/useNotification";
 
@@ -25,7 +25,7 @@ const FriendRow = ({ friend, onOpenChat }) => (
       onClick={() => onOpenChat(friend)}
       className="flex-1 flex items-center gap-3 px-3 py-2.5 text-left"
     >
-      <UserAvatar name={friend?.username} avatarUrl={friend?.avatar?.url} />
+      <UserAvatar name={friend?.username} avatarUrl={friend?.avatar?.url} size={48} />
       <div className="flex flex-col min-w-0">
         <span className="text-sm font-semibold text-[var(--color-text-primary)] truncate">
           {friend?.username}
@@ -35,8 +35,9 @@ const FriendRow = ({ friend, onOpenChat }) => (
     </button>
 
     <div
-      className="touch-always-visible self-center mr-4 opacity-100 sm:opacity-0 sm:group-hover:opacity-100
-     transition-opacity duration-150"
+      className="touch-always-visible self-center mr-4
+      opacity-100 sm:opacity-0 sm:group-hover:opacity-100
+      transition-opacity duration-150"
     >
       <PopoverFriendActions />
     </div>
