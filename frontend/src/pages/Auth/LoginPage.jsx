@@ -29,7 +29,7 @@ const LoginPage = () => {
         description: "Chào mừng bạn quay lại hệ thống",
       });
 
-      navigate("/messages");
+      navigate("/chat");
     } catch (error) {
       notification.error({
         message: "Đăng nhập thất bại",
