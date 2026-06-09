@@ -22,7 +22,7 @@ const userApi = {
    * GET /user/search?keyword=
    */
   getUsers: (keyword) => {
-    return instance.get("/user/search", {
+    return instance.get("/user", {
       params: { keyword },
     });
   },

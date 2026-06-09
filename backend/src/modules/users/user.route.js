@@ -5,17 +5,21 @@ const {
   getUserProfile,
   updateUserProfile,
   getUsers,
+  getUserDetail,
 } = require("./user.controller.js");
 
 const router = express.Router();
 
-// Lấy thông tin người dùng
+// Lấy thông tin bản thân
 router.get("/profile", verifyToken, getUserProfile);
 
-// Cập nhật thông tin người dùng
+// Cập nhật thông tin bản thân
 router.put("/profile", verifyToken, upload.single("avatar"), updateUserProfile);
 
-// Tìm kiếm người dùng
-router.get("/search", verifyToken, getUsers);
+// Lấy danh sách người dùng
+router.get("/", verifyToken, getUsers);
+
+// Lấy chi tiết người dùng
+router.get("/:id", verifyToken, getUserDetail);
 
 module.exports = router;
