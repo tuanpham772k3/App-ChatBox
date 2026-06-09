@@ -8,6 +8,7 @@ const userRoutes = require("./modules/users/user.route.js");
 const conversationRoutes = require("./modules/conversations/conversation.route.js");
 const messageRoutes = require("./modules/messages/message.route.js");
 const uploadRoutes = require("./modules/upload/upload.route.js");
+const relationshipRoutes = require("./modules/relationship/relationship.route.js");
 
 const { errorHandler, notFoundHandler } = require("./middlewares/errorMiddleware.js");
 
@@ -32,6 +33,7 @@ app.use("/api/user", userRoutes);
 app.use("/api/conversations", conversationRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/relationships", relationshipRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
