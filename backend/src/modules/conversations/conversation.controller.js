@@ -136,7 +136,6 @@ const getConversations = async (req, res, next) => {
 
     return res.status(200).json({
       success: true,
-      message: "Conversations retrieved successfully",
       data: {
         conversations,
         pagination,
@@ -227,9 +226,7 @@ const removeMemberFromGroup = async (req, res, next) => {
   }
 };
 
-/**
- * Lấy thông tin chi tiết một conversation
- */
+// Lấy thông tin chi tiết một conversation
 const getConversationById = async (req, res, next) => {
   try {
     const { userId } = req.user;
@@ -249,7 +246,6 @@ const getConversationById = async (req, res, next) => {
 
     return res.status(200).json({
       success: true,
-      message: "Conversation retrieved successfully",
       data: conversation,
     });
   } catch (error) {
@@ -324,7 +320,6 @@ const getConversationImages = async (req, res, next) => {
 
     return res.status(200).json({
       success: true,
-      message: "Images retrieved successfully",
       data: images,
     });
   } catch (error) {

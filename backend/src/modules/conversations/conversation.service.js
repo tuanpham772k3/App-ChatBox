@@ -1,6 +1,7 @@
 const Conversation = require("./conversation.model.js");
 const User = require("../users/user.model.js");
 const Message = require("../messages/message.model.js");
+const Relationship = require("../relationship/relationship.model.js");
 const { AppError } = require("../../utils/AppError.js");
 
 const ConversationService = {
@@ -142,20 +143,106 @@ const ConversationService = {
       },
     };
 
-    // Tìm tất cả conversation có (deletedAt: null)
-    const conversations = await Conversation.find(query)
-      .populate("participants.userId", "username email avatar bio presence lastSeenAt")
-      .populate("lastMessage.senderId", "username avatar")
-      .sort({ "lastMessage.createdAt": -1, updatedAt: -1 }) // Sắp xếp theo tin nhắn cuối hoặc thời gian cập nhật
-      .skip(skip)
-      .limit(limit)
+    const [conversations, total] = await Promise.all([
+      Conversation.find(query)
+        .populate("participants.userId", "username email avatar bio presence lastSeenAt")
+        .populate("lastMessage.senderId", "username avatar")
+        .sort({
+          "lastMessage.createdAt": -1,
+          updatedAt: -1,
+        })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+
+      Conversation.countDocuments(query),
+    ]);
+
+    // =========================
+    // Lấy danh sách user còn lại
+    // =========================
+
+    const otherUserIds = conversations
+      .filter((conversation) => conversation.type === "private")
+      .map((conversation) => {
+        const otherParticipant = conversation.participants.find(
+          (participant) => participant.userId._id.toString() !== userId.toString()
+        );
+
+        return otherParticipant?.userId._id;
+      })
+      .filter(Boolean);
+
+    // =========================
+    // Lấy tất cả bạn bè trong 1 query
+    // =========================
+
+    const relationships = await Relationship.find({
+      status: "accepted",
+      $or: [
+        {
+          requesterId: userId,
+          recipientId: {
+            $in: otherUserIds,
+          },
+        },
+        {
+          recipientId: userId,
+          requesterId: {
+            $in: otherUserIds,
+          },
+        },
+      ],
+    })
+      .select("requesterId recipientId")
       .lean();
 
-    // Total conversation
-    const total = await Conversation.countDocuments(query);
+    // =========================
+    // Tạo set friend lookup O(1)
+    // =========================
+
+    const friendIds = new Set();
+
+    relationships.forEach((relationship) => {
+      const requesterId = relationship.requesterId.toString();
+      const recipientId = relationship.recipientId.toString();
+
+      if (requesterId === userId.toString()) {
+        friendIds.add(recipientId);
+      } else {
+        friendIds.add(requesterId);
+      }
+    });
+
+    // =========================
+    // Gắn category cho conversation
+    // =========================
+
+    const formattedConversations = conversations.map((conversation) => {
+      // Group chat
+      if (conversation.type === "group") {
+        return {
+          ...conversation,
+          conversationCategory: "group",
+        };
+      }
+
+      const otherParticipant = conversation.participants.find(
+        (participant) => participant.userId._id.toString() !== userId.toString()
+      );
+
+      const otherUserId = otherParticipant?.userId._id?.toString();
+
+      const isFriend = friendIds.has(otherUserId);
+
+      return {
+        ...conversation,
+        conversationCategory: isFriend ? "friend" : "stranger",
+      };
+    });
 
     return {
-      conversations,
+      conversations: formattedConversations,
       pagination: {
         currentPage: page,
         totalPages: Math.ceil(total / limit),
@@ -289,6 +376,62 @@ const ConversationService = {
 
     if (!conversation) {
       throw new AppError("Conversation not found or access denied", 404);
+    }
+
+    let relationshipStatus = "not_friend";
+
+    if (conversation.type === "private") {
+      const targetParticipant = conversation.participants.find(
+        (p) => p.userId._id.toString() !== userId
+      );
+
+      if (!targetParticipant) {
+        throw new AppError("Target participant not found", 404);
+      }
+
+      const targetUserId = targetParticipant.userId._id;
+
+      const relationship = await Relationship.findOne({
+        $or: [
+          {
+            requesterId: userId,
+            recipientId: targetUserId,
+          },
+          {
+            requesterId: targetUserId,
+            recipientId: userId,
+          },
+        ],
+      }).lean();
+
+      if (relationship) {
+        if (relationship.status === "accepted") {
+          relationshipStatus = "friend";
+        }
+
+        if (relationship.status === "pending") {
+          if (relationship.requesterId.toString() === userId) {
+            relationshipStatus = "pending_sent";
+          } else {
+            relationshipStatus = "pending_received";
+          }
+        }
+
+        if (relationship.status === "blocked") {
+          if (relationship.blockedBy?.toString() === userId) {
+            relationshipStatus = "blocked_by_me";
+          } else {
+            relationshipStatus = "blocked_by_other";
+          }
+        }
+      }
+
+      return {
+        ...conversation,
+        relationship: {
+          status: relationshipStatus,
+        },
+      };
     }
 
     return conversation;
