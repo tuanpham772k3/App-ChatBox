@@ -109,11 +109,25 @@ const ModalCreateGroup = ({ isOpen, onCancel }) => {
       confirmLoading={loading}
       okText="Tạo"
       cancelText="Hủy"
-      title="Tạo nhóm chat"
+      styles={{
+        content: {
+          padding: 0,
+        },
+        footer: {
+          margin: 0,
+          padding: 16,
+        },
+      }}
+      centered
     >
-      <div className="flex flex-col max-h-[60vh] border-y border-[var(--color-border)] py-4">
-        {/* Header Content */}
-        <div className="space-y-2 shrink-0">
+      <div className="h-[70vh] flex flex-col">
+        <header className="h-12 px-4 flex items-center border-b border-[var(--color-border)]">
+          <h2 className="text-[var(--color-text-primary)] text-base font-semibold">
+            Tạo nhóm chat
+          </h2>
+        </header>
+
+        <main className="flex-1 min-h-0 flex flex-col gap-2 px-4 mt-2">
           {/* Input */}
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 flex items-center justify-center bg-[var(--color-surface)] hover:bg-[var(--color-hover)] active:bg-[var(--color-active)] border border-[var(--color-border)] rounded-full cursor-pointer">
@@ -134,31 +148,31 @@ const ModalCreateGroup = ({ isOpen, onCancel }) => {
           <SearchBar
             value={searchText}
             onChange={setSearchText}
-            placeholder="Tìm kiếm thành viên..."
+            placeholder="Tìm kiếm..."
           />
-        </div>
 
-        {/* User List */}
-        <ul className="flex-1 min-h-0 flex flex-col gap-1 mt-2 overflow-y-auto custom-scrollbar">
-          {loading ? (
-            <div className="w-full text-center mt-8">
-              <Spin />
-            </div>
-          ) : results.length === 0 ? (
-            <div className="text-center py-8 text-[var(--color-text-secondary)]">
-              Không tìm thấy kết quả
-            </div>
-          ) : (
-            results.map((user) => (
-              <UserSelectItem
-                key={user._id}
-                user={user}
-                isSelected={selectedUsers.includes(user._id)}
-                onToggle={() => toggleUser(user._id)}
-              />
-            ))
-          )}
-        </ul>
+          {/* User List */}
+          <ul className="flex-1 min-h-0 space-y-1 overflow-y-auto custom-scrollbar">
+            {loading ? (
+              <div className="w-full text-center mt-8">
+                <Spin />
+              </div>
+            ) : results.length === 0 ? (
+              <div className="text-center py-8 text-[var(--color-text-secondary)]">
+                Không tìm thấy kết quả
+              </div>
+            ) : (
+              results.map((user) => (
+                <UserSelectItem
+                  key={user._id}
+                  user={user}
+                  isSelected={selectedUsers.includes(user._id)}
+                  onToggle={() => toggleUser(user._id)}
+                />
+              ))
+            )}
+          </ul>
+        </main>
       </div>
     </Modal>
   );

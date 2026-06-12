@@ -9,6 +9,7 @@
   --color-primary: #2563eb;
   --color-primary-hover: #1d4ed8;
   --color-primary-focus: #1d4ed8;
+  --color-primary-active: #1e40af;
 
   /* Background */
   --color-app: #ffffff;
@@ -38,6 +39,7 @@
   --color-primary: #3b82f6;
   --color-primary-hover: #60a5fa;
   --color-primary-focus: #60a5fa;
+  --color-primary-active: #2563eb;
 
   /* Background */
   --color-app: #090909;

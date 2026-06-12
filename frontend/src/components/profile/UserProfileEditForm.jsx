@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Form, Input, Radio, Select } from "antd";
+import { Button, Form, Input, Radio, Select } from "antd";
 
 const days = Array.from({ length: 31 }, (_, i) => ({
   label: String(i + 1).padStart(2, "0"),
@@ -50,10 +50,9 @@ const UserProfileEditForm = ({ profile, onCancel, onSubmit }) => {
       form={form}
       layout="vertical"
       onFinish={handleFinish}
-      className="flex flex-col h-full"
+      className="flex-1 flex flex-col"
     >
-      {/* Body */}
-      <div className="flex-1 space-y-4 overflow-y-auto">
+      <main className="flex-1 min-h-0 space-y-4 px-4 py-4 overflow-y-auto custom-scrollbar">
         <Form.Item
           label="Tên hiển thị"
           name="displayName"
@@ -88,26 +87,15 @@ const UserProfileEditForm = ({ profile, onCancel, onSubmit }) => {
             </Form.Item>
           </div>
         </div>
-      </div>
+      </main>
 
-      {/* Footer */}
-      <div className="flex justify-end gap-2 pt-2 border-t border-[var(--color-border)]">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="px-4 py-2 bg-[var(--color-surface)] text-[var(--color-text-primary)] hover:bg-[var(--color-hover)] rounded"
-        >
-          Hủy
-        </button>
+      <footer className="flex justify-end gap-4 px-4 py-4 border-t border-[var(--color-border)]">
+        <Button onClick={onCancel}>Hủy</Button>
 
-        <button
-          type="submit"
-          disabled={!form.isFieldsTouched(true)}
-          className="px-4 py-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white rounded disabled:opacity-50"
-        >
+        <Button type="primary" disabled={!form.isFieldsTouched(true)}>
           Cập nhật
-        </button>
-      </div>
+        </Button>
+      </footer>
     </Form>
   );
 };
