@@ -127,7 +127,7 @@ const ModalCreateGroup = ({ isOpen, onCancel }) => {
           </h2>
         </header>
 
-        <main className="flex-1 min-h-0 flex flex-col gap-2 px-4 mt-2">
+        <section className="flex-1 min-h-0 flex flex-col gap-2 px-4 mt-2">
           {/* Input */}
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 flex items-center justify-center bg-[var(--color-surface)] hover:bg-[var(--color-hover)] active:bg-[var(--color-active)] border border-[var(--color-border)] rounded-full cursor-pointer">
@@ -172,7 +172,7 @@ const ModalCreateGroup = ({ isOpen, onCancel }) => {
               ))
             )}
           </ul>
-        </main>
+        </section>
       </div>
     </Modal>
   );

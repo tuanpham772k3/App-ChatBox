@@ -59,7 +59,7 @@ const ModalUserInfo = ({ isOpen, onCancel }) => {
               </h2>
             </header>
 
-            <main className="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
+            <section className="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
               {/* Cover photo & Avatar */}
               <div className="flex flex-col border-b-4 border-[var(--color-border)]">
                 <img
@@ -116,7 +116,7 @@ const ModalUserInfo = ({ isOpen, onCancel }) => {
                   </Descriptions.Item>
                 </Descriptions>
               </div>
-            </main>
+            </section>
 
             <footer className="px-4 py-4 border-t border-[var(--color-border)]">
               <Button
@@ -170,7 +170,7 @@ const ModalUserInfo = ({ isOpen, onCancel }) => {
             </header>
 
             {/* Đang làm */}
-            <main className="flex-1 min-h-0 flex items-center justify-center overflow-y-auto custom-scrollbar">
+            <section className="flex-1 min-h-0 flex items-center justify-center overflow-y-auto custom-scrollbar">
               <ImgCrop rotationSlider>
                 <Upload
                   listType="picture-card"
@@ -196,7 +196,7 @@ const ModalUserInfo = ({ isOpen, onCancel }) => {
                   {fileList.length === 0 && "+ Tải ảnh"}
                 </Upload>
               </ImgCrop>
-            </main>
+            </section>
 
             <footer className="flex justify-end gap-2 px-4 py-4 border-t border-[var(--color-border)]">
               <Button onClick={() => modalTransition("profile")}>Hủy</Button>

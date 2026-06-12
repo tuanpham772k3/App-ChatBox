@@ -52,7 +52,7 @@ const UserProfileEditForm = ({ profile, onCancel, onSubmit }) => {
       onFinish={handleFinish}
       className="flex-1 flex flex-col"
     >
-      <main className="flex-1 min-h-0 space-y-4 px-4 py-4 overflow-y-auto custom-scrollbar">
+      <section className="flex-1 min-h-0 space-y-4 px-4 py-4 overflow-y-auto custom-scrollbar">
         <Form.Item
           label="Tên hiển thị"
           name="displayName"
@@ -87,7 +87,7 @@ const UserProfileEditForm = ({ profile, onCancel, onSubmit }) => {
             </Form.Item>
           </div>
         </div>
-      </main>
+      </section>
 
       <footer className="flex justify-end gap-4 px-4 py-4 border-t border-[var(--color-border)]">
         <Button onClick={onCancel}>Hủy</Button>
