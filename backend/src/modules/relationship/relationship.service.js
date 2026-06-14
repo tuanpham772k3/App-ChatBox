@@ -184,7 +184,7 @@ const RelationshipService = {
   },
 
   async getFriends(userId) {
-    return Relationship.find({
+    const relationships = await Relationship.find({
       status: "accepted",
       $or: [
         {
@@ -196,7 +196,16 @@ const RelationshipService = {
       ],
     })
       .populate("requesterId", "username avatar email")
-      .populate("recipientId", "username avatar email");
+      .populate("recipientId", "username avatar email")
+      .lean();
+
+    const friends = relationships.map((relationship) => {
+      return relationship.requesterId._id.toString() === userId
+        ? relationship.recipientId
+        : relationship.requesterId;
+    });
+
+    return friends;
   },
 };
 
