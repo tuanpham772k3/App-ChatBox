@@ -4,6 +4,7 @@ import userReducer from "./userSlice";
 import conversationsReducer from "./conversationsSlice";
 import messagesReducer from "./messagesSlice";
 import themeReducer from "./themeSlice";
+import relationshipReducer from "./relationshipSlice";
 
 export const store = configureStore({
   reducer: {
@@ -11,6 +12,7 @@ export const store = configureStore({
     user: userReducer,
     conversations: conversationsReducer,
     messages: messagesReducer,
+    relationship: relationshipReducer,
     theme: themeReducer,
   },
 });
