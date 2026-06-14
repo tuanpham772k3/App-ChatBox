@@ -6,7 +6,7 @@ const instance = axios.create({
   withCredentials: true,
 });
 
-// 👉 axios riêng để gọi refresh (tránh loop interceptor)
+// Instance riêng để gọi refresh token (tránh loop)
 const refreshClient = axios.create({
   baseURL: import.meta.env.VITE_API_BACKEND_URL || "http://localhost:8383/api",
   timeout: 5000,
@@ -16,6 +16,7 @@ const refreshClient = axios.create({
 let isRefreshing = false;
 let refreshQueue = [];
 
+// Hàm đồng bộ trạng thái sang Redux Store
 const syncAuthAfterRefresh = async (token) => {
   const [{ store }, { syncAccessToken }] = await Promise.all([
     import("@/store/store"),
@@ -25,7 +26,7 @@ const syncAuthAfterRefresh = async (token) => {
   store.dispatch(syncAccessToken(token));
 };
 
-// xử lý queue
+// Xử lý hàng đợi request khi có token mới hoặc thất bại
 const processQueue = (error, token = null) => {
   refreshQueue.forEach((prom) => {
     if (error) {
@@ -37,7 +38,7 @@ const processQueue = (error, token = null) => {
   refreshQueue = [];
 };
 
-// ================= REQUEST =================
+// ================= REQUEST INTERCEPTOR =================
 instance.interceptors.request.use(
   (config) => {
     const accessToken = localStorage.getItem("accessToken");
@@ -51,21 +52,21 @@ instance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// ================= RESPONSE =================
+// ================= RESPONSE INTERCEPTOR =================
 instance.interceptors.response.use(
   (response) => response.data.data,
   async (error) => {
     const originalRequest = error.config;
 
-    // ================= CASE: có response =================
+    // 1. Xử lý khi có Response từ Server
     if (error.response) {
       const { status, data } = error.response;
 
-      // ====== HANDLE 401 (token expired) ======
+      // Xử lý lỗi 401 hết hạn token
       if (status === 401 && !originalRequest._retry && !originalRequest.skipAuthRefresh) {
         originalRequest._retry = true;
 
-        // Nếu đang refresh → queue lại
+        // Nếu đang trong quá trình refresh -> Đẩy request vào hàng đợi
         if (isRefreshing) {
           return new Promise((resolve, reject) => {
             refreshQueue.push({
@@ -81,7 +82,7 @@ instance.interceptors.response.use(
         isRefreshing = true;
 
         try {
-          // 👉 gọi refresh token
+          // Gọi API refresh token từ instance riêng lẻ
           const res = await refreshClient.post("/auth/refresh-token");
 
           const newAccessToken = res.data.data.accessToken;
@@ -90,18 +91,18 @@ instance.interceptors.response.use(
             throw new Error("Không lấy được Access Token mới từ API");
           }
 
-          // lưu token mới
+          // Cập nhật token mới vào bộ nhớ
           localStorage.setItem("accessToken", newAccessToken);
           await syncAuthAfterRefresh(newAccessToken);
 
-          // chạy lại các request đang chờ
+          // Giải phóng hàng đợi thành công
           processQueue(null, newAccessToken);
 
-          // retry request cũ
+          // Thực hiện lại request ban đầu với token mới
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
           return instance(originalRequest);
         } catch (refreshError) {
-          // refresh fail → clear auth
+          // Dọn dẹp dữ liệu trước khi báo lỗi cho hàng đợi để tránh lỗi đồng bộ giao diện
           processQueue(refreshError, null);
 
           localStorage.removeItem("accessToken");
@@ -117,27 +118,25 @@ instance.interceptors.response.use(
         }
       }
 
-      // ====== các lỗi khác ======
+      // Xử lý các lỗi HTTP khác (400, 403, 500...)
       return Promise.reject({
         status,
         message: data?.message || "Có lỗi xảy ra từ server",
       });
     }
 
-    // ================= NETWORK ERROR =================
+    // 2. Xử lý lỗi kết nối mạng (Network Error)
     if (error.request) {
       return Promise.reject({
         status: 0,
         message: "Không thể kết nối tới server. Hãy kiểm tra lại kết nối internet",
-        idCode: -2,
       });
     }
 
-    // ================= UNKNOWN =================
+    // 3. Xử lý lỗi không xác định cấu trúc
     return Promise.reject({
       status: -1,
       message: error.message || "Lỗi không xác định",
-      idCode: -3,
     });
   }
 );
