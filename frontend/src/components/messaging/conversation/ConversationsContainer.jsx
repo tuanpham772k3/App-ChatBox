@@ -15,7 +15,7 @@ import {
 import ConversationHeader from "./ConversationHeader";
 import ConversationItem from "./ConversationItem";
 import ModalCreateGroup from "./ModalCreateGroup";
-import ModalCreatePrivate from "./ModalCreatePrivate";
+import ModalAddFriend from "./ModalAddFriend";
 
 import { getDisplayInfo } from "@/utils/conversationHelper";
 import { useNotification } from "@/hooks/useNotification";
@@ -222,7 +222,7 @@ const ConversationContainer = () => {
       </section>
 
       <ModalCreateGroup isOpen={modal === "group"} onCancel={() => setModal(null)} />
-      <ModalCreatePrivate isOpen={modal === "private"} onCancel={() => setModal(null)} />
+      <ModalAddFriend isOpen={modal === "private"} onCancel={() => setModal(null)} />
     </>
   );
 };

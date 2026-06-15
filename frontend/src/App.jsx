@@ -19,6 +19,7 @@ import ProfilePage from "@/pages/ProfilePage";
 import { useSocket } from "@/hooks/useSocket";
 
 import { connectSocket, disconnectSocket, initSocket } from "./lib/socket";
+import CommunityFriendInvitation from "./pages/CommunityFriendInvitation";
 
 export const NotificationContext = createContext(null);
 
@@ -79,6 +80,7 @@ function App() {
             <Route path="/community" element={<CommunityLayout />}>
               <Route path="friends" element={<CommunityFriends />} />
               <Route path="groups" element={<CommunityGroups />} />
+              <Route path="friend-invitation" element={<CommunityFriendInvitation />} />
               <Route path="chat/:conversationId" element={<ChatWindow />} />
             </Route>
             <Route path="/profile" element={<ProfilePage />} />

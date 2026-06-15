@@ -2,9 +2,10 @@ import React, { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { UsersRound } from "lucide-react";
 import { HiOutlineUserGroup } from "react-icons/hi2";
+import { RiUserSharedLine } from "react-icons/ri";
 import ConversationHeader from "../messaging/conversation/ConversationHeader";
 import ModalCreateGroup from "../messaging/conversation/ModalCreateGroup";
-import ModalCreatePrivate from "../messaging/conversation/ModalCreatePrivate";
+import ModalAddFriend from "../messaging/conversation/ModalAddFriend";
 
 const CommunityPanel = ({ isDetailOpen }) => {
   const location = useLocation();
@@ -63,12 +64,29 @@ const CommunityPanel = ({ isDetailOpen }) => {
                 <span>Danh sách nhóm và cộng đồng</span>
               </NavLink>
             </li>
+
+            <li>
+              <NavLink
+                to="/community/friend-invitation"
+                className={({ isActive }) =>
+                  `flex w-full items-center gap-4 p-5 text-sm text-[var(--color-text-primary)] rounded-lg
+                active:bg-[var(--color-active)] ${
+                  isActive
+                    ? "bg-[var(--color-primary-focus)]/10"
+                    : "hover:bg-[var(--color-hover)]"
+                }`
+                }
+              >
+                <RiUserSharedLine size={20} />
+                <span>Lời mời kết bạn</span>
+              </NavLink>
+            </li>
           </ul>
         </nav>
       </section>
 
       <ModalCreateGroup isOpen={modal === "group"} onCancel={() => setModal(null)} />
-      <ModalCreatePrivate isOpen={modal === "private"} onCancel={() => setModal(null)} />
+      <ModalAddFriend isOpen={modal === "private"} onCancel={() => setModal(null)} />
     </>
   );
 };

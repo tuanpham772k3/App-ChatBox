@@ -38,6 +38,8 @@ const RelationshipService = {
       status: "pending",
     });
 
+    await relationship.populate("recipientId", "username avatar email");
+
     return relationship;
   },
 
