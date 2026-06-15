@@ -55,6 +55,7 @@ const messagesSlice = createSlice({
     pagination: null,
     cursor: null,
     hasMore: true,
+
     loading: false,
     error: null,
   },
@@ -138,7 +139,6 @@ const messagesSlice = createSlice({
           isTemp: true,
         };
         state.messages.push(tempMessage);
-        state.error = null;
       })
       .addCase(createNewMessage.fulfilled, (state, action) => {
         const newMessage = action.payload;
@@ -163,8 +163,6 @@ const messagesSlice = createSlice({
         if (tempMsg) {
           tempMsg.status = "failed";
         }
-
-        state.error = action.payload;
       })
 
       // -------------------------------
