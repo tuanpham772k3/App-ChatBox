@@ -9,6 +9,7 @@ import {
   cancelFriendRequest,
   getReceivedRequests,
   getSentRequests,
+  rejectFriendRequest,
 } from "@/store/relationshipSlice";
 import UserAvatar from "@/components/ui/avatar/UserAvatar";
 import { useNotification } from "@/hooks/useNotification";
@@ -67,7 +68,7 @@ const CommunityFriendInvitation = () => {
     } catch (error) {
       notification.error({
         message: "Chấp nhận yêu cầu kết bạn thất bại!",
-        descriptions: error.message || "Vui lòng thử lại sau",
+        description: error.message || "Vui lòng thử lại sau",
       });
     }
   };
@@ -83,7 +84,7 @@ const CommunityFriendInvitation = () => {
     } catch (error) {
       notification.error({
         message: "Từ chối yêu cầu kết bạn thất bại!",
-        descriptions: error.message || "Vui lòng thử lại sau",
+        description: error.message || "Vui lòng thử lại sau",
       });
     }
   };
@@ -99,7 +100,7 @@ const CommunityFriendInvitation = () => {
     } catch (error) {
       notification.error({
         message: "Hủy yêu cầu kết bạn thất bại!",
-        descriptions: error.message || "Vui lòng thử lại sau",
+        description: error.message || "Vui lòng thử lại sau",
       });
     }
   };
@@ -109,7 +110,6 @@ const CommunityFriendInvitation = () => {
     dispatch(getSentRequests());
   }, []);
 
-  console.log("🚀 ~ CommunityFriendInvitation ~ sentRequests:", sentRequests);
   return (
     <>
       <section
@@ -157,7 +157,7 @@ const CommunityFriendInvitation = () => {
             <ul className="grid gap-4 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
               {receivedRequests.map((r) => (
                 <FriendCard
-                  key={r?.requesterId?._id}
+                  key={r?._id}
                   name={r?.requesterId?.username}
                   avatarUrl={r?.requesterId?.avatar?.url}
                   onSelect={() => handleSelectUser(r?.requesterId)}
@@ -199,7 +199,7 @@ const CommunityFriendInvitation = () => {
             <ul className="grid gap-4 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
               {sentRequests.map((s) => (
                 <FriendCard
-                  key={s?.recipientId?._id}
+                  key={s?._id}
                   name={s?.recipientId?.username}
                   avatarUrl={s?.recipientId?.avatar?.url}
                   onSelect={() => handleSelectUser(s?.recipientId)}

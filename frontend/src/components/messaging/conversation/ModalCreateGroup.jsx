@@ -1,54 +1,38 @@
 import React, { useEffect, useState } from "react";
 import { Modal, Spin } from "antd";
 import { Camera } from "lucide-react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { createGroupConversation } from "@/store/conversationsSlice";
 import UserSelectItem from "@/components/ui/user/UserSelectItem";
 import { useNotification } from "@/hooks/useNotification";
 import SearchBar from "../../ui/search/SearchBar";
-import userApi from "@/services/userApi";
+import { getFriends } from "@/store/relationshipSlice";
 
 const ModalCreateGroup = ({ isOpen, onCancel }) => {
   const dispatch = useDispatch();
 
-  const [results, setResults] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const { friends, loading } = useSelector((state) => state.relationship);
+
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [groupName, setGroupName] = useState("");
 
   const notification = useNotification();
 
-  const fetchUsers = async (query = "") => {
-    try {
-      setLoading(true);
-      const users = await userApi.getUsers(query);
-      setResults(users);
-    } catch (error) {
-      notification.error({
-        message: "Không thể tải danh sách người dùng",
-        description: error.message || "Vui lòng thử lại sau",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Lấy danh sách user
   useEffect(() => {
-    fetchUsers();
-  }, [dispatch]);
+    dispatch(getFriends());
+  }, []);
 
   // Tìm kiếm bạn bè khi searchText thay đổi
-  useEffect(() => {
-    const query = searchText.trim();
+  // useEffect(() => {
+  //   const query = searchText.trim();
 
-    const handler = setTimeout(() => {
-      fetchUsers(query);
-    }, 400);
+  //   const handler = setTimeout(() => {
+  //     fetchUsers(query);
+  //   }, 400);
 
-    return () => clearTimeout(handler);
-  }, [searchText, dispatch]);
+  //   return () => clearTimeout(handler);
+  // }, [searchText, dispatch]);
 
   // Hàm xử lý chọn/bỏ chọn bạn bè
   const toggleUser = (userId) => {
@@ -63,7 +47,7 @@ const ModalCreateGroup = ({ isOpen, onCancel }) => {
     });
   };
 
-  // Xử lý khi nhấn nút "Tạo nhóm"
+  // Xử lý Tạo nhóm
   const handleCreateGroup = async () => {
     try {
       if (selectedUsers.length < 2) {
@@ -82,12 +66,10 @@ const ModalCreateGroup = ({ isOpen, onCancel }) => {
         return;
       }
 
-      // Create conversation
       await dispatch(
         createGroupConversation({ name: groupName, memberIds: selectedUsers })
       ).unwrap();
 
-      // Reset state
       setSelectedUsers([]);
       setGroupName("");
       setSearchText("");
@@ -157,12 +139,12 @@ const ModalCreateGroup = ({ isOpen, onCancel }) => {
               <div className="w-full text-center mt-8">
                 <Spin />
               </div>
-            ) : results.length === 0 ? (
+            ) : friends.length === 0 ? (
               <div className="text-center py-8 text-[var(--color-text-secondary)]">
                 Không tìm thấy kết quả
               </div>
             ) : (
-              results.map((user) => (
+              friends.map((user) => (
                 <UserSelectItem
                   key={user._id}
                   user={user}

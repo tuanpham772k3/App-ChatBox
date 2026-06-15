@@ -1,14 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Spin } from "antd";
 import { SlArrowLeft } from "react-icons/sl";
 import { UsersRound, Search, ArrowUpDown, ListFilter, ChevronDown } from "lucide-react";
-import userApi from "@/services/userApi";
 import UserAvatar from "@/components/ui/avatar/UserAvatar";
 import PopoverFriendActions from "@/components/community/PopoverFriendActions";
 import { createPrivateConversation } from "@/store/conversationsSlice";
 import { useNotification } from "@/hooks/useNotification";
+import { getFriends } from "@/store/relationshipSlice";
 
 /** Yellow pill shown under friend name */
 const FriendTag = ({ label }) => (
@@ -63,13 +63,17 @@ const CommunityFriends = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const { friends, loading } = useSelector((state) => state.relationship);
   const [search, setSearch] = useState("");
-  const [friends, setFriends] = useState([]);
-  const [loading, setLoading] = useState(false);
 
   const notification = useNotification();
 
   const isCommunityFriends = location.pathname === "/community/friends";
+
+  useEffect(() => {
+    dispatch(getFriends());
+  }, []);
 
   const TOTAL_FRIENDS = friends.length;
 
@@ -95,25 +99,6 @@ const CommunityFriends = () => {
       }, {})
     );
   }, [friends, search]);
-
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  const fetchUsers = async (query = "") => {
-    try {
-      setLoading(true);
-      const users = await userApi.getUsers(query);
-      setFriends(users);
-    } catch (error) {
-      notification.error({
-        message: "Không thể tải danh sách người dùng",
-        description: error.message || "Vui lòng thử lại sau",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleOpenChat = async (friend) => {
     try {
