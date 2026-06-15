@@ -9,6 +9,7 @@ const ChatHeader = ({
   onOpenConversationInfo,
   onOpenAddMembers,
   onOpenMembersInfo,
+  onSelectAvatarUser,
   displayInfo,
   typingNames,
   isOnline,
@@ -32,11 +33,17 @@ const ChatHeader = ({
         </button>
 
         {/* ===== AVATAR ===== */}
-        <div className="relative hidden sm:flex">
+        <div className="hidden sm:flex">
           {displayInfo.isGroup ? (
-            <GroupAvatar users={displayInfo.participants} size={48} />
+            <button type="button">
+              <GroupAvatar users={displayInfo.participants} size={48} />
+            </button>
           ) : (
-            <>
+            <button
+              onClick={() => onSelectAvatarUser(displayInfo?.partnerId)}
+              type="button"
+              className="relative"
+            >
               <UserAvatar
                 name={displayInfo.displayName}
                 avatarUrl={displayInfo.displayAvatar}
@@ -48,7 +55,7 @@ const ChatHeader = ({
                   aria-label="Online"
                 />
               )}
-            </>
+            </button>
           )}
         </div>
 

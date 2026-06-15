@@ -15,6 +15,7 @@ const MessageItem = ({
   onPreviewImage,
   onDeleteMessage,
   onEditClick,
+  onSelectAvatarUser,
 }) => {
   const msgTimeDate = new Date(msg.createdAt);
   const msgTime = msgTimeDate.toLocaleTimeString([], {
@@ -103,10 +104,12 @@ const MessageItem = ({
       >
         {/* --- Avatar ---*/}
         {showAvatar ? (
-          <UserAvatar
-            name={msg.senderId?.username || "Người dùng"}
-            avatarUrl={msg.senderId?.avatar?.url}
-          />
+          <button type="button" onClick={() => onSelectAvatarUser(msg?.senderId?._id)}>
+            <UserAvatar
+              name={msg.senderId?.username || "Người dùng"}
+              avatarUrl={msg.senderId?.avatar?.url}
+            />
+          </button>
         ) : (
           <div className="w-10 h-10 shrink-0" />
         )}

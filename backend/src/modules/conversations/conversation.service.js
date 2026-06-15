@@ -378,8 +378,6 @@ const ConversationService = {
       throw new AppError("Conversation not found or access denied", 404);
     }
 
-    let relationshipStatus = "not_friend";
-
     if (conversation.type === "private") {
       const targetParticipant = conversation.participants.find(
         (p) => p.userId._id.toString() !== userId
@@ -403,6 +401,8 @@ const ConversationService = {
           },
         ],
       }).lean();
+
+      let relationshipStatus = "not_friend";
 
       if (relationship) {
         if (relationship.status === "accepted") {

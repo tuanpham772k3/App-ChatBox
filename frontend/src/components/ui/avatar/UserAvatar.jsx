@@ -26,9 +26,10 @@ const avatarColorFor = (name = "") => {
 /** Circular avatar — shows image if provided, otherwise coloured initials */
 const UserAvatar = ({ name, avatarUrl, size = 40, className = "", style }) => (
   <div
-    className={`rounded-full shrink-0 flex items-center justify-center
+    className={`rounded-full shrink-0
+      flex items-center justify-center
       text-white font-semibold overflow-hidden
-      border border-[var(--color-border)] cursor-pointer
+      border border-[var(--color-border)]
       ${!avatarUrl ? avatarColorFor(name) : ""}
       ${className}`}
     style={{ width: size, height: size, fontSize: size / 3, ...style }}

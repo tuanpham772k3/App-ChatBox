@@ -56,6 +56,19 @@ const ModalUserProfile = ({
 
             {/* Button */}
             <div className="flex gap-2 px-4 pb-4">
+              {/* Bạn bè */}
+              {selectedUser?.relationship?.status === "friend" && (
+                <>
+                  <button
+                    type="button"
+                    className="flex-1 h-8 rounded-sm font-medium text-white
+                bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)]
+                active:bg-[var(--color-primary-active)]"
+                  >
+                    Nhắn tin
+                  </button>
+                </>
+              )}
               {/* Không phải bạn bè */}
               {selectedUser?.relationship?.status === "not_friend" && (
                 <>

@@ -16,7 +16,7 @@ const GroupAvatar = ({ users, size = 48 }) => {
   const itemSize = size / 1.9;
   return (
     <div
-      className="relative shrink-0 rounded-full bg-transparent cursor-pointer"
+      className="relative shrink-0 rounded-full bg-transparent"
       style={{ width: size, height: size }}
     >
       {visibleUsers.map((user, index) => {

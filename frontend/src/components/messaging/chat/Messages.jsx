@@ -44,6 +44,7 @@ const Messages = ({
   conversationId,
   currentConversation,
   setEditingMessage,
+  onSelectAvatarUser,
 }) => {
   const dispatch = useDispatch();
   const { ref: topRef, inView } = useInView({
@@ -208,6 +209,38 @@ const Messages = ({
         aria-label="Messages"
         className="h-full px-4 py-4 bg-[var(--color-chat)] overflow-y-auto custom-scrollbar"
       >
+        {currentConversation?.relationship?.status === "not_friend" ? (
+          <div className="flex items-center justify-between px-6 py-2 bg-[var(--color-app)] text-[var(--color-text-primary)]">
+            <span>Gửi yêu cầu kết bạn đến người này.</span>
+            <button
+              type="button"
+              className="py-1 px-4 bg-[var(--color-surface)] hover:bg-[var(--color-hover)] active:bg-[var(--color-active)]"
+            >
+              Kết bạn
+            </button>
+          </div>
+        ) : currentConversation?.relationship?.status === "pending_sent" ? (
+          <div className="flex items-center justify-between px-6 py-2 bg-[var(--color-app)] text-[var(--color-text-primary)]">
+            <span>Bạn đã gửi yêu cầu kết bạn và đang chờ đồng ý.</span>
+          </div>
+        ) : currentConversation?.relationship?.status === "pending_received" ? (
+          <div className="flex items-center justify-between px-6 py-2 bg-[var(--color-app)] text-[var(--color-text-primary)]">
+            <span>Người này đã gửi yêu cầu kết bạn và đang chờ bạn đồng ý.</span>
+            <button>Đồng ý</button>
+          </div>
+        ) : currentConversation?.relationship?.status === "blocked_by_me" ? (
+          <div className="flex items-center justify-between px-6 py-2 bg-[var(--color-app)] text-[var(--color-text-primary)]">
+            <span>Bạn đã ghét họ.</span>
+            <button>Bỏ ghét</button>
+          </div>
+        ) : currentConversation?.relationship?.status === "blocked_by_other" ? (
+          <div className="flex items-center justify-between px-6 py-2 bg-[var(--color-app)] text-[var(--color-text-primary)]">
+            <span>Bạn đã bị người này tẩy chay.</span>
+          </div>
+        ) : (
+          <></>
+        )}
+
         {/* Sentinel for loading older messages */}
         <li ref={topRef} aria-hidden="true" className="h-px" />
 
@@ -215,34 +248,33 @@ const Messages = ({
           <li className="flex justify-center" aria-live="polite">
             <Spin />
           </li>
+        ) : messages.length === 0 ? (
+          <li className="text-center text-sm text-[var(--color-text-secondary)]">
+            Chưa có tin nhắn nào
+          </li>
         ) : (
-          messages.length === 0 && (
-            <li className="text-center text-sm text-[var(--color-text-secondary)]">
-              Chưa có tin nhắn nào
-            </li>
-          )
+          messagesWithMeta.map((msg, index) => {
+            return (
+              <React.Fragment key={msg._id}>
+                {msg.meta.showDate && <MessageDateDivider date={msg.createdAt} />}
+                <MessageItem
+                  msg={msg}
+                  currentUserId={currentUserId}
+                  currentConversation={currentConversation}
+                  isMine={msg.meta.isMine}
+                  showTime={msg.meta.showTime}
+                  showName={msg.meta.showName}
+                  showAvatar={msg.meta.showAvatar}
+                  isLastMessage={index === messages.length - 1}
+                  onPreviewImage={handlePreviewImage}
+                  onDeleteMessage={handleDeleteMessage}
+                  onEditClick={handleEditClick}
+                  onSelectAvatarUser={onSelectAvatarUser}
+                />
+              </React.Fragment>
+            );
+          })
         )}
-
-        {messagesWithMeta.map((msg, index) => {
-          return (
-            <React.Fragment key={msg._id}>
-              {msg.meta.showDate && <MessageDateDivider date={msg.createdAt} />}
-              <MessageItem
-                msg={msg}
-                currentUserId={currentUserId}
-                currentConversation={currentConversation}
-                isMine={msg.meta.isMine}
-                showTime={msg.meta.showTime}
-                showName={msg.meta.showName}
-                showAvatar={msg.meta.showAvatar}
-                isLastMessage={index === messages.length - 1}
-                onPreviewImage={handlePreviewImage}
-                onDeleteMessage={handleDeleteMessage}
-                onEditClick={handleEditClick}
-              />
-            </React.Fragment>
-          );
-        })}
       </ul>
 
       {/* Lightbox */}

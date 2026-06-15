@@ -22,16 +22,19 @@ import { getDisplayInfo } from "@/utils/conversationHelper";
 import { emitEvent } from "@/lib/socket";
 import ModalLeaveGroup from "../components/messaging/chat/ModalLeaveGroup";
 import { useNotification } from "@/hooks/useNotification";
+import { getUserDetail } from "@/store/userSlice";
+import ModalUserProfile from "@/components/community/ModalUserProfile";
 
 const MODAL = {
-  ADD: "addMembers",
-  REMOVE: "removeMembers",
-  LEAVE: "leaveGroup",
+  ADD: "add_members",
+  REMOVE: "remove_members",
+  LEAVE: "leave_group",
+  PROFILE: "user_profile",
 };
 
 const DRAWER = {
-  INFO: "conversationInfo",
-  MEMBERS: "membersInfo",
+  INFO: "conversation_info",
+  MEMBERS: "members_info",
   MEDIA: "media",
 };
 
@@ -46,6 +49,8 @@ const ChatWindow = () => {
   const { currentConversation, typingUsers, statusUsers, images } = useSelector(
     (state) => state.conversations
   );
+  console.log("🚀 ~ ChatWindow ~ currentConversation:", currentConversation);
+  const { selectedUser } = useSelector((state) => state.user);
 
   const [openModal, setOpenModal] = useState(null);
   const [openDrawer, setOpenDrawer] = useState(null);
@@ -83,8 +88,46 @@ const ChatWindow = () => {
   useEffect(() => {
     if (!activeConversationId) return;
 
+    emitEvent("join_conversation", {
+      conversationId: activeConversationId,
+    });
+
+    return () => {
+      emitEvent("leave_conversation", {
+        conversationId: activeConversationId,
+      });
+    };
+  }, [activeConversationId]);
+
+  useEffect(() => {
+    if (!activeConversationId) return;
+
     dispatch(getConversationDetail(activeConversationId)).unwrap().catch(console.error);
   }, [activeConversationId, dispatch]);
+
+  useEffect(() => {
+    if (openDrawer === DRAWER.INFO && activeConversationId) {
+      dispatch(
+        getConversationImages({
+          conversationId: activeConversationId,
+          limit: 8,
+        })
+      )
+        .unwrap()
+        .catch(console.error);
+    }
+  }, [openDrawer, activeConversationId, dispatch]);
+
+  useEffect(() => {
+    setOpenDrawer(null);
+    setOpenModal(null);
+    setSelectedMemberId(null);
+    setEditingMessage({
+      id: null,
+      content: "",
+      originalContent: "",
+    });
+  }, [activeConversationId]);
 
   const handleTogglePinConversation = () => {
     if (!activeConversationId || !currentUserId) return;
@@ -150,43 +193,10 @@ const ChatWindow = () => {
     }
   };
 
-  useEffect(() => {
-    setOpenDrawer(null);
-    setOpenModal(null);
-    setSelectedMemberId(null);
-    setEditingMessage({
-      id: null,
-      content: "",
-      originalContent: "",
-    });
-  }, [activeConversationId]);
-
-  useEffect(() => {
-    if (openDrawer === DRAWER.INFO && activeConversationId) {
-      dispatch(
-        getConversationImages({
-          conversationId: activeConversationId,
-          limit: 8,
-        })
-      )
-        .unwrap()
-        .catch(console.error);
-    }
-  }, [openDrawer, activeConversationId, dispatch]);
-
-  useEffect(() => {
-    if (!activeConversationId) return;
-
-    emitEvent("join_conversation", {
-      conversationId: activeConversationId,
-    });
-
-    return () => {
-      emitEvent("leave_conversation", {
-        conversationId: activeConversationId,
-      });
-    };
-  }, [activeConversationId]);
+  const handleSelectAvatarUser = (userId) => {
+    setOpenModal(MODAL.PROFILE);
+    dispatch(getUserDetail(userId));
+  };
 
   return (
     <section
@@ -200,6 +210,7 @@ const ChatWindow = () => {
         onOpenConversationInfo={() => setOpenDrawer(DRAWER.INFO)}
         onOpenAddMembers={() => setOpenModal(MODAL.ADD)}
         onOpenMembersInfo={() => setOpenDrawer(DRAWER.MEMBERS)}
+        onSelectAvatarUser={handleSelectAvatarUser}
         displayInfo={displayInfo}
         typingNames={typingNames}
         isOnline={isOnline}
@@ -211,6 +222,7 @@ const ChatWindow = () => {
           conversationId={activeConversationId}
           currentConversation={currentConversation}
           setEditingMessage={setEditingMessage}
+          onSelectAvatarUser={handleSelectAvatarUser}
         />
       </div>
 
@@ -271,6 +283,12 @@ const ChatWindow = () => {
         conversationId={activeConversationId}
         currentUser={displayInfo?.currentUser}
         members={displayInfo?.participants}
+      />
+
+      <ModalUserProfile
+        isOpen={openModal === MODAL.PROFILE}
+        onCancel={() => setOpenModal(null)}
+        selectedUser={selectedUser}
       />
     </section>
   );
