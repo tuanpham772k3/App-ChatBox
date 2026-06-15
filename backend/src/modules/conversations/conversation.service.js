@@ -424,6 +424,14 @@ const ConversationService = {
             relationshipStatus = "blocked_by_other";
           }
         }
+
+        return {
+          ...conversation,
+          relationship: {
+            _id: relationship._id,
+            status: relationshipStatus,
+          },
+        };
       }
 
       return {

@@ -24,6 +24,11 @@ import ModalLeaveGroup from "../components/messaging/chat/ModalLeaveGroup";
 import { useNotification } from "@/hooks/useNotification";
 import { getUserDetail } from "@/store/userSlice";
 import ModalUserProfile from "@/components/community/ModalUserProfile";
+import {
+  acceptFriendRequest,
+  cancelFriendRequest,
+  createFriendRequest,
+} from "@/store/relationshipSlice";
 
 const MODAL = {
   ADD: "add_members",
@@ -49,7 +54,6 @@ const ChatWindow = () => {
   const { currentConversation, typingUsers, statusUsers, images } = useSelector(
     (state) => state.conversations
   );
-  console.log("🚀 ~ ChatWindow ~ currentConversation:", currentConversation);
   const { selectedUser } = useSelector((state) => state.user);
 
   const [openModal, setOpenModal] = useState(null);
@@ -198,6 +202,52 @@ const ChatWindow = () => {
     dispatch(getUserDetail(userId));
   };
 
+  const handleCreateFriendRequest = async () => {
+    try {
+      await dispatch(createFriendRequest(displayInfo?.partnerId)).unwrap();
+      notification.success({
+        message: "Đã gửi yêu cầu kết bạn",
+      });
+    } catch (error) {
+      notification.error({
+        message: "Đã gửi yêu cầu kết bạn thất bại",
+        description: error.message || "Có lỗi xảy ra",
+      });
+    }
+  };
+
+  const handleAcceptFriendRequest = async () => {
+    try {
+      await dispatch(
+        acceptFriendRequest(currentConversation?.relationship?._id)
+      ).unwrap();
+      notification.success({
+        message: "Đã chấp nhận yêu cầu kết bạn",
+      });
+    } catch (error) {
+      notification.error({
+        message: "Chấp nhận yêu cầu kết bạn thất bại",
+        description: error.message || "Có lỗi xảy ra",
+      });
+    }
+  };
+
+  const handleCancelFriendRequest = async () => {
+    try {
+      await dispatch(
+        cancelFriendRequest(currentConversation?.relationship?._id)
+      ).unwrap();
+      notification.success({
+        message: "Đã hủy yêu cầu kết bạn",
+      });
+    } catch (error) {
+      notification.error({
+        message: "Hủy yêu cầu kết bạn thất bại",
+        description: error.message || "Có lỗi xảy ra",
+      });
+    }
+  };
+
   return (
     <section
       className={`min-w-0 min-h-0 flex-1 flex-col bg-[var(--color-app)] ${
@@ -223,6 +273,8 @@ const ChatWindow = () => {
           currentConversation={currentConversation}
           setEditingMessage={setEditingMessage}
           onSelectAvatarUser={handleSelectAvatarUser}
+          onCreateFriendRequest={handleCreateFriendRequest}
+          onAcceptFriendRequest={handleAcceptFriendRequest}
         />
       </div>
 
@@ -289,6 +341,9 @@ const ChatWindow = () => {
         isOpen={openModal === MODAL.PROFILE}
         onCancel={() => setOpenModal(null)}
         selectedUser={selectedUser}
+        onCreateFriendRequest={handleCreateFriendRequest}
+        onAcceptFriendRequest={handleAcceptFriendRequest}
+        onCancelFriendRequest={handleCancelFriendRequest}
       />
     </section>
   );

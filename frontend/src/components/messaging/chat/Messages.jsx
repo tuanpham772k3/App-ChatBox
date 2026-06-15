@@ -10,14 +10,13 @@ import { useInView } from "react-intersection-observer";
 import "yet-another-react-lightbox/plugins/thumbnails.css";
 import "yet-another-react-lightbox/styles.css";
 
-import { buildMessageMeta } from "@/utils/messageHelper";
-import { emitEvent } from "@/lib/socket";
-
-import MessageItem from "./MessageItem";
-import { useNotification } from "@/hooks/useNotification";
 import { clearMessages, fetchConversationMessages } from "@/store/messagesSlice";
 import { syncReadStatusRealtime } from "@/store/conversationsSlice";
+import { buildMessageMeta } from "@/utils/messageHelper";
+import { emitEvent } from "@/lib/socket";
+import { useNotification } from "@/hooks/useNotification";
 import messagesApi from "@/services/messagesApi";
+import MessageItem from "./MessageItem";
 
 const MessageDateDivider = ({ date }) => {
   const messageDate = new Date(date);
@@ -45,6 +44,8 @@ const Messages = ({
   currentConversation,
   setEditingMessage,
   onSelectAvatarUser,
+  onCreateFriendRequest,
+  onAcceptFriendRequest,
 }) => {
   const dispatch = useDispatch();
   const { ref: topRef, inView } = useInView({
@@ -62,6 +63,8 @@ const Messages = ({
   const lastReadAtRef = useRef(null);
 
   const notification = useNotification();
+
+  const relationshipStatus = currentConversation?.relationship?.status;
 
   // ===== Load initial messages =====
   useEffect(() => {
@@ -209,36 +212,60 @@ const Messages = ({
         aria-label="Messages"
         className="h-full px-4 py-4 bg-[var(--color-chat)] overflow-y-auto custom-scrollbar"
       >
-        {currentConversation?.relationship?.status === "not_friend" ? (
-          <div className="flex items-center justify-between px-6 py-2 bg-[var(--color-app)] text-[var(--color-text-primary)]">
-            <span>Gửi yêu cầu kết bạn đến người này.</span>
-            <button
-              type="button"
-              className="py-1 px-4 bg-[var(--color-surface)] hover:bg-[var(--color-hover)] active:bg-[var(--color-active)]"
+        {relationshipStatus && relationshipStatus !== "friend" && (
+          <li>
+            <div
+              className="h-10 flex items-center justify-between px-6
+              bg-[var(--color-app)] text-[var(--color-text-primary)]"
             >
-              Kết bạn
-            </button>
-          </div>
-        ) : currentConversation?.relationship?.status === "pending_sent" ? (
-          <div className="flex items-center justify-between px-6 py-2 bg-[var(--color-app)] text-[var(--color-text-primary)]">
-            <span>Bạn đã gửi yêu cầu kết bạn và đang chờ đồng ý.</span>
-          </div>
-        ) : currentConversation?.relationship?.status === "pending_received" ? (
-          <div className="flex items-center justify-between px-6 py-2 bg-[var(--color-app)] text-[var(--color-text-primary)]">
-            <span>Người này đã gửi yêu cầu kết bạn và đang chờ bạn đồng ý.</span>
-            <button>Đồng ý</button>
-          </div>
-        ) : currentConversation?.relationship?.status === "blocked_by_me" ? (
-          <div className="flex items-center justify-between px-6 py-2 bg-[var(--color-app)] text-[var(--color-text-primary)]">
-            <span>Bạn đã ghét họ.</span>
-            <button>Bỏ ghét</button>
-          </div>
-        ) : currentConversation?.relationship?.status === "blocked_by_other" ? (
-          <div className="flex items-center justify-between px-6 py-2 bg-[var(--color-app)] text-[var(--color-text-primary)]">
-            <span>Bạn đã bị người này tẩy chay.</span>
-          </div>
-        ) : (
-          <></>
+              {relationshipStatus === "not_friend" ? (
+                <>
+                  <span className="text-[13px]">Người này có đủ trình không?</span>
+                  <button
+                    type="button"
+                    onClick={onCreateFriendRequest}
+                    className="text-sm py-1 px-4 bg-[var(--color-surface)]
+                    hover:bg-[var(--color-hover)] active:bg-[var(--color-active)]"
+                  >
+                    Chiêu mộ
+                  </button>
+                </>
+              ) : relationshipStatus === "pending_sent" ? (
+                <span className="text-[13px]">
+                  Bạn đã cho người khác cơ hội làm bạn với mình
+                </span>
+              ) : relationshipStatus === "pending_received" ? (
+                <>
+                  <span className="text-[13px]">
+                    Người này đang van xin được kết bạn với bạn
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={onAcceptFriendRequest}
+                    className="text-sm py-1 px-4 bg-[var(--color-surface)]
+                    hover:bg-[var(--color-hover)] active:bg-[var(--color-active)]"
+                  >
+                    Cho phép
+                  </button>
+                </>
+              ) : relationshipStatus === "blocked_by_me" ? (
+                <>
+                  <span className="text-[13px]">Bạn đã ghét họ</span>
+
+                  <button
+                    type="button"
+                    className="text-sm py-1 px-4 bg-[var(--color-surface)]
+                    hover:bg-[var(--color-hover)] active:bg-[var(--color-active)]"
+                  >
+                    Bỏ ghét
+                  </button>
+                </>
+              ) : relationshipStatus === "blocked_by_other" ? (
+                <span className="text-[13px]">Bạn đã bị người này tẩy chay</span>
+              ) : null}
+            </div>
+          </li>
         )}
 
         {/* Sentinel for loading older messages */}

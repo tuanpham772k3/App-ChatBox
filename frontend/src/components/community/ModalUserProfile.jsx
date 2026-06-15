@@ -8,8 +8,9 @@ const ModalUserProfile = ({
   isOpen,
   onCancel,
   selectedUser,
-  onAcceptRequest,
-  onCancelRequest,
+  onCreateFriendRequest,
+  onAcceptFriendRequest,
+  onCancelFriendRequest,
 }) => {
   return (
     <Modal
@@ -74,6 +75,7 @@ const ModalUserProfile = ({
                 <>
                   <button
                     type="button"
+                    onClick={onCreateFriendRequest}
                     className="flex-1 h-8 rounded-sm font-medium
                 text-[var(--color-text-primary)] bg-[var(--color-chat)]
                 hover:bg-[var(--color-hover-elevated)] active:bg-[var(--color-active)]"
@@ -94,7 +96,7 @@ const ModalUserProfile = ({
               {selectedUser?.relationship?.status === "pending_sent" && (
                 <>
                   <button
-                    onClick={() => onCancelRequest(selectedUser?.relationship?._id)}
+                    onClick={onCancelFriendRequest}
                     type="button"
                     className="flex-1 h-8 rounded-sm font-medium
                 text-[var(--color-text-primary)] bg-[var(--color-chat)]
@@ -116,7 +118,7 @@ const ModalUserProfile = ({
               {selectedUser?.relationship?.status === "pending_received" && (
                 <>
                   <button
-                    onClick={() => onAcceptRequest(selectedUser?.relationship?._id)}
+                    onClick={onAcceptFriendRequest}
                     type="button"
                     className="flex-1 h-8 rounded-sm font-medium
                 text-[var(--color-text-primary)] bg-[var(--color-chat)]

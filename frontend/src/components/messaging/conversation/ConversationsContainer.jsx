@@ -30,6 +30,14 @@ const ConversationContainer = () => {
     (state) => state.conversations
   );
 
+  const CATEGORY = {
+    ALL: "all",
+    FRIEND: "friend",
+    GROUP: "group",
+    STRANGER: "stranger",
+  };
+
+  const [category, setCategory] = useState(CATEGORY.ALL);
   const [searchInput, setSearchInput] = useState("");
   const [modal, setModal] = useState(null); // "group" | "private" | null
 
@@ -118,30 +126,45 @@ const ConversationContainer = () => {
         const aPinned = a.participants.find(
           (p) => p.userId._id === currentUserId
         )?.pinnedAt;
+
         const bPinned = b.participants.find(
           (p) => p.userId._id === currentUserId
         )?.pinnedAt;
+
         if (aPinned && bPinned) return new Date(bPinned) - new Date(aPinned);
         if (aPinned) return -1;
         if (bPinned) return 1;
         return 0;
       });
 
-    const trimmed = searchInput.trim();
-    if (!trimmed) {
-      return sortByPinned(conversations);
+    let results = conversations;
+
+    // filter category
+    if (category === CATEGORY.ALL) {
+      results = results.filter((conversation) =>
+        ["friend", "group"].includes(conversation.conversationCategory)
+      );
+    } else {
+      results = results.filter(
+        (conversation) => conversation.conversationCategory === category
+      );
     }
 
-    const keyword = trimmed.toLowerCase();
+    // search
+    const trimmed = searchInput.trim();
 
-    const results = conversations.filter((conversation) => {
-      const displayInfo = getDisplayInfo(conversation, currentUserId);
-      if (!displayInfo) return false;
+    if (trimmed) {
+      const keyword = trimmed.toLowerCase();
 
-      return displayInfo.displayName?.toLowerCase().includes(keyword);
-    });
+      results = results.filter((conversation) => {
+        const displayInfo = getDisplayInfo(conversation, currentUserId);
+
+        return displayInfo?.displayName?.toLowerCase().includes(keyword);
+      });
+    }
+
     return sortByPinned(results);
-  }, [conversations, currentUserId, searchInput]);
+  }, [conversations, currentUserId, searchInput, category]);
 
   return (
     <>
@@ -167,10 +190,53 @@ const ConversationContainer = () => {
         ) : (
           <div className="min-w-0 flex pt-6 overflow-hidden">
             <section className="flex-1 flex flex-col overflow-y-auto custom-scrollbar">
-              <header className="flex items-center gap-2 px-4 mb-2 text-sm text-[var(--color-text-secondary)]">
-                <MessageSquareText size={14} aria-hidden="true" />
-                <h2 id="conversations-heading">All Message</h2>
-              </header>
+              <nav aria-label="Lọc hội thoại" className="flex gap-2 px-4 mb-2">
+                <button
+                  type="button"
+                  onClick={() => setCategory(CATEGORY.ALL)}
+                  className={`flex-1 px-3 py-1 text-sm rounded-full ${
+                    category === CATEGORY.ALL
+                      ? "bg-[var(--color-primary)] text-white"
+                      : "bg-[var(--color-surface)] text-[var(--color-text-primary)]"
+                  }`}
+                >
+                  Tất cả
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setCategory(CATEGORY.FRIEND)}
+                  className={`flex-1 px-3 py-1 text-sm rounded-full ${
+                    category === CATEGORY.FRIEND
+                      ? "bg-[var(--color-primary)] text-white"
+                      : "bg-[var(--color-surface)] text-[var(--color-text-primary)]"
+                  }`}
+                >
+                  Bạn bè
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCategory(CATEGORY.GROUP)}
+                  className={`flex-1 px-3 py-1 text-sm rounded-full ${
+                    category === CATEGORY.GROUP
+                      ? "bg-[var(--color-primary)] text-white"
+                      : "bg-[var(--color-surface)] text-[var(--color-text-primary)]"
+                  }`}
+                >
+                  Nhóm
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCategory(CATEGORY.STRANGER)}
+                  className={`whitespace-nowrap flex-1 px-3 py-1 text-sm rounded-full ${
+                    category === CATEGORY.STRANGER
+                      ? "bg-[var(--color-primary)] text-white"
+                      : "bg-[var(--color-surface)] text-[var(--color-text-primary)]"
+                  }`}
+                >
+                  Người lạ
+                </button>
+              </nav>
 
               <ul className="flex-1 flex flex-col gap-1 px-2">
                 {filteredConversations.length === 0 ? (
