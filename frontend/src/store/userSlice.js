@@ -6,11 +6,11 @@ import userApi from "@/services/userApi";
  * ============================= */
 
 // Lấy thông tin user
-export const fetchProfile = createAsyncThunk(
-  "user/fetchProfile",
+export const getMyProfile = createAsyncThunk(
+  "user/getMyProfile",
   async (_, { rejectWithValue }) => {
     try {
-      const res = await userApi.getUserProfile();
+      const res = await userApi.getMyProfile();
       return res; // user
     } catch (err) {
       return rejectWithValue(err);
@@ -19,11 +19,11 @@ export const fetchProfile = createAsyncThunk(
 );
 
 // Cập nhật hồ sơ
-export const editProfile = createAsyncThunk(
-  "user/editProfile",
+export const updateMyProfile = createAsyncThunk(
+  "user/updateMyProfile",
   async (payload, { rejectWithValue }) => {
     try {
-      const res = await userApi.updateUserProfile(payload);
+      const res = await userApi.updateMyProfile(payload);
       return res; // user
     } catch (err) {
       return rejectWithValue(err);
@@ -44,6 +44,19 @@ export const getUsers = createAsyncThunk(
   }
 );
 
+// Lấy chi tiết người dùng
+export const getUserDetail = createAsyncThunk(
+  "user/getUserDetail",
+  async (id, { rejectWithValue }) => {
+    try {
+      const res = await userApi.getUserDetail(id);
+      return res;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
 /* =============================
  *  Slice setup
  * ============================= */
@@ -52,6 +65,8 @@ const userSlice = createSlice({
   name: "user",
   initialState: {
     profile: null,
+    selectedUser: null,
+
     loading: false,
     error: null,
   },
@@ -63,28 +78,42 @@ const userSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      /* ----- fetchProfile ----- */
-      .addCase(fetchProfile.pending, (state) => {
+      /* ----- getMyProfile ----- */
+      .addCase(getMyProfile.pending, (state) => {
         state.loading = true;
       })
-      .addCase(fetchProfile.fulfilled, (state, action) => {
+      .addCase(getMyProfile.fulfilled, (state, action) => {
         state.loading = false;
         state.profile = action.payload;
       })
-      .addCase(fetchProfile.rejected, (state, action) => {
+      .addCase(getMyProfile.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
 
-      /* ----- editProfile ----- */
-      .addCase(editProfile.pending, (state) => {
+      /* ----- updateMyProfile ----- */
+      .addCase(updateMyProfile.pending, (state) => {
         state.loading = true;
       })
-      .addCase(editProfile.fulfilled, (state, action) => {
+      .addCase(updateMyProfile.fulfilled, (state, action) => {
         state.loading = false;
         state.profile = action.payload;
       })
-      .addCase(editProfile.rejected, (state, action) => {
+      .addCase(updateMyProfile.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      /* ----- getUserDetail ----- */
+      .addCase(getUserDetail.pending, (state, action) => {
+        state.loading = true;
+        state.selectedUser = null;
+      })
+      .addCase(getUserDetail.fulfilled, (state, action) => {
+        state.loading = false;
+        state.selectedUser = action.payload;
+      })
+      .addCase(getUserDetail.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

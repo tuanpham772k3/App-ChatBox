@@ -4,7 +4,7 @@ import { Popover, Switch } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleTheme } from "@/store/themeSlice";
 import { useLogout } from "@/hooks/useLogout";
-import ModalUserInfo from "./ModalUserInfo";
+import ModalMyProfile from "./ModalMyProfile";
 import UserAvatar from "../ui/avatar/UserAvatar";
 
 const PopoverUserActions = ({ userInfo }) => {
@@ -15,7 +15,7 @@ const PopoverUserActions = ({ userInfo }) => {
   const [open, setOpen] = useState(false);
   const [openModal, setOpenModal] = useState(false);
 
-  const openModalUserInfo = () => {
+  const openModalMyProfile = () => {
     setOpenModal(true);
     setOpen(false);
   };
@@ -68,7 +68,7 @@ const PopoverUserActions = ({ userInfo }) => {
               </button>
               <button
                 type="button"
-                onClick={openModalUserInfo}
+                onClick={openModalMyProfile}
                 className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left text-[var(--color-text-primary)]
             hover:bg-[var(--color-hover)] rounded"
               >
@@ -115,7 +115,7 @@ const PopoverUserActions = ({ userInfo }) => {
         </button>
       </Popover>
 
-      <ModalUserInfo isOpen={openModal} onCancel={() => setOpenModal(false)} />
+      <ModalMyProfile isOpen={openModal} onCancel={() => setOpenModal(false)} />
     </>
   );
 };

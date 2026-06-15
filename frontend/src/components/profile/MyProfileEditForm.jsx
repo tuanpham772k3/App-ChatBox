@@ -16,7 +16,7 @@ const years = Array.from({ length: 100 }, (_, i) => {
   return { label: year, value: year };
 });
 
-const UserProfileEditForm = ({ profile, onCancel, onSubmit }) => {
+const MyProfileEditForm = ({ profile, onCancel, onSubmit }) => {
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -100,4 +100,4 @@ const UserProfileEditForm = ({ profile, onCancel, onSubmit }) => {
   );
 };
 
-export default UserProfileEditForm;
+export default MyProfileEditForm;

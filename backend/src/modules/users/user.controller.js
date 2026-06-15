@@ -1,12 +1,12 @@
 const { Types } = require("mongoose");
 const UserService = require("./user.service.js");
 
-// lấy thông tin người dùng
-const getUserProfile = async (req, res, next) => {
+// lấy thông tin của tôi
+const getMyProfile = async (req, res, next) => {
   try {
     const userId = req.user.userId;
 
-    const user = await UserService.getUserProfile(userId);
+    const user = await UserService.getMyProfile(userId);
 
     return res.status(200).json({
       success: true,
@@ -17,14 +17,14 @@ const getUserProfile = async (req, res, next) => {
   }
 };
 
-// cập nhật hồ sơ
-const updateUserProfile = async (req, res, next) => {
+// cập nhật hồ sơ của tôi
+const updateMyProfile = async (req, res, next) => {
   try {
     const userId = req.user.userId;
     const { username, bio } = req.body;
     const file = req.file;
 
-    const user = await UserService.updateUserProfile(userId, username, bio, file);
+    const user = await UserService.updateMyProfile(userId, username, bio, file);
 
     return res.status(200).json({
       success: true,
@@ -57,16 +57,16 @@ const getUsers = async (req, res, next) => {
 const getUserDetail = async (req, res, next) => {
   try {
     const userId = req.user.userId;
-    const { id } = req.params;
+    const { id: targetUserId } = req.params;
 
-    if (!Types.ObjectId.isValid(id)) {
+    if (!Types.ObjectId.isValid(targetUserId)) {
       return res.status(400).json({
         success: false,
         message: "Invalid user id.",
       });
     }
 
-    const user = await UserService.getUserDetail(id, userId);
+    const user = await UserService.getUserDetail(targetUserId, userId);
 
     return res.status(200).json({
       success: true,
@@ -78,8 +78,8 @@ const getUserDetail = async (req, res, next) => {
 };
 
 module.exports = {
-  getUserProfile,
-  updateUserProfile,
+  getMyProfile,
+  updateMyProfile,
   getUsers,
   getUserDetail,
 };

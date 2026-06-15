@@ -5,16 +5,16 @@ const userApi = {
    * Lấy thông tin hồ sơ người dùng hiện tại
    * GET /user/profile
    */
-  getUserProfile: () => {
-    return instance.get("/user/profile");
+  getMyProfile: () => {
+    return instance.get("/user/me");
   },
 
   /**
    * Cập nhật hồ sơ người dùng
    * PUT /user/profile
    */
-  updateUserProfile: (formData) => {
-    return instance.put("/user/profile", formData);
+  updateMyProfile: (formData) => {
+    return instance.put("/user/me", formData);
   },
 
   /**
@@ -25,6 +25,10 @@ const userApi = {
     return instance.get("/user", {
       params: { keyword },
     });
+  },
+
+  getUserDetail: (id) => {
+    return instance.get(`/user/${id}`);
   },
 };
 

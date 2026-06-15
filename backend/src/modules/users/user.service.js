@@ -4,7 +4,7 @@ const Relationship = require("../relationship/relationship.model.js");
 const cloudinary = require("../../config/cloudinary.js");
 
 const UserService = {
-  async getUserProfile(userId) {
+  async getMyProfile(userId) {
     const user = await User.findById(userId).select(
       "-passwordHash -refreshTokenHash -refreshTokenExpiresAt"
     );
@@ -16,7 +16,7 @@ const UserService = {
     return user;
   },
 
-  async updateUserProfile(userId, username, bio, file) {
+  async updateMyProfile(userId, username, bio, file) {
     let avatarData = null;
 
     if (file) {
@@ -61,33 +61,45 @@ const UserService = {
   },
 
   async getUsers(keyword, userId) {
-    // Nếu không có keyword → trả về danh sách gợi ý (mới hoạt động gần đây)
-    if (!keyword || keyword.trim() === "") {
-      const suggestedUsers = await User.find({ _id: { $ne: userId } })
-        .select("_id username avatar bio lastActiveAt")
-        .sort({ lastActiveAt: -1 }) // user hoạt động gần nhất trước
-        .limit(20);
+    // Lấy danh sách bạn bè
+    const relationships = await Relationship.find({
+      status: { $in: ["pending", "accepted", "blocked"] },
+      $or: [{ requesterId: userId }, { recipientId: userId }],
+    });
 
-      return suggestedUsers;
+    const friendIds = relationships.map((r) =>
+      r.requesterId.toString() === userId.toString() ? r.recipientId : r.requesterId
+    );
+
+    // Loại bỏ chính mình và bạn bè
+    const excludeIds = [userId, ...friendIds];
+
+    if (!keyword || keyword.trim() === "") {
+      return await User.find({
+        _id: { $nin: excludeIds },
+      })
+        .select("_id username avatar bio lastActiveAt")
+        .sort({ lastActiveAt: -1 })
+        .limit(20);
     }
 
     // Tìm kiếm theo tên, không phân biệt hoa thường
     const regex = new RegExp(keyword.trim(), "i");
 
-    const searchedUsers = await User.find({
-      _id: { $ne: userId },
+    const users = await User.find({
+      _id: { $nin: excludeIds },
       username: regex,
     })
       .select("_id username avatar bio lastActiveAt")
       .sort({ lastActiveAt: -1 })
       .limit(10);
 
-    return searchedUsers;
+    return users;
   },
 
   async getUserDetail(targetUserId, userId) {
     const user = await User.findById(targetUserId)
-      .select("_id username avatar bio createdAt")
+      .select("_id username email avatar bio createdAt")
       .lean();
 
     if (!user) {
@@ -129,6 +141,15 @@ const UserService = {
           relationshipStatus = "blocked_by_other";
         }
       }
+
+      return {
+        ...user,
+
+        relationship: {
+          _id: relationship._id,
+          status: relationshipStatus,
+        },
+      };
     }
 
     return {

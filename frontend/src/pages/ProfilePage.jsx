@@ -5,7 +5,7 @@ import { Menu, User, Phone, Home, FileText } from "lucide-react";
 import { AiOutlineCloudUpload } from "react-icons/ai";
 import { useNotification } from "@/hooks/useNotification";
 import { useLayout } from "@/contexts/LayoutContext";
-import { editProfile, fetchProfile } from "@/store/userSlice";
+import { updateMyProfile, getMyProfile } from "@/store/userSlice";
 import UserAvatar from "@/components/ui/avatar/UserAvatar";
 
 const { TextArea } = Input;
@@ -22,7 +22,7 @@ const ProfilePage = () => {
 
   // Fetch profile khi mount
   useEffect(() => {
-    dispatch(fetchProfile());
+    dispatch(getMyProfile());
   }, [dispatch]);
 
   // Xử lý ảnh preview
@@ -53,7 +53,7 @@ const ProfilePage = () => {
         formData.append("avatar", avatarFile); // Gửi file thật
       }
 
-      const res = await dispatch(editProfile(formData)).unwrap();
+      const res = await dispatch(updateMyProfile(formData)).unwrap();
       console.log("cập nhật thành công ", res);
 
       if (res && res.idCode === 0) {

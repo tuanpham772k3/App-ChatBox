@@ -1,22 +1,22 @@
 import React, { useEffect, useState } from "react";
-import { Button, Descriptions, Image, Modal, Upload } from "antd";
+import { Button, Descriptions, Modal, Upload } from "antd";
 import { Typography } from "antd";
 import ImgCrop from "antd-img-crop";
 import { ArrowLeft, Camera, PencilLine } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchProfile } from "../../store/userSlice";
+import { getMyProfile } from "../../store/userSlice";
 import { useNotification } from "@/hooks/useNotification";
-import UserProfileEditForm from "./UserProfileEditForm";
+import UserProfileEditForm from "./MyProfileEditForm";
 import UserAvatar from "../ui/avatar/UserAvatar";
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
-const ModalUserInfo = ({ isOpen, onCancel }) => {
+const ModalMyProfile = ({ isOpen, onCancel }) => {
   const dispatch = useDispatch();
   const profile = useSelector((state) => state.user.profile);
   const notification = useNotification();
 
-  const [view, setView] = useState("profile"); // profile || editProfile || editAvatar
+  const [view, setView] = useState("profile"); // profile || updateMyProfile || editAvatar
   const [avatarFile, setAvatarFile] = useState(null);
   const [fileList, setFileList] = useState([]);
 
@@ -25,7 +25,7 @@ const ModalUserInfo = ({ isOpen, onCancel }) => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        await dispatch(fetchProfile()).unwrap();
+        await dispatch(getMyProfile()).unwrap();
       } catch (error) {
         notification.error({
           message: "Lấy thông tin người dùng thất bại",
@@ -90,7 +90,7 @@ const ModalUserInfo = ({ isOpen, onCancel }) => {
                         type="text"
                         shape="circle"
                         icon={<PencilLine size={14} />}
-                        onClick={() => modalTransition("editProfile")}
+                        onClick={() => modalTransition("updateMyProfile")}
                       />
                     </div>
                   </div>
@@ -123,7 +123,7 @@ const ModalUserInfo = ({ isOpen, onCancel }) => {
                 type="primary"
                 block
                 icon={<PencilLine size={18} />}
-                onClick={() => modalTransition("editProfile")}
+                onClick={() => modalTransition("updateMyProfile")}
               >
                 Cập nhật
               </Button>
@@ -131,7 +131,7 @@ const ModalUserInfo = ({ isOpen, onCancel }) => {
           </>
         )}
 
-        {view === "editProfile" && (
+        {view === "updateMyProfile" && (
           <>
             <header className="h-12 flex items-center gap-1 px-1 border-b border-[var(--color-border)]">
               <Button
@@ -224,4 +224,4 @@ const ModalUserInfo = ({ isOpen, onCancel }) => {
   );
 };
 
-export default ModalUserInfo;
+export default ModalMyProfile;
