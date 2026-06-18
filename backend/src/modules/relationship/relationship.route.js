@@ -1,5 +1,5 @@
 const express = require("express");
-const { verifyToken } = require("../../middlewares/authMiddleware.js");
+const { verifyToken } = require("../../middlewares/auth.middleware.js");
 const {
   createFriendRequest,
   cancelFriendRequest,

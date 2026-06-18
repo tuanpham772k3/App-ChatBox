@@ -2,9 +2,12 @@ const { Types } = require("mongoose");
 const User = require("../users/user.model.js");
 const Relationship = require("./relationship.model.js");
 const { AppError } = require("../../utils/AppError.js");
+const {
+  emitRelationshipEvent,
+} = require("../../sockets/emitters/relationship.emitter.js");
 
 const RelationshipService = {
-  async createFriendRequest(requesterId, recipientId) {
+  async createFriendRequest(requesterId, recipientId, io) {
     if (!Types.ObjectId.isValid(recipientId)) {
       throw new AppError("Invalid recipient id.", 400);
     }
@@ -39,6 +42,19 @@ const RelationshipService = {
     });
 
     await relationship.populate("recipientId", "username avatar email");
+
+    // realtime
+    emitRelationshipEvent.friendRequestReceived({
+      io,
+      recipientId,
+      relationship,
+    });
+
+    emitRelationshipEvent.friendRequestSent({
+      io,
+      requesterId,
+      relationship,
+    });
 
     return relationship;
   },

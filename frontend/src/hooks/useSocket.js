@@ -67,7 +67,7 @@ export const useSocket = () => {
       }
 
       if (!isMine) {
-        emitEvent("message_delivered", { messageId: msg._id });
+        emitEvent("message:mark_delivered", { messageId: msg._id });
       }
     };
 
@@ -80,21 +80,24 @@ export const useSocket = () => {
     };
 
     const requestDeliverySync = () => {
-      emitEvent("delivery_sync");
+      emitEvent("sync_delivery");
     };
 
     onEvent("connect", requestDeliverySync);
+
     onEvent("user_status_changed", onStatusChanged);
     onEvent("user_typing", onTypingStart);
     onEvent("user_stop_typing", onTypingStop);
-    onEvent("conversation:new", onNewConversation);
-    onEvent("conversation:lastMessage", onConversationLastMessage);
-    onEvent("conversation:unread", onConversationUnread);
-    onEvent("conversation:read", onConversationRead);
-    onEvent("conversation:delivered", onConversationDelivered);
-    onEvent("message_new", onMessageNew);
-    onEvent("message_edit", onMessageEdit);
-    onEvent("message_delete", onMessageDelete);
+
+    onEvent("conversation:created", onNewConversation);
+    onEvent("conversation:last_message_updated", onConversationLastMessage);
+
+    onEvent("message:unread_updated", onConversationUnread);
+    onEvent("message:seen_updated", onConversationRead);
+    onEvent("message:delivered_updated", onConversationDelivered);
+    onEvent("message:created", onMessageNew);
+    onEvent("message:edited", onMessageEdit);
+    onEvent("message:deleted", onMessageDelete);
 
     if (isSocketConnected()) {
       requestDeliverySync();
@@ -102,17 +105,20 @@ export const useSocket = () => {
 
     return () => {
       offEvent("connect", requestDeliverySync);
+
       offEvent("user_status_changed", onStatusChanged);
       offEvent("user_typing", onTypingStart);
       offEvent("user_stop_typing", onTypingStop);
-      offEvent("conversation:new", onNewConversation);
-      offEvent("conversation:lastMessage", onConversationLastMessage);
-      offEvent("conversation:unread", onConversationUnread);
-      offEvent("conversation:read", onConversationRead);
-      offEvent("conversation:delivered", onConversationDelivered);
-      offEvent("message_new", onMessageNew);
-      offEvent("message_edit", onMessageEdit);
-      offEvent("message_delete", onMessageDelete);
+
+      offEvent("conversation:created", onNewConversation);
+      offEvent("conversation:last_message_updated", onConversationLastMessage);
+
+      offEvent("message:unread_updated", onConversationUnread);
+      offEvent("message:read_updated", onConversationRead);
+      offEvent("message:delivered_updated", onConversationDelivered);
+      offEvent("message:created", onMessageNew);
+      offEvent("message:edited", onMessageEdit);
+      offEvent("message_deleted", onMessageDelete);
     };
   }, [activeConversationId, currentUserId, dispatch]);
 };

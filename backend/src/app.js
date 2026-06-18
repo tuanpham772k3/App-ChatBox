@@ -10,7 +10,7 @@ const messageRoutes = require("./modules/messages/message.route.js");
 const uploadRoutes = require("./modules/upload/upload.route.js");
 const relationshipRoutes = require("./modules/relationship/relationship.route.js");
 
-const { errorHandler, notFoundHandler } = require("./middlewares/errorMiddleware.js");
+const { errorHandler, notFoundHandler } = require("./middlewares/error.middleware.js");
 
 const app = express();
 

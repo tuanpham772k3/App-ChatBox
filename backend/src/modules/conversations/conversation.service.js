@@ -706,7 +706,7 @@ const ConversationService = {
     return null;
   },
 
-  getReadStatus: async (conversationId, userId) => {
+  getSeenStatus: async (conversationId, userId) => {
     const conversation = await Conversation.findOne({
       _id: conversationId,
       "participants.userId": userId,

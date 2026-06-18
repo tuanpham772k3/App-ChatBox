@@ -15,7 +15,7 @@ const {
   markAsUnread,
   clearConversationHistory,
 } = require("./conversation.controller.js");
-const { verifyToken } = require("../../middlewares/authMiddleware.js");
+const { verifyToken } = require("../../middlewares/auth.middleware.js");
 
 const router = express.Router();
 

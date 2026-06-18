@@ -93,7 +93,7 @@ const Messages = ({
 
     lastReadAtRef.current = latestMessage.createdAt;
 
-    emitEvent("message_read", { messageId: latestMessage._id });
+    emitEvent("message:mark_seen", { messageId: latestMessage._id });
 
     dispatch(
       syncReadStatusRealtime({

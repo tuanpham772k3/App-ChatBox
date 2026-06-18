@@ -1,10 +1,11 @@
+const { Server } = require("socket.io");
 const Conversation = require("../modules/conversations/conversation.model.js");
 const Message = require("../modules/messages/message.model.js");
-const { authSocket } = require("./auth.socket.js");
-const { messageSocket } = require("./message.socket.js");
-const { conversationSocket } = require("./conversation.socket.js");
-const { broadcastPresence } = require("./presence.socket.js");
-const { emitConversationDelivered } = require("./realtime.emitter.js");
+const { registerMessageHandlers } = require("./handlers/message.handler.js");
+const { registerConversationHandlers } = require("./handlers/conversation.handler.js");
+const { socketAuthMiddleware } = require("./socket.middleware.js");
+const { emitConversationEvent } = require("./emitters/conversation.emitter.js");
+const { broadcastPresence } = require("./emitters/user.emitter.js");
 
 const buildPendingDeliveredQuery = ({ conversationId, participant, userId }) => {
   const query = {
@@ -75,7 +76,7 @@ const syncDeliveredPointersOnReconnect = async (io, socket) => {
 
       if (!updatedConversation) return;
 
-      emitConversationDelivered({
+      emitConversationEvent.messageDeliveredUpdated({
         io,
         conversationId: String(conversation._id),
         userId: String(socket.userId),
@@ -86,9 +87,16 @@ const syncDeliveredPointersOnReconnect = async (io, socket) => {
   );
 };
 
-const registerSocket = (io) => {
+let io = null;
+
+/**
+ * Khởi tạo Socket.IO và lưu singleton
+ */
+const initSocket = (server) => {
+  io = new Server(server, { cors: { origin: "*" } });
+
   // Auth middleware
-  authSocket(io);
+  io.use(socketAuthMiddleware);
 
   // Xử lý connection
   io.on("connection", async (socket) => {
@@ -132,8 +140,8 @@ const registerSocket = (io) => {
       });
 
       // Đăng ký socket handlers
-      messageSocket(io, socket);
-      conversationSocket(io, socket);
+      registerMessageHandlers(io, socket);
+      registerConversationHandlers(io, socket);
     } catch (err) {
       console.error("Error in socket connection handler:", err);
       socket.disconnect(true);
@@ -141,4 +149,13 @@ const registerSocket = (io) => {
   });
 };
 
-module.exports = { registerSocket };
+/**
+ * Lấy instance Socket.IO ở bất cứ đâu
+ */
+const getSocket = () => {
+  if (!io) throw new Error("Socket.IO not initialized. Call initSocket first.");
+
+  return io;
+};
+
+module.exports = { initSocket, getSocket };

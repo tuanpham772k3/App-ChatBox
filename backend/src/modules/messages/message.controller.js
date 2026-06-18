@@ -1,11 +1,7 @@
 const MessageService = require("./message.service.js");
 const { Types } = require("mongoose");
-const { getSocket } = require("../../socket.js");
-const {
-  emitMessageCreated,
-  emitMessageDeleted,
-  emitMessageEditedWithConversationSync,
-} = require("../../sockets/realtime.emitter.js");
+const { emitMessageEvent } = require("../../sockets/emitters/message.emitter.js");
+const { getSocket } = require("../../sockets/socket.js");
 
 /**
  * Tạo tin nhắn mới
@@ -37,7 +33,7 @@ const createNewMessage = async (req, res, next) => {
         const { message, conversation } = await MessageService.getMessageRealtimeData(
           newMessage._id
         );
-        emitMessageCreated({ io, message, conversation, senderId: userId });
+        emitMessageEvent.created({ io, message, conversation, senderId: userId });
       } catch (err) {
         // Không fail request nếu realtime emit lỗi (demo-prod best practice)
         console.error("[REALTIME] emitMessageCreated failed:", err);
@@ -110,7 +106,7 @@ const deleteMessageById = async (req, res, next) => {
     try {
       const io = getSocket();
       const realtimeData = await MessageService.getMessageDeleteRealtimeData(messageId);
-      emitMessageDeleted({
+      emitMessageEvent.deleted({
         io,
         messageId: String(realtimeData.messageId),
         conversationId: String(realtimeData.conversationId),
@@ -160,7 +156,7 @@ const editMessageById = async (req, res, next) => {
     try {
       const io = getSocket();
       const realtimeData = await MessageService.getMessageRealtimeData(messageId);
-      emitMessageEditedWithConversationSync({
+      emitMessageEvent.edited({
         io,
         message: realtimeData.message,
         conversation: realtimeData.conversation,

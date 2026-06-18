@@ -1,8 +1,7 @@
 const http = require("http");
 const app = require("./app.js");
 const { connectDB } = require("./config/db.js");
-const { initSocket } = require("./socket.js");
-const { registerSocket } = require("./sockets/register.socket.js");
+const { initSocket } = require("./sockets/socket.js");
 
 const port = process.env.PORT || 8080;
 
@@ -10,12 +9,10 @@ const startServer = async () => {
   try {
     await connectDB();
 
-    const server = http.createServer(app);
-    const io = initSocket(server);
+    const httpServer = http.createServer(app);
+    initSocket(httpServer);
 
-    registerSocket(io);
-
-    server.listen(port, () => {
+    httpServer.listen(port, () => {
       console.log(`✅ Server running on port ${port}`);
     });
   } catch (err) {

@@ -12,7 +12,7 @@ export const useLogout = () => {
 
   const logout = useCallback(async () => {
     conversations.forEach((conversation) => {
-      emitEvent("leave_conversation", { conversationId: conversation._id });
+      emitEvent("conversation:leave", { conversationId: conversation._id });
     });
 
     try {

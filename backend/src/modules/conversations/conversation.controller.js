@@ -1,10 +1,9 @@
 const { Types } = require("mongoose");
 const ConversationService = require("./conversation.service.js");
-const { getSocket } = require("../../socket.js");
 const {
-  emitConversationCreated,
-  emitConversationRead,
-} = require("../../sockets/realtime.emitter.js");
+  emitConversationEvent,
+} = require("../../sockets/emitters/conversation.emitter.js");
+const { getSocket } = require("../../sockets/socket.js");
 
 /**
  * Tạo conversation 1-1
@@ -43,7 +42,7 @@ const createPrivateConversation = async (req, res, next) => {
     // Server-authoritative publish: emit realtime ngay sau khi tạo conversation thành công
     try {
       const io = getSocket();
-      emitConversationCreated({ io, conversation });
+      emitConversationEvent.created({ io, conversation });
     } catch (err) {
       console.error("[REALTIME] emitConversationCreated (private) failed:", err);
     }
@@ -97,7 +96,7 @@ const createGroupConversation = async (req, res, next) => {
     // Server-authoritative publish
     try {
       const io = getSocket();
-      emitConversationCreated({ io, conversation });
+      emitConversationEvent.created({ io, conversation });
     } catch (err) {
       console.error("[REALTIME] emitConversationCreated (group) failed:", err);
     }
@@ -273,13 +272,13 @@ const markAsRead = async (req, res, next) => {
     // Server-authoritative publish read receipt (nếu người khác đang join room)
     try {
       const io = getSocket();
-      const readStatus = await ConversationService.getReadStatus(conversationId, userId);
-      emitConversationRead({
+      const seenStatus = await ConversationService.getSeenStatus(conversationId, userId);
+      emitConversationEvent.messageSeenUpdated({
         io,
-        conversationId: String(readStatus.conversationId),
-        userId: String(readStatus.userId),
-        lastReadAt: readStatus.lastReadAt,
-        participants: readStatus.participants,
+        conversationId: String(seenStatus.conversationId),
+        userId: String(seenStatus.userId),
+        lastReadAt: seenStatus.lastReadAt,
+        participants: seenStatus.participants,
       });
     } catch (err) {
       console.error("[REALTIME] emitConversationRead failed:", err);

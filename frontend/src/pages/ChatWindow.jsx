@@ -92,12 +92,12 @@ const ChatWindow = () => {
   useEffect(() => {
     if (!activeConversationId) return;
 
-    emitEvent("join_conversation", {
+    emitEvent("conversation:join", {
       conversationId: activeConversationId,
     });
 
     return () => {
-      emitEvent("leave_conversation", {
+      emitEvent("conversation:leave", {
         conversationId: activeConversationId,
       });
     };

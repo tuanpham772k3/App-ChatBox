@@ -1,9 +1,11 @@
+const { getSocket } = require("../../sockets/socket");
 const RelationshipService = require("./relationship.service");
 
 const createFriendRequest = async (req, res, next) => {
   try {
     const requesterId = req.user.userId;
     const { recipientId } = req.body;
+    const io = getSocket();
 
     if (!recipientId) {
       return res.status(400).json({
@@ -21,7 +23,8 @@ const createFriendRequest = async (req, res, next) => {
 
     const relationship = await RelationshipService.createFriendRequest(
       requesterId,
-      recipientId
+      recipientId,
+      io
     );
 
     return res.status(201).json({

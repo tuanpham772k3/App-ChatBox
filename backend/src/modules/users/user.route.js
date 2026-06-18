@@ -1,5 +1,4 @@
 const express = require("express");
-const { verifyToken } = require("../../middlewares/authMiddleware.js");
 const { upload } = require("../../config/multer.js");
 const {
   getUsers,
@@ -7,6 +6,7 @@ const {
   getMyProfile,
   updateMyProfile,
 } = require("./user.controller.js");
+const { verifyToken } = require("../../middlewares/auth.middleware.js");
 
 const router = express.Router();
 
