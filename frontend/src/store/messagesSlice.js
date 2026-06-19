@@ -18,14 +18,14 @@ export const createNewMessage = createAsyncThunk(
         const formData = new FormData();
         formData.append("file", payload.file.localFile);
 
-        const uploadRes = await instance.post("/upload", formData);
+        const res = await instance.post("/upload", formData);
 
         // replace file info bằng file thật từ server
-        finalPayload.file = uploadRes;
+        finalPayload.file = res.data;
       }
 
-      const newMessage = await messagesApi.createNewMessage(finalPayload);
-      return newMessage;
+      const res = await messagesApi.createNewMessage(finalPayload);
+      return res.data;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -38,7 +38,7 @@ export const fetchConversationMessages = createAsyncThunk(
   async ({ conversationId, cursor }, { rejectWithValue }) => {
     try {
       const res = await messagesApi.getConversationMessages({ conversationId, cursor });
-      return res; // { messages, nextCursor, hasMore }
+      return res.data; // { messages, nextCursor, hasMore }
     } catch (err) {
       return rejectWithValue(err);
     }

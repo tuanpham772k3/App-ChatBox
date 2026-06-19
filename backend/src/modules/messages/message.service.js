@@ -154,11 +154,11 @@ const MessageService = {
     const messages = await Message.find(query)
       .populate("senderId", "displayName email avatar")
       .sort({ createdAt: -1 }) // Sắp xếp từ mới nhất đến cũ nhất
-      .limit(limit)
+      .limit(limit + 1)
       .lean();
 
     // 3. Xác định còn tin nhắn để load thêm không
-    const hasMore = messages.length === limit;
+    const hasMore = messages.length > limit;
 
     // 4. Đảo ngược để UI hiển thị từ cũ → mới
     messages.reverse();

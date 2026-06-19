@@ -7,7 +7,7 @@ export const getFriends = createAsyncThunk(
     try {
       const response = await relationshipApi.getFriends();
 
-      return response;
+      return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(error);
     }
@@ -20,7 +20,7 @@ export const getSentRequests = createAsyncThunk(
     try {
       const response = await relationshipApi.getSentRequests();
 
-      return response;
+      return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(error);
     }
@@ -33,7 +33,7 @@ export const getReceivedRequests = createAsyncThunk(
     try {
       const response = await relationshipApi.getReceivedRequests();
 
-      return response;
+      return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(error);
     }
@@ -46,7 +46,7 @@ export const createFriendRequest = createAsyncThunk(
     try {
       const response = await relationshipApi.createFriendRequest(recipientId);
 
-      return response;
+      return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(error);
     }
@@ -59,7 +59,7 @@ export const acceptFriendRequest = createAsyncThunk(
     try {
       const response = await relationshipApi.acceptFriendRequest(relationshipId);
 
-      return response;
+      return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(error);
     }

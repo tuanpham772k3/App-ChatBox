@@ -10,7 +10,7 @@ export const loginUser = createAsyncThunk(
   async (payload, { rejectWithValue }) => {
     try {
       const res = await authApi.login(payload);
-      return res; // { accessToken, user }
+      return res.data; // { accessToken, user }
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -23,7 +23,7 @@ export const logoutUser = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const res = await authApi.logout();
-      return res;
+      return res.data;
     } catch (err) {
       return rejectWithValue(err);
     }

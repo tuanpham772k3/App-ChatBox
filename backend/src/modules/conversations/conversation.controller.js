@@ -135,10 +135,8 @@ const getConversations = async (req, res, next) => {
 
     return res.status(200).json({
       success: true,
-      data: {
-        conversations,
-        pagination,
-      },
+      pagination,
+      data: conversations,
     });
   } catch (error) {
     return next(error);

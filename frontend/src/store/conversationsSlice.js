@@ -16,8 +16,8 @@ export const createPrivateConversation = createAsyncThunk(
   "conversations/create",
   async (participantId, { rejectWithValue }) => {
     try {
-      const conversation = await conversationApi.createPrivateConversation(participantId);
-      return conversation;
+      const res = await conversationApi.createPrivateConversation(participantId);
+      return res.data;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -32,8 +32,8 @@ export const createGroupConversation = createAsyncThunk(
    */
   async (payload, { rejectWithValue }) => {
     try {
-      const conversation = await conversationApi.createGroupConversation(payload);
-      return conversation;
+      const res = await conversationApi.createGroupConversation(payload);
+      return res.data;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -46,7 +46,10 @@ export const getConversations = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const res = await conversationApi.getConversations();
-      return res; // { conversations, pagination }
+      return {
+        conversations: res.data,
+        pagination: res.pagination,
+      };
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -58,8 +61,8 @@ export const getConversationDetail = createAsyncThunk(
   "conversations/getDetail",
   async (conversationId, { rejectWithValue }) => {
     try {
-      const conversation = await conversationApi.getConversationById(conversationId);
-      return conversation;
+      const res = await conversationApi.getConversationById(conversationId);
+      return res.data;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -73,11 +76,11 @@ export const addMemberToGroup = createAsyncThunk(
   "conversations/addMemberToGroup",
   async ({ conversationId, memberIds }, { rejectWithValue }) => {
     try {
-      const conversation = await conversationApi.addMemberToGroup({
+      const res = await conversationApi.addMemberToGroup({
         conversationId,
         memberIds,
       });
-      return conversation;
+      return res.data;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -94,11 +97,11 @@ export const removeMemberFromGroup = createAsyncThunk(
    */
   async ({ conversationId, memberId }, { rejectWithValue }) => {
     try {
-      const conversation = await conversationApi.removeMemberFromGroup({
+      const res = await conversationApi.removeMemberFromGroup({
         conversationId,
         memberId,
       });
-      return conversation;
+      return res.data;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -123,8 +126,8 @@ export const getConversationImages = createAsyncThunk(
   "conversations/getImages",
   async ({ conversationId, limit = 8 }, { rejectWithValue }) => {
     try {
-      const images = await conversationApi.getConversationImages(conversationId, limit);
-      return images;
+      const res = await conversationApi.getConversationImages(conversationId, limit);
+      return res.data;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -174,8 +177,8 @@ export const togglePinConversation = createAsyncThunk(
   "conversations/togglePin",
   async ({ conversationId, userId }, { rejectWithValue }) => {
     try {
-      const pinnedAt = await conversationApi.togglePinConversation(conversationId);
-      return pinnedAt;
+      const res = await conversationApi.togglePinConversation(conversationId);
+      return res.data;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -186,8 +189,8 @@ export const markConversationAsUnread = createAsyncThunk(
   "conversations/markUnread",
   async ({ conversationId, userId }, { rejectWithValue }) => {
     try {
-      const unreadCount = await conversationApi.markAsUnread(conversationId);
-      return unreadCount;
+      const res = await conversationApi.markAsUnread(conversationId);
+      return res.data;
     } catch (err) {
       return rejectWithValue(err);
     }

@@ -11,7 +11,7 @@ export const getMyProfile = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const res = await userApi.getMyProfile();
-      return res; // user
+      return res.data; // user
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -24,7 +24,7 @@ export const updateMyProfile = createAsyncThunk(
   async (payload, { rejectWithValue }) => {
     try {
       const res = await userApi.updateMyProfile(payload);
-      return res; // user
+      return res.data; // user
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -37,7 +37,7 @@ export const getUsers = createAsyncThunk(
   async (keyword = "", { rejectWithValue }) => {
     try {
       const res = await userApi.getUsers(keyword);
-      return res; // users
+      return res.data; // users
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -50,7 +50,7 @@ export const getUserDetail = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const res = await userApi.getUserDetail(id);
-      return res;
+      return res.data;
     } catch (err) {
       return rejectWithValue(err);
     }

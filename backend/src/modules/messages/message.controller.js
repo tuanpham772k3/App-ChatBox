@@ -18,7 +18,7 @@ const createNewMessage = async (req, res, next) => {
       });
     }
 
-    const { message: newMessage, isNew } = await MessageService.createMessage(
+    const { message, isNew } = await MessageService.createMessage(
       conversationId,
       userId,
       content,
@@ -31,7 +31,7 @@ const createNewMessage = async (req, res, next) => {
       try {
         const io = getSocket();
         const { message, conversation } = await MessageService.getMessageRealtimeData(
-          newMessage._id
+          message._id
         );
         emitMessageEvent.created({ io, message, conversation, senderId: userId });
       } catch (err) {
@@ -43,7 +43,7 @@ const createNewMessage = async (req, res, next) => {
     return res.status(201).json({
       success: true,
       message: "Message created successfully",
-      data: newMessage,
+      data: message,
     });
   } catch (error) {
     return next(error);
@@ -68,7 +68,7 @@ const getConversationMessages = async (req, res, next) => {
       });
     }
 
-    const result = await MessageService.getConversationMessages(
+    const results = await MessageService.getConversationMessages(
       conversationId,
       userId,
       before,
@@ -77,8 +77,7 @@ const getConversationMessages = async (req, res, next) => {
 
     return res.status(200).json({
       success: true,
-      message: "Messages retrieved successfully",
-      data: result,
+      data: results,
     });
   } catch (error) {
     return next(error);

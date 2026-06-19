@@ -54,7 +54,7 @@ instance.interceptors.request.use(
 
 // ================= RESPONSE INTERCEPTOR =================
 instance.interceptors.response.use(
-  (response) => response.data.data,
+  (response) => response.data,
   async (error) => {
     const originalRequest = error.config;
 

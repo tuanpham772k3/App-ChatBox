@@ -27,9 +27,9 @@ const ModalAddFriend = ({ isOpen, onCancel }) => {
     try {
       setLoading(true);
 
-      const users = await userApi.getUsers(query);
+      const res = await userApi.getUsers(query);
 
-      setResults(users);
+      setResults(res.data);
     } catch (error) {
       notification.error({
         message: "Không thể tải danh sách người dùng",
