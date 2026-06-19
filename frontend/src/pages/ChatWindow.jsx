@@ -75,7 +75,7 @@ const ChatWindow = () => {
 
     return currentConversation.participants
       .filter((p) => typingMap[p.userId._id] && p.userId._id !== currentUserId)
-      .map((p) => p.userId.username);
+      .map((p) => p.userId.displayName);
   }, [activeConversationId, typingUsers, currentConversation, currentUserId]);
 
   const displayInfo = useMemo(

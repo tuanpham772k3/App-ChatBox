@@ -71,7 +71,7 @@ const ModalMyProfile = ({ isOpen, onCancel }) => {
                   <div className="absolute bottom-2 w-full flex items-center gap-4 px-4">
                     <div className="relative">
                       <UserAvatar
-                        name={profile?.username || "Người dùng"}
+                        name={profile?.displayName || "Người dùng"}
                         avatarUrl={profile?.avatar?.url}
                         size={80}
                       />
@@ -84,7 +84,7 @@ const ModalMyProfile = ({ isOpen, onCancel }) => {
                     </div>
                     <div className="flex items-center gap-2">
                       <h2 className="min-w-0 truncate text-lg font-medium">
-                        {profile?.username}
+                        {profile?.displayName}
                       </h2>
                       <Button
                         type="text"

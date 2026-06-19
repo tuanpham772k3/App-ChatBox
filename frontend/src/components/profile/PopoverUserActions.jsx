@@ -41,7 +41,7 @@ const PopoverUserActions = ({ userInfo }) => {
           <div className="w-[180px]">
             <header className="border-b border-[var(--color-border)]">
               <h2 className="px-3 pb-2 text-lg font-medium text-[var(--color-text-primary)]">
-                {userInfo?.username}
+                {userInfo?.displayName}
               </h2>
             </header>
 
@@ -109,7 +109,7 @@ const PopoverUserActions = ({ userInfo }) => {
         >
           <UserAvatar
             avatarUrl={userInfo?.avatar?.url}
-            name={userInfo?.username}
+            name={userInfo?.displayName}
             size={48}
           />
         </button>

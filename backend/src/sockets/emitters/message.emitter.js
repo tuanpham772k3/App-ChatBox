@@ -10,7 +10,7 @@ const buildLastMessagePayload = (conversationId, message) => ({
     messageId: message._id,
     senderId: {
       _id: message.senderId?._id,
-      username: message.senderId?.username,
+      displayName: message.senderId?.displayName,
       avatarUrl: message.senderId?.avatar?.url,
     },
     type: message.type,

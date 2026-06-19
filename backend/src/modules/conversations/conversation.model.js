@@ -1,5 +1,98 @@
 const mongoose = require("mongoose");
 
+const participantSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    role: {
+      type: String,
+      enum: ["owner", "admin", "member"],
+      default: "member",
+    },
+    joinedAt: {
+      type: Date,
+      default: Date.now,
+    },
+    clearedMessagesHistoryAt: {
+      type: Date,
+      default: null,
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
+    lastReadAt: {
+      type: Date,
+      default: null,
+    },
+    lastDeliveredAt: {
+      type: Date,
+      default: null,
+    },
+    unreadCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    pinnedAt: {
+      type: Date,
+      default: null,
+    },
+  },
+  { _id: false }
+);
+
+const avatarSchema = new mongoose.Schema(
+  {
+    url: String,
+
+    publicId: {
+      type: String,
+      default: null,
+    },
+  },
+  { _id: false }
+);
+
+const lastMessageSchema = new mongoose.Schema(
+  {
+    messageId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Message",
+      default: null,
+    },
+    senderId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+    type: {
+      type: String,
+      default: null,
+    },
+    content: {
+      type: String,
+      default: null,
+    },
+    file: {
+      type: Object,
+      default: null,
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+    createdAt: {
+      type: Date,
+      default: null,
+    },
+  },
+  { _id: false }
+);
+
 const conversationSchema = new mongoose.Schema(
   {
     type: {
@@ -7,58 +100,19 @@ const conversationSchema = new mongoose.Schema(
       enum: ["private", "group"],
       required: true,
     },
-
-    participants: [
-      {
-        userId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
-          required: true,
-        },
-        role: {
-          type: String,
-          enum: ["owner", "admin", "member"],
-          default: "member",
-        },
-        joinedAt: {
-          type: Date,
-          default: Date.now,
-        }, // Mốc thời gian người dùng tham gia cuộc trò chuyện
-        clearedMessagesHistoryAt: {
-          type: Date,
-          default: null,
-        }, // Mốc thời gian xóa lịch sử trò chuyện của người dùng (để soft delete)
-        deletedAt: {
-          type: Date,
-          default: null,
-        }, // Mốc thời gian người dùng xóa cuộc trò chuyện (soft delete)
-        lastReadAt: { type: Date, default: null }, // mốc thời gian của tin nhắn cuối mà người dùng đã đọc
-        lastDeliveredAt: { type: Date, default: null }, //mốc thời gian của tin nhắn cuối được giao đến người dùng
-        unreadCount: { type: Number, default: 0, min: 0 },
-        pinnedAt: {
-          type: Date,
-          default: null,
-        }, // mốc thời gian ghim hội thoại (null = chưa ghim)
-      },
-    ],
-
-    name: { type: String, default: null }, // only group
-
+    participants: [participantSchema],
+    name: {
+      type: String,
+      default: null,
+    }, // only group
     avatar: {
-      url: { type: String },
-      public_id: { type: String, default: null }, // ID để xóa/replace ảnh trên Cloudinary
+      type: avatarSchema,
+      default: () => ({}),
     },
-
     lastMessage: {
-      messageId: { type: mongoose.Schema.Types.ObjectId, ref: "Message", default: null },
-      senderId: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
-      type: { type: String, default: null },
-      content: { type: String, default: null },
-      file: { type: Object, default: null },
-      isDeleted: { type: Boolean, default: false },
-      createdAt: { type: Date, default: null },
+      type: lastMessageSchema,
+      default: null,
     },
-
     isActive: {
       type: Boolean,
       default: true,
@@ -69,9 +123,9 @@ const conversationSchema = new mongoose.Schema(
 
 conversationSchema.index({
   "participants.userId": 1,
-  "participants.deletedAt": 1,
   isActive: 1,
   "lastMessage.createdAt": -1,
+  "participants.deletedAt": 1,
   updatedAt: -1,
 });
 

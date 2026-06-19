@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Button, Card, Checkbox, Form, Input, Typography } from "antd";
+import { Button, Card, Checkbox, Col, Form, Input, Row, Typography } from "antd";
 import { useNotification } from "@/hooks/useNotification";
 import authApi from "@/services/authApi";
 
@@ -52,32 +52,84 @@ const RegisterPage = () => {
     <section id="register">
       <div className="container mx-auto min-h-screen flex items-center justify-center px-4 py-6">
         <Card className="w-full max-w-[25rem] shadow-lg">
-          {/* Title */}
           <Title level={3} className="text-center">
             Đăng ký
           </Title>
 
-          {/* Form AntD (layout vertical) */}
           <Form
             form={form}
-            name="login"
+            name="register"
             layout="vertical"
             initialValues={{ remember: true }}
             onFinish={onFinish}
             autoComplete="off"
           >
+            {/* Display Name */}
+            <Row gutter={12}>
+              <Col span={12}>
+                <Form.Item
+                  label="Họ"
+                  name="firstName"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Vui lòng nhập họ!",
+                    },
+                    {
+                      max: 50,
+                      message: "Họ không được vượt quá 50 ký tự!",
+                    },
+                  ]}
+                >
+                  <Input placeholder="Phạm" disabled={loading} />
+                </Form.Item>
+              </Col>
+
+              <Col span={12}>
+                <Form.Item
+                  label="Tên"
+                  name="lastName"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Vui lòng nhập tên!",
+                    },
+                    {
+                      max: 50,
+                      message: "Tên không được vượt quá 50 ký tự!",
+                    },
+                  ]}
+                >
+                  <Input placeholder="Anh Tuấn" disabled={loading} />
+                </Form.Item>
+              </Col>
+            </Row>
+
             {/* Username */}
             <Form.Item
-              label="Tên hiển thị"
+              label="Tên đăng nhập"
               name="username"
               rules={[
                 {
                   required: true,
-                  message: "Vui lòng nhập tên người dùng!",
+                  message: "Vui lòng nhập tên đăng nhập!",
+                },
+                {
+                  min: 3,
+                  message: "Tên đăng nhập phải có ít nhất 3 ký tự!",
+                },
+                {
+                  max: 30,
+                  message: "Tên đăng nhập không được vượt quá 30 ký tự!",
+                },
+                {
+                  pattern: /^[a-zA-Z0-9_]+$/,
+                  message:
+                    "Tên đăng nhập chỉ được chứa chữ cái, số và dấu gạch dưới (_)!",
                 },
               ]}
             >
-              <Input placeholder="nguyen_van_a" disabled={loading} />
+              <Input placeholder="tuan_anh" disabled={loading} />
             </Form.Item>
 
             {/* Email */}
@@ -85,7 +137,10 @@ const RegisterPage = () => {
               label="Email"
               name="email"
               rules={[
-                { required: true, message: "Vui lòng nhập email!" },
+                {
+                  required: true,
+                  message: "Vui lòng nhập email!",
+                },
                 {
                   type: "email",
                   message: "Email không hợp lệ",
@@ -112,16 +167,19 @@ const RegisterPage = () => {
                   min: 6,
                   message: "Mật khẩu phải có tối thiểu 6 ký tự",
                 },
-                //có thể thêm pattern để yêu cầu ký tự đặc biệt / số / hoa thường
+                {
+                  max: 128,
+                  message: "Mật khẩu quá dài",
+                },
               ]}
             >
               <Input.Password
-                placeholder="Mật khẩu chưa ít nhất 6 ký tự"
+                placeholder="Mật khẩu có ít nhất 6 ký tự"
                 disabled={loading}
               />
             </Form.Item>
 
-            {/* Confirm Password  */}
+            {/* Confirm Password */}
             <Form.Item
               label="Xác nhận mật khẩu"
               name="confirmPassword"
@@ -136,7 +194,20 @@ const RegisterPage = () => {
               <Input.Password placeholder="Nhập lại mật khẩu" disabled={loading} />
             </Form.Item>
 
-            <Form.Item name="remember" valuePropName="checked">
+            <Form.Item
+              name="remember"
+              valuePropName="checked"
+              rules={[
+                {
+                  validator: (_, value) =>
+                    value
+                      ? Promise.resolve()
+                      : Promise.reject(
+                          new Error("Bạn cần chấp nhận điều khoản & điều kiện")
+                        ),
+                },
+              ]}
+            >
               <Checkbox disabled={loading}>Chấp nhận điều khoản & điều kiện</Checkbox>
             </Form.Item>
 
@@ -145,8 +216,8 @@ const RegisterPage = () => {
                 type="primary"
                 htmlType="submit"
                 block
-                disabled={loading}
                 loading={loading}
+                disabled={loading}
               >
                 {loading ? "Đang xử lý..." : "Đăng ký"}
               </Button>

@@ -43,13 +43,13 @@ const ModalUserProfile = ({
             <div className="relative h-20 px-4">
               <div className="absolute bottom-4 flex items-center gap-4">
                 <UserAvatar
-                  name={selectedUser?.username || "Người dùng"}
+                  name={selectedUser?.displayName || "Người dùng"}
                   avatarUrl={selectedUser?.avatar?.url}
                   size={80}
                 />
                 <div>
                   <h2 className="min-w-0 truncate text-base font-medium">
-                    {selectedUser?.username}
+                    {selectedUser?.displayName}
                   </h2>
                 </div>
               </div>

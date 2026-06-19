@@ -1,5 +1,19 @@
 const mongoose = require("mongoose");
 
+const fileSchema = new mongoose.Schema(
+  {
+    url: String,
+    publicId: {
+      type: String,
+      default: null,
+    },
+    filename: String,
+    mimeType: String,
+    size: Number,
+  },
+  { _id: false }
+);
+
 const messageSchema = new mongoose.Schema(
   {
     conversationId: {
@@ -7,13 +21,11 @@ const messageSchema = new mongoose.Schema(
       ref: "Conversation",
       required: true,
     },
-
     senderId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-
     // Idempotency key do client tạo. Dùng để retry/dedupe khi gửi tin nhắn.
     // Không đặt unique ở field-level để tránh unique "global"; sẽ dùng compound unique index bên dưới.
     clientMessageId: {
@@ -21,53 +33,42 @@ const messageSchema = new mongoose.Schema(
       default: null,
       trim: true,
     },
-
     content: {
       type: String,
       trim: true,
       maxLength: 2000,
       default: null,
     },
-
     type: {
       type: String,
       enum: ["text", "image", "file", "emoji"],
       required: true,
     },
-
     // Thông tin file (nếu là tin nhắn file/image)
     file: {
-      url: { type: String }, // URL file trên Cloudinary
-      public_id: { type: String }, // ID để xóa/replace file trên Cloudinary
-      filename: { type: String },
-      mimeType: { type: String },
-      size: { type: Number },
+      type: fileSchema,
+      default: null,
     },
-
     // Thông tin reply (trả lời tin nhắn khác) // Tin nhắn được trả lời
     replyTo: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Message",
       default: null,
     },
-
     // Thông tin forward (chuyển tiếp tin nhắn)// Người gửi tin nhắn gốc (nếu là tin nhắn chuyển tiếp)
     forwardedFrom: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       default: null,
     },
-
     isDeleted: {
       type: Boolean,
       default: false,
     }, // Soft delete
-
     isEdited: {
       type: Boolean,
       default: false,
     },
-
     editedAt: {
       type: Date,
       default: null,

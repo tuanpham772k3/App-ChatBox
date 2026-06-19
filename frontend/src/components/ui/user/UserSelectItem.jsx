@@ -14,9 +14,9 @@ const UserSelectItem = ({ user, isSelected, onToggle }) => {
       />
 
       <div className="min-w-0 flex items-center gap-2">
-        <UserAvatar avatarUrl={user?.avatar?.url} name={user.username} size={40} />
+        <UserAvatar avatarUrl={user?.avatar?.url} name={user.displayName} size={40} />
         <span className="truncate text-sm font-medium text-[var(--color-text-primary)]">
-          {user?.username}
+          {user?.displayName}
         </span>
       </div>
     </li>

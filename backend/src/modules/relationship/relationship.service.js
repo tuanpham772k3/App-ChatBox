@@ -41,7 +41,7 @@ const RelationshipService = {
       status: "pending",
     });
 
-    await relationship.populate("recipientId", "username avatar email");
+    await relationship.populate("recipientId", "displayName avatar email");
 
     // realtime
     emitRelationshipEvent.friendRequestReceived({
@@ -188,7 +188,7 @@ const RelationshipService = {
       requesterId: userId,
       status: "pending",
     })
-      .populate("recipientId", "username avatar email")
+      .populate("recipientId", "displayName avatar email")
       .sort({ createdAt: -1 });
   },
 
@@ -197,7 +197,7 @@ const RelationshipService = {
       recipientId: userId,
       status: "pending",
     })
-      .populate("requesterId", "username avatar email")
+      .populate("requesterId", "displayName avatar email")
       .sort({ createdAt: -1 });
   },
 
@@ -213,8 +213,8 @@ const RelationshipService = {
         },
       ],
     })
-      .populate("requesterId", "username avatar email")
-      .populate("recipientId", "username avatar email")
+      .populate("requesterId", "displayName avatar email")
+      .populate("recipientId", "displayName avatar email")
       .lean();
 
     const friends = relationships.map((relationship) => {

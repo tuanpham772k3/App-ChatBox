@@ -23,7 +23,7 @@ const MyProfileEditForm = ({ profile, onCancel, onSubmit }) => {
     if (!profile) return;
 
     form.setFieldsValue({
-      displayName: profile.username,
+      displayName: profile.displayName,
       gender: profile.gender || "male",
       day: 7,
       month: 7,

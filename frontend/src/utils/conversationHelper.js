@@ -16,7 +16,8 @@ const mapParticipants = (participants, currentUserId) => {
   return participants.map((p) => {
     return {
       id: p.userId?._id,
-      name: p.userId?._id === currentUserId ? "Bạn" : p.userId?.username || "Người dùng",
+      name:
+        p.userId?._id === currentUserId ? "Bạn" : p.userId?.displayName || "Người dùng",
       avatarUrl: p.userId?.avatar?.url || null,
       role: p.role,
     };
@@ -66,7 +67,7 @@ const getLastMessageInfo = (lastMsg, currentUserId) => {
   const isMe = lastMsg.senderId?._id === currentUserId;
 
   return {
-    sender: isMe ? "Bạn" : lastMsg.senderId?.username || "",
+    sender: isMe ? "Bạn" : lastMsg.senderId?.displayName || "",
     content: lastMsg.content || "",
     time: lastMsg.createdAt ? formatConversationTime(lastMsg.createdAt) : "",
   };
@@ -91,7 +92,7 @@ export const getDisplayInfo = (conversation, currentUserId) => {
     partnerId: partner?.userId?._id,
     currentUser,
     participants: mappedParticipants,
-    displayName: isGroup ? name : partner?.userId?.username || "Người dùng",
+    displayName: isGroup ? name : partner?.userId?.displayName || "Người dùng",
     displayAvatar: isGroup ? null : partner?.userId?.avatar?.url || null,
     lastMsgSender: lastMsg.sender,
     lastMsgContent: lastMsg.content,

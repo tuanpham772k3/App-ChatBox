@@ -2,9 +2,11 @@ const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const User = require("../users/user.model.js");
+const Session = require("../users/session.model.js");
 const { AppError } = require("../../utils/AppError.js");
 
-const REFRESH_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+const ACCESS_TOKEN_TTL = "14m";
+const REFRESH_TOKEN_TTL = 14 * 24 * 60 * 60 * 1000; // 14 ngày
 
 // Helper: send refresh token to client as HTTP cookie.
 const setRefreshCookie = (res, refreshToken) => {
@@ -12,24 +14,14 @@ const setRefreshCookie = (res, refreshToken) => {
     httpOnly: true, // client JS không thể truy cập cookie này, giảm nguy cơ bị XSS đánh cắp token
     secure: process.env.NODE_ENV === "production", // Nếu false gửi cả http và https, true chỉ gửi https
     sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    maxAge: REFRESH_TTL_MS,
+    maxAge: REFRESH_TOKEN_TTL,
     path: "/", // gửi cookie trong mọi request đến backend
-  });
-};
-
-// Xóa cookie
-const clearRefreshCookie = (res) => {
-  res.clearCookie("refreshToken", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    path: "/",
   });
 };
 
 let signAccessToken = (payload) => {
   return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
-    expiresIn: "15m",
+    expiresIn: ACCESS_TOKEN_TTL,
   });
 };
 
@@ -44,14 +36,17 @@ let hashToken = (token) => {
 // Register
 const register = async (req, res, next) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, email, password, firstName, lastName } = req.body;
 
-    if (!username || !email || !password) {
-      throw new AppError("username, email, password are required", 400);
+    if (!username || !email || !password || !firstName || !lastName) {
+      throw new AppError(
+        "username, email, password, firstName, lastName are required",
+        400
+      );
     }
 
-    const user = await User.findOne({ email });
-    if (user) {
+    const duplicate = await User.findOne({ email });
+    if (duplicate) {
       throw new AppError("email already exists", 409);
     }
 
@@ -61,6 +56,7 @@ const register = async (req, res, next) => {
       username,
       email,
       passwordHash: hashedPassword,
+      displayName: `${firstName} ${lastName}`,
     });
 
     await newUser.save();
@@ -71,7 +67,7 @@ const register = async (req, res, next) => {
       data: {
         user: {
           id: newUser._id,
-          username: newUser.username,
+          displayName: newUser.displayName,
           email: newUser.email,
         },
       },
@@ -84,35 +80,38 @@ const register = async (req, res, next) => {
 // Login
 const login = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const { username, password } = req.body;
 
-    if (!email || !password) {
-      throw new AppError("Email, password are required", 400);
+    if (!username || !password) {
+      throw new AppError("Username, password are required", 400);
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ username });
     if (!user) {
-      throw new AppError("Invalid email or password", 401);
+      throw new AppError("Invalid username or password", 401);
     }
 
     const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) {
-      throw new AppError("Invalid email or password", 401);
+      throw new AppError("Invalid username or password", 401);
     }
 
     const accessToken = signAccessToken({
       userId: user._id,
-      roles: user.roles,
     });
 
-    const refreshToken = generateRefreshToken();
-
-    user.refreshTokenHash = hashToken(refreshToken);
-    user.refreshTokenExpiresAt = new Date(Date.now() + REFRESH_TTL_MS);
-    user.status = "active";
     user.lastSeenAt = new Date();
 
     await user.save();
+
+    const refreshToken = generateRefreshToken();
+    const refreshTokenHash = hashToken(refreshToken);
+
+    await Session.create({
+      userId: user.id,
+      refreshTokenHash,
+      expiresAt: new Date(Date.now() + REFRESH_TOKEN_TTL),
+    });
 
     setRefreshCookie(res, refreshToken);
 
@@ -123,55 +122,10 @@ const login = async (req, res, next) => {
         accessToken,
         user: {
           id: user._id,
-          username: user.username,
+          displayName: user.displayName,
           email: user.email,
           avatarUrl: user.avatar.url,
         },
-      },
-    });
-  } catch (error) {
-    return next(error);
-  }
-};
-
-// Refresh token
-const refreshToken = async (req, res, next) => {
-  try {
-    const token = req.cookies?.refreshToken;
-
-    if (!token) {
-      throw new AppError("No token provided", 400);
-    }
-
-    const hashed = hashToken(token);
-
-    const user = await User.findOne({
-      refreshTokenHash: hashed,
-      refreshTokenExpiresAt: { $gt: new Date() },
-    });
-
-    if (!user) {
-      throw new AppError("Invalid token", 400);
-    }
-
-    const newAccessToken = signAccessToken({
-      userId: user._id,
-      roles: user.roles,
-    });
-
-    const newRefreshToken = generateRefreshToken();
-
-    user.refreshTokenHash = hashToken(newRefreshToken);
-    user.refreshTokenExpiresAt = new Date(Date.now() + REFRESH_TTL_MS);
-
-    await user.save();
-
-    setRefreshCookie(res, newRefreshToken);
-
-    return res.status(200).json({
-      success: true,
-      data: {
-        accessToken: newAccessToken,
       },
     });
   } catch (error) {
@@ -187,16 +141,12 @@ const logout = async (req, res, next) => {
     if (token) {
       const hashed = hashToken(token);
 
-      await User.findOneAndUpdate(
-        { refreshTokenHash: hashed },
-        {
-          refreshTokenHash: null,
-          refreshTokenExpiresAt: null,
-        }
-      );
-    }
+      // xoá phiên đăng nhập
+      await Session.deleteOne({ refreshTokenHash: hashed });
 
-    clearRefreshCookie(res);
+      // xoá cookie
+      res.clearCookie("refreshToken");
+    }
 
     return res.status(200).json({
       success: true,
@@ -207,9 +157,52 @@ const logout = async (req, res, next) => {
   }
 };
 
+// Refresh token
+const refreshToken = async (req, res, next) => {
+  try {
+    const token = req.cookies?.refreshToken;
+    if (!token) {
+      throw new AppError("No token provided", 401);
+    }
+
+    const hashed = hashToken(token);
+
+    const session = await Session.findOne({ refreshTokenHash: hashed });
+    if (!session) {
+      throw new AppError("Invalid refresh token", 403);
+    }
+    if (session.expiresAt < new Date()) {
+      throw new AppError("Refresh token expired", 403);
+    }
+
+    const newAccessToken = signAccessToken({
+      userId: session.userId,
+    });
+
+    const newRefreshToken = generateRefreshToken();
+    const newRefreshTokenHash = hashToken(newRefreshToken);
+
+    session.refreshTokenHash = newRefreshTokenHash;
+    session.expiresAt = new Date(Date.now() + REFRESH_TOKEN_TTL);
+
+    await session.save();
+
+    setRefreshCookie(res, newRefreshToken);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        accessToken: newAccessToken,
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 module.exports = {
   register,
   login,
-  refreshToken,
   logout,
+  refreshToken,
 };

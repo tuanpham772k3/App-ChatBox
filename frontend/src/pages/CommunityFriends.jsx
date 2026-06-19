@@ -25,10 +25,10 @@ const FriendRow = ({ friend, onOpenChat }) => (
       onClick={() => onOpenChat(friend)}
       className="flex-1 flex items-center gap-3 px-3 py-2.5 text-left"
     >
-      <UserAvatar name={friend?.username} avatarUrl={friend?.avatar?.url} size={48} />
+      <UserAvatar name={friend?.displayName} avatarUrl={friend?.avatar?.url} size={48} />
       <div className="flex flex-col min-w-0">
         <span className="text-sm font-semibold text-[var(--color-text-primary)] truncate">
-          {friend?.username}
+          {friend?.displayName}
         </span>
         {friend?.tag && <FriendTag label={friend?.tag} />}
       </div>
@@ -79,12 +79,12 @@ const CommunityFriends = () => {
 
   const visibleGroups = useMemo(() => {
     const filtered = friends.filter((friend) =>
-      friend.username.toLowerCase().includes(search.toLowerCase())
+      friend.displayName.toLowerCase().includes(search.toLowerCase())
     );
 
     return Object.values(
       filtered.reduce((groups, friend) => {
-        const label = friend.username[0].toUpperCase();
+        const label = friend.displayName[0].toUpperCase();
 
         if (!groups[label]) {
           groups[label] = {

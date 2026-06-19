@@ -17,12 +17,12 @@ const LoginPage = () => {
   const notification = useNotification();
 
   const onFinish = async (values) => {
-    const { email, password } = values;
+    const { username, password } = values;
 
     setLoading(true);
 
     try {
-      await dispatch(loginUser({ email, password })).unwrap();
+      await dispatch(loginUser({ username, password })).unwrap();
 
       notification.success({
         message: "Đăng nhập thành công",
@@ -57,17 +57,25 @@ const LoginPage = () => {
             autoComplete="off"
           >
             <Form.Item
-              label="Email"
-              name="email"
+              label="Tên đăng nhập"
+              name="username"
               rules={[
-                { required: true, message: "Vui lòng nhập email!" },
                 {
-                  type: "email",
-                  message: "Email không hợp lệ",
+                  required: true,
+                  message: "Vui lòng nhập tên đăng nhập!",
                 },
                 {
-                  max: 254,
-                  message: "Email quá dài",
+                  min: 3,
+                  message: "Tên đăng nhập phải có ít nhất 3 ký tự!",
+                },
+                {
+                  max: 30,
+                  message: "Tên đăng nhập không được vượt quá 30 ký tự!",
+                },
+                {
+                  pattern: /^[a-zA-Z0-9_]+$/,
+                  message:
+                    "Tên đăng nhập chỉ được chứa chữ cái, số và dấu gạch dưới (_)!",
                 },
               ]}
             >

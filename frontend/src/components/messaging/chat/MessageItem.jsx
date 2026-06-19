@@ -106,7 +106,7 @@ const MessageItem = ({
         {showAvatar ? (
           <button type="button" onClick={() => onSelectAvatarUser(msg?.senderId?._id)}>
             <UserAvatar
-              name={msg.senderId?.username || "Người dùng"}
+              name={msg.senderId?.displayName || "Người dùng"}
               avatarUrl={msg.senderId?.avatar?.url}
             />
           </button>
@@ -130,7 +130,7 @@ const MessageItem = ({
           {/* --- Name Sender --- */}
           {showName && currentConversation?.type === "group" && (
             <span className="bg-[var(--color-app)] p-1 rounded-xl text-xs font-medium text-[var(--color-text-secondary)]">
-              {msg.senderId?.username || "Người dùng"}
+              {msg.senderId?.displayName || "Người dùng"}
             </span>
           )}
 
@@ -197,7 +197,7 @@ const MessageItem = ({
               {readers.map((p) => (
                 <UserAvatar
                   key={p.userId?._id}
-                  name={p.userId?.username || "Người dùng"}
+                  name={p.userId?.displayName || "Người dùng"}
                   avatarUrl={p.userId?.avatar?.url}
                   size={24}
                 />

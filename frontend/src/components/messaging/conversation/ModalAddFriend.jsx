@@ -115,30 +115,32 @@ const ModalAddFriend = ({ isOpen, onCancel }) => {
                 ) : results.length === 0 ? (
                   <span className="flex justify-center">Không có người dùng nào</span>
                 ) : (
-                  results.map((user) => (
-                    <li
-                      key={user._id}
-                      onClick={() => handleSelectUser(user._id)}
-                      className="min-w-0 flex items-center justify-between gap-3 px-4 py-2 hover:bg-[var(--color-hover)] rounded cursor-pointer transition-all"
-                    >
-                      <div className="min-w-0 flex items-center gap-2">
-                        <UserAvatar
-                          avatarUrl={user?.avatar?.url}
-                          name={user.username}
-                          size={40}
-                        />
-                        <span className="truncate text-sm font-medium text-[var(--color-text-primary)]">
-                          {user?.username}
-                        </span>
-                      </div>
-                      <Button
-                        onClick={(e) => handleCreateFriendRequest(e, user._id)}
-                        type="primary"
+                  results.map((user) => {
+                    return (
+                      <li
+                        key={user._id}
+                        onClick={() => handleSelectUser(user._id)}
+                        className="min-w-0 flex items-center justify-between gap-3 px-4 py-2 hover:bg-[var(--color-hover)] rounded cursor-pointer transition-all"
                       >
-                        Kết bạn
-                      </Button>
-                    </li>
-                  ))
+                        <div className="min-w-0 flex items-center gap-2">
+                          <UserAvatar
+                            avatarUrl={user?.avatar?.url}
+                            name={user.displayName}
+                            size={40}
+                          />
+                          <span className="truncate text-sm font-medium text-[var(--color-text-primary)]">
+                            {user?.displayName}
+                          </span>
+                        </div>
+                        <Button
+                          onClick={(e) => handleCreateFriendRequest(e, user._id)}
+                          type="primary"
+                        >
+                          Kết bạn
+                        </Button>
+                      </li>
+                    );
+                  })
                 )}
               </ul>
             </section>
@@ -171,14 +173,14 @@ const ModalAddFriend = ({ isOpen, onCancel }) => {
                   <div className="absolute bottom-4 flex items-center gap-4">
                     <div className="relative">
                       <UserAvatar
-                        name={selectedUser?.username || "Người dùng"}
+                        name={selectedUser?.displayName || "Người dùng"}
                         avatarUrl={selectedUser?.avatar?.url}
                         size={80}
                       />
                     </div>
                     <div className="flex items-center gap-2">
                       <h2 className="min-w-0 truncate text-base font-medium">
-                        {selectedUser?.username}
+                        {selectedUser?.displayName}
                       </h2>
                     </div>
                   </div>

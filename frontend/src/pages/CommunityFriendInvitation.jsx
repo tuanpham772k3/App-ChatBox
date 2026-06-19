@@ -158,7 +158,7 @@ const CommunityFriendInvitation = () => {
               {receivedRequests.map((r) => (
                 <FriendCard
                   key={r?._id}
-                  name={r?.requesterId?.username}
+                  name={r?.requesterId?.displayName}
                   avatarUrl={r?.requesterId?.avatar?.url}
                   onSelect={() => handleSelectUser(r?.requesterId)}
                   actions={
@@ -200,7 +200,7 @@ const CommunityFriendInvitation = () => {
               {sentRequests.map((s) => (
                 <FriendCard
                   key={s?._id}
-                  name={s?.recipientId?.username}
+                  name={s?.recipientId?.displayName}
                   avatarUrl={s?.recipientId?.avatar?.url}
                   onSelect={() => handleSelectUser(s?.recipientId)}
                   actions={

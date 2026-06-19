@@ -26,7 +26,7 @@ const GroupAvatar = ({ users, size = 48 }) => {
           <UserAvatar
             key={user?.id || user.userId?._id}
             avatarUrl={user?.avatarUrl || user?.userId?.avatar?.url}
-            name={user?.name || user?.userId?.username}
+            name={user?.name || user?.userId?.displayName}
             className="absolute"
             size={itemSize}
             style={pos}

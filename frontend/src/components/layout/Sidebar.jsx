@@ -97,7 +97,7 @@ const Sidebar = ({ mode = "desktop", onClose }) => {
 
         <div className="flex-col items-start truncate">
           <p className="text-sm font-semibold text-[var(--color-text-primary)]">
-            {profile?.username || "User"}
+            {profile?.displayName || "User"}
           </p>
           <button
             type="button"

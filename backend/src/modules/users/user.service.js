@@ -16,7 +16,7 @@ const UserService = {
     return user;
   },
 
-  async updateMyProfile(userId, username, bio, file) {
+  async updateMyProfile(userId, displayName, bio, file) {
     let avatarData = null;
 
     if (file) {
@@ -44,7 +44,7 @@ const UserService = {
       avatarData = { url: result.secure_url, public_id: result.public_id };
     }
 
-    const updateFields = { username, bio };
+    const updateFields = { displayName, bio };
     if (avatarData) updateFields.avatar = avatarData;
 
     const user = await User.findByIdAndUpdate(
@@ -78,7 +78,7 @@ const UserService = {
       return await User.find({
         _id: { $nin: excludeIds },
       })
-        .select("_id username avatar bio lastActiveAt")
+        .select("_id displayName avatar bio lastActiveAt")
         .sort({ lastActiveAt: -1 })
         .limit(20);
     }
@@ -88,9 +88,9 @@ const UserService = {
 
     const users = await User.find({
       _id: { $nin: excludeIds },
-      username: regex,
+      displayName: regex,
     })
-      .select("_id username avatar bio lastActiveAt")
+      .select("_id displayName avatar bio lastActiveAt")
       .sort({ lastActiveAt: -1 })
       .limit(10);
 
@@ -99,7 +99,7 @@ const UserService = {
 
   async getUserDetail(targetUserId, userId) {
     const user = await User.findById(targetUserId)
-      .select("_id username email avatar bio createdAt")
+      .select("_id displayName email avatar bio createdAt")
       .lean();
 
     if (!user) {

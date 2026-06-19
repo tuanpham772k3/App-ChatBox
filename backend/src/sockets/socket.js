@@ -101,7 +101,7 @@ const initSocket = (server) => {
   // Xử lý connection
   io.on("connection", async (socket) => {
     try {
-      console.log(`User connected: ${socket.user.username} (${socket.id})`);
+      console.log(`User connected: ${socket.user.displayName} (${socket.id})`);
 
       // Join room user_{userId}
       socket.join(`user_${socket.userId}`);
@@ -123,7 +123,7 @@ const initSocket = (server) => {
       // Xử lý disconnect
       socket.on("disconnect", async () => {
         try {
-          console.log(`User disconnected: ${socket.user?.username} (${socket.id})`);
+          console.log(`User disconnected: ${socket.user?.displayName} (${socket.id})`);
 
           const userRoom = io.sockets.adapter.rooms.get(`user_${socket.userId}`);
           const hasAnotherActiveSession = Boolean(userRoom && userRoom.size > 0);

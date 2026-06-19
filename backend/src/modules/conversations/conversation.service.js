@@ -30,11 +30,11 @@ const ConversationService = {
       const populatedConversation = await existingConversation.populate([
         {
           path: "participants.userId",
-          select: "username email avatar bio presence lastSeenAt",
+          select: "displayName email avatar bio presence lastSeenAt",
         },
         {
           path: "lastMessage.senderId",
-          select: "username avatar",
+          select: "displayName avatar",
         },
       ]);
 
@@ -52,11 +52,11 @@ const ConversationService = {
     const populatedConversation = await savedConversation.populate([
       {
         path: "participants.userId",
-        select: "username email avatar bio presence lastSeenAt",
+        select: "displayName email avatar bio presence lastSeenAt",
       },
       {
         path: "lastMessage.senderId",
-        select: "username avatar",
+        select: "displayName avatar",
       },
     ]);
 
@@ -114,9 +114,9 @@ const ConversationService = {
     const populatedConversation = await savedConversation.populate([
       {
         path: "participants.userId",
-        select: "username email avatar bio presence lastSeenAt",
+        select: "displayName email avatar bio presence lastSeenAt",
       },
-      { path: "lastMessage.senderId", select: "username avatar" },
+      { path: "lastMessage.senderId", select: "displayName avatar" },
     ]);
 
     return populatedConversation.toObject();
@@ -145,8 +145,11 @@ const ConversationService = {
 
     const [conversations, total] = await Promise.all([
       Conversation.find(query)
-        .populate("participants.userId", "username email avatar bio presence lastSeenAt")
-        .populate("lastMessage.senderId", "username avatar")
+        .populate(
+          "participants.userId",
+          "displayName email avatar bio presence lastSeenAt"
+        )
+        .populate("lastMessage.senderId", "displayName avatar")
         .sort({
           "lastMessage.createdAt": -1,
           updatedAt: -1,
@@ -297,11 +300,11 @@ const ConversationService = {
     await conversation.populate([
       {
         path: "participants.userId",
-        select: "username email avatar bio status lastSeenAt",
+        select: "displayName email avatar bio status lastSeenAt",
       },
       {
         path: "lastMessage.senderId",
-        select: "username avatar",
+        select: "displayName avatar",
       },
     ]);
 
@@ -346,11 +349,11 @@ const ConversationService = {
       .populate([
         {
           path: "participants.userId",
-          select: "username email avatar bio presence lastSeenAt",
+          select: "displayName email avatar bio presence lastSeenAt",
         },
         {
           path: "lastMessage.senderId",
-          select: "username avatar",
+          select: "displayName avatar",
         },
       ])
       .lean();
@@ -370,8 +373,8 @@ const ConversationService = {
       "participants.userId": userId,
       isActive: true,
     })
-      .populate("participants.userId", "username email avatar bio presence lastSeenAt")
-      .populate("lastMessage.senderId", "username avatar")
+      .populate("participants.userId", "displayName email avatar bio presence lastSeenAt")
+      .populate("lastMessage.senderId", "displayName avatar")
       .lean();
 
     if (!conversation) {
@@ -512,7 +515,7 @@ const ConversationService = {
 
     const images = await Message.find(query)
       .select("file senderId createdAt")
-      .populate("senderId", "username avatar")
+      .populate("senderId", "displayName avatar")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -729,8 +732,8 @@ const ConversationService = {
 
   getConversationRealtimeData: async (conversationId) => {
     const conversation = await Conversation.findById(conversationId)
-      .populate("participants.userId", "username email avatar bio presence lastSeenAt")
-      .populate("lastMessage.senderId", "username avatar")
+      .populate("participants.userId", "displayName email avatar bio presence lastSeenAt")
+      .populate("lastMessage.senderId", "displayName avatar")
       .lean();
 
     if (!conversation) {

@@ -6,23 +6,24 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
+      lowercase: true,
+      trim: true,
     },
     email: {
       type: String,
       required: true,
       unique: true,
+      lowercase: true,
+      trim: true,
     },
     passwordHash: {
       type: String,
       required: true,
     },
-    refreshTokenHash: {
+    displayName: {
       type: String,
-      default: null,
-    },
-    refreshTokenExpiresAt: {
-      type: Date,
-      default: null,
+      required: true,
+      trim: true,
     },
     avatar: {
       url: {
@@ -33,17 +34,12 @@ const userSchema = new mongoose.Schema(
     },
     bio: {
       type: String,
-      default: "",
-    }, // Tiểu sử
-    roles: {
-      type: [String],
-      default: ["user"],
+      maxlength: 500,
     },
-    status: {
+    phone: {
       type: String,
-      enum: ["active", "inactive", "banned"],
-      default: "inactive",
-    }, // Trạng thái tài khoản
+      sparse: true, // cho phép null, nhưng không được trùng
+    },
     presence: {
       type: String,
       enum: ["online", "offline"],
@@ -61,7 +57,7 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-userSchema.index({ username: "text" });
+userSchema.index({ displayName: "text" });
 
 const User = mongoose.model("User", userSchema);
 module.exports = User;

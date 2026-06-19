@@ -46,7 +46,7 @@ const ProfilePage = () => {
       // Tạo FormData để gửi file ảnh + thông tin khác
       const formData = new FormData();
 
-      formData.append("username", values.username || "");
+      formData.append("displayName", values.displayName || "");
       formData.append("bio", values.bio || "");
       formData.append("status", values.status || "");
       if (avatarFile) {
@@ -126,9 +126,8 @@ const ProfilePage = () => {
             form={form}
             layout="vertical"
             initialValues={{
-              username: profile?.username || "",
+              displayName: profile?.displayName || "",
               bio: profile?.bio || "",
-              status: profile?.status || "active",
               address: "",
               phone: "",
             }}
@@ -149,7 +148,7 @@ const ProfilePage = () => {
                 <div className="flex flex-col">
                   <UserAvatar
                     avatarUrl={profile?.avatar?.url}
-                    name={profile?.username}
+                    name={profile?.displayName}
                     size={64}
                   />
 
@@ -162,10 +161,10 @@ const ProfilePage = () => {
               </div>
             </Form.Item>
 
-            {/* Username */}
+            {/* displayName */}
             <Form.Item
               label="Tên người dùng"
-              name="username"
+              name="displayName"
               rules={[{ required: true, message: "Vui lòng nhập tên người dùng" }]}
             >
               <Input prefix={<User size={16} />} placeholder="Nhập tên..." />

@@ -21,10 +21,10 @@ const getMyProfile = async (req, res, next) => {
 const updateMyProfile = async (req, res, next) => {
   try {
     const userId = req.user.userId;
-    const { username, bio } = req.body;
+    const { displayName, bio } = req.body;
     const file = req.file;
 
-    const user = await UserService.updateMyProfile(userId, username, bio, file);
+    const user = await UserService.updateMyProfile(userId, displayName, bio, file);
 
     return res.status(200).json({
       success: true,
