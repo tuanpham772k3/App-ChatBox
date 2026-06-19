@@ -134,7 +134,6 @@ const ConversationService = {
 
     const query = {
       isActive: true,
-      "lastMessage.messageId": { $ne: null },
       participants: {
         $elemMatch: {
           userId: userId,
