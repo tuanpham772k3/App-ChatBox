@@ -1,7 +1,7 @@
 import { createContext, useEffect } from "react";
 import { Routes, Route, Navigate, Outlet } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { notification } from "antd";
+import { useDispatch, useSelector } from "react-redux";
+import { notification, Spin } from "antd";
 
 import LoginPage from "@/pages/Auth/LoginPage";
 import RegisterPage from "@/pages/Auth/RegisterPage";
@@ -20,17 +20,42 @@ import { useSocket } from "@/hooks/useSocket";
 
 import { connectSocket, disconnectSocket, initSocket } from "./lib/socket";
 import CommunityFriendInvitation from "./pages/CommunityFriendInvitation";
+import { refreshToken, setInitializing } from "./store/authSlice";
+import { getMe } from "./store/userSlice";
+import AppLoadingScreen from "./components/ui/AppLoadingScreen";
 
 export const NotificationContext = createContext(null);
 
-const PrivateRoute = () => {
-  const { accessToken } = useSelector((state) => state.auth);
-  return accessToken ? <Outlet /> : <Navigate to="/login" />;
+const ProtectedRoute = () => {
+  const dispatch = useDispatch();
+
+  const { accessToken, isInitializing } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    const bootstrap = async () => {
+      try {
+        await dispatch(refreshToken()).unwrap();
+        await dispatch(getMe()).unwrap();
+      } catch (err) {
+        console.log("No active session");
+      } finally {
+        dispatch(setInitializing(false));
+      }
+    };
+
+    bootstrap();
+  }, [dispatch]);
+
+  if (isInitializing) {
+    return <AppLoadingScreen />;
+  }
+
+  return accessToken ? <Outlet /> : <Navigate to="/login" replace />;
 };
 
 const PublicRoute = () => {
   const { accessToken } = useSelector((state) => state.auth);
-  return accessToken ? <Navigate to="/messages" replace /> : <Outlet />;
+  return accessToken ? <Navigate to="/chat" replace /> : <Outlet />;
 };
 
 function App() {
@@ -46,8 +71,6 @@ function App() {
 
     initSocket(accessToken);
     connectSocket();
-
-    return () => disconnectSocket();
   }, [accessToken]);
 
   useSocket();
@@ -68,7 +91,7 @@ function App() {
         </Route>
 
         {/* Private */}
-        <Route element={<PrivateRoute />}>
+        <Route element={<ProtectedRoute />}>
           <Route element={<MainLayout />}>
             <Route index element={<Navigate to="/chat" replace />} />
 

@@ -1,9 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import authApi from "../services/authApi";
 
-const savedToken = localStorage.getItem("accessToken");
-const savedUser = JSON.parse(localStorage.getItem("user"));
-
 // Login
 export const loginUser = createAsyncThunk(
   "auth/login",
@@ -30,43 +27,54 @@ export const logoutUser = createAsyncThunk(
   }
 );
 
+//refresh
+export const refreshToken = createAsyncThunk(
+  "auth/refreshToken",
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await authApi.refreshToken();
+      return res.data;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
 const authSlice = createSlice({
   name: "auth",
   initialState: {
-    user: savedUser,
-    accessToken: savedToken,
+    accessToken: null,
+    isInitializing: true,
   },
   reducers: {
-    syncAccessToken: (state, action) => {
+    setAccessToken: (state, action) => {
       state.accessToken = action.payload || null;
-
-      if (action.payload) {
-        localStorage.setItem("accessToken", action.payload);
-      } else {
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("user");
-      }
+    },
+    clearState: (state, action) => {
+      state.accessToken = null;
+    },
+    setInitializing: (state, action) => {
+      state.isInitializing = action.payload;
     },
   },
   extraReducers: (builder) => {
     builder
       // login
       .addCase(loginUser.fulfilled, (state, action) => {
-        state.user = action.payload.user;
-        state.accessToken = action.payload.accessToken;
-        localStorage.setItem("accessToken", action.payload.accessToken);
-        localStorage.setItem("user", JSON.stringify(action.payload.user));
+        state.accessToken = action.payload;
       })
 
       // logout
-      .addCase(logoutUser.fulfilled, (state) => {
-        state.user = null;
+      .addCase(logoutUser.fulfilled, (state, action) => {
         state.accessToken = null;
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("user");
+      })
+
+      // refresh
+      .addCase(refreshToken.fulfilled, (state, action) => {
+        state.accessToken = action.payload;
       });
   },
 });
 
-export const { syncAccessToken } = authSlice.actions;
+export const { setAccessToken, clearState, setInitializing } = authSlice.actions;
 export default authSlice.reducer;

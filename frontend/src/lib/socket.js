@@ -1,15 +1,16 @@
 import { io } from "socket.io-client";
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:8383";
+const baseURL = import.meta.env.VITE_SOCKET_URL || "http://localhost:8383";
 
 let socket = null;
 
 export const initSocket = (token) => {
   if (socket) {
-    socket.disconnect();
+    socket.auth = { token };
+    return socket;
   }
 
-  socket = io(SOCKET_URL, {
+  socket = io(baseURL, {
     autoConnect: false,
     transports: ["websocket"],
     auth: { token },

@@ -30,7 +30,7 @@ const navItems = [
 ];
 
 const Sidebar = ({ mode = "desktop", onClose }) => {
-  const profile = useSelector((state) => state.user.profile);
+  const currentUser = useSelector((state) => state.user.currentUser);
   const logout = useLogout();
   const notification = useNotification();
   const isMobile = mode === "mobile";
@@ -42,7 +42,7 @@ const Sidebar = ({ mode = "desktop", onClose }) => {
       }`}
     >
       <header className="shrink-0 h-16 sm:h-20 flex items-center gap-3 px-4 border-b border-[var(--color-border)] transition-all">
-        <img src={"/message.svg.png"} alt="" className="w-8 h-8" />
+        <img src={"/logo.svg.png"} alt="" className="w-8 h-8" />
         <p className="text-2xl font-bold text-shadow-sm text-[var(--color-text-primary)]">
           Chatbox
         </p>
@@ -93,11 +93,11 @@ const Sidebar = ({ mode = "desktop", onClose }) => {
       </nav>
 
       <footer className="flex items-center gap-3 p-4 transition-all">
-        <PopoverUserActions userInfo={profile} />
+        <PopoverUserActions currentUser={currentUser} />
 
         <div className="flex-col items-start truncate">
           <p className="text-sm font-semibold text-[var(--color-text-primary)]">
-            {profile?.displayName || "User"}
+            {currentUser?.displayName || "User"}
           </p>
           <button
             type="button"

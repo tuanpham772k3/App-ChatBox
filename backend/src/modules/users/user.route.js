@@ -1,17 +1,17 @@
 const express = require("express");
 const { upload } = require("../../config/multer.js");
 const {
+  getMe,
+  updateMyProfile,
   getUsers,
   getUserDetail,
-  getMyProfile,
-  updateMyProfile,
 } = require("./user.controller.js");
 const { verifyToken } = require("../../middlewares/auth.middleware.js");
 
 const router = express.Router();
 
 // Lấy thông tin bản thân
-router.get("/me", verifyToken, getMyProfile);
+router.get("/me", verifyToken, getMe);
 
 // Cập nhật thông tin bản thân
 router.put("/me", verifyToken, upload.single("avatar"), updateMyProfile);

@@ -1,4 +1,6 @@
 import axios from "axios";
+import { store } from "@/store/store";
+import { clearState, setAccessToken } from "@/store/authSlice";
 
 const instance = axios.create({
   baseURL: import.meta.env.VITE_API_BACKEND_URL || "http://localhost:8383/api",
@@ -16,16 +18,6 @@ const refreshClient = axios.create({
 let isRefreshing = false;
 let refreshQueue = [];
 
-// Hàm đồng bộ trạng thái sang Redux Store
-const syncAuthAfterRefresh = async (token) => {
-  const [{ store }, { syncAccessToken }] = await Promise.all([
-    import("@/store/store"),
-    import("@/store/authSlice"),
-  ]);
-
-  store.dispatch(syncAccessToken(token));
-};
-
 // Xử lý hàng đợi request khi có token mới hoặc thất bại
 const processQueue = (error, token = null) => {
   refreshQueue.forEach((prom) => {
@@ -41,7 +33,7 @@ const processQueue = (error, token = null) => {
 // ================= REQUEST INTERCEPTOR =================
 instance.interceptors.request.use(
   (config) => {
-    const accessToken = localStorage.getItem("accessToken");
+    const accessToken = store.getState().auth.accessToken;
 
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
@@ -85,15 +77,14 @@ instance.interceptors.response.use(
           // Gọi API refresh token từ instance riêng lẻ
           const res = await refreshClient.post("/auth/refresh-token");
 
-          const newAccessToken = res.data.data.accessToken;
+          const newAccessToken = res.data.data;
 
           if (!newAccessToken) {
             throw new Error("Không lấy được Access Token mới từ API");
           }
 
-          // Cập nhật token mới vào bộ nhớ
-          localStorage.setItem("accessToken", newAccessToken);
-          await syncAuthAfterRefresh(newAccessToken);
+          // Cập nhật token mới
+          store.dispatch(setAccessToken(newAccessToken));
 
           // Giải phóng hàng đợi thành công
           processQueue(null, newAccessToken);
@@ -105,9 +96,7 @@ instance.interceptors.response.use(
           // Dọn dẹp dữ liệu trước khi báo lỗi cho hàng đợi để tránh lỗi đồng bộ giao diện
           processQueue(refreshError, null);
 
-          localStorage.removeItem("accessToken");
-          localStorage.removeItem("user");
-          await syncAuthAfterRefresh(null);
+          store.dispatch(clearState());
 
           return Promise.reject({
             status: 401,
@@ -125,17 +114,15 @@ instance.interceptors.response.use(
       });
     }
 
-    // 2. Xử lý lỗi kết nối mạng (Network Error)
-    if (error.request) {
+    // 2. Xử lý lỗi phản hồi chậm từ server và kết nối mạng (Network Error)
+    if (error.code === "ECONNABORTED" || error.request) {
       return Promise.reject({
-        status: 0,
-        message: "Không thể kết nối tới server. Hãy kiểm tra lại kết nối internet",
+        message: "Máy chủ không phản hồi. Vui lòng kiểm tra lại kết nối internet",
       });
     }
 
     // 3. Xử lý lỗi không xác định cấu trúc
     return Promise.reject({
-      status: -1,
       message: error.message || "Lỗi không xác định",
     });
   }

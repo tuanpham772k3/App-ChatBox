@@ -64,13 +64,7 @@ const register = async (req, res, next) => {
     return res.status(201).json({
       success: true,
       message: "User created successfully",
-      data: {
-        user: {
-          id: newUser._id,
-          displayName: newUser.displayName,
-          email: newUser.email,
-        },
-      },
+      data: null,
     });
   } catch (error) {
     return next(error);
@@ -118,15 +112,7 @@ const login = async (req, res, next) => {
     return res.status(200).json({
       success: true,
       message: "Login successful",
-      data: {
-        accessToken,
-        user: {
-          id: user._id,
-          displayName: user.displayName,
-          email: user.email,
-          avatarUrl: user.avatar.url,
-        },
-      },
+      data: accessToken,
     });
   } catch (error) {
     return next(error);
@@ -175,25 +161,23 @@ const refreshToken = async (req, res, next) => {
       throw new AppError("Refresh token expired", 403);
     }
 
-    const newAccessToken = signAccessToken({
+    const accessToken = signAccessToken({
       userId: session.userId,
     });
 
-    const newRefreshToken = generateRefreshToken();
-    const newRefreshTokenHash = hashToken(newRefreshToken);
+    const refreshToken = generateRefreshToken();
+    const refreshTokenHash = hashToken(refreshToken);
 
-    session.refreshTokenHash = newRefreshTokenHash;
+    session.refreshTokenHash = refreshTokenHash;
     session.expiresAt = new Date(Date.now() + REFRESH_TOKEN_TTL);
 
     await session.save();
 
-    setRefreshCookie(res, newRefreshToken);
+    setRefreshCookie(res, refreshToken);
 
     return res.status(200).json({
       success: true,
-      data: {
-        accessToken: newAccessToken,
-      },
+      data: accessToken,
     });
   } catch (error) {
     return next(error);

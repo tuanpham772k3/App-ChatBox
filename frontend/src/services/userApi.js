@@ -2,10 +2,10 @@ import instance from "@/lib/axios";
 
 const userApi = {
   /**
-   * Lấy thông tin hồ sơ người dùng hiện tại
+   * Lấy thông tin người dùng hiện tại
    * GET /user/profile
    */
-  getMyProfile: () => {
+  getMe: () => {
     return instance.get("/user/me");
   },
 

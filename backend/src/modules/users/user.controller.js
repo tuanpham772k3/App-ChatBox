@@ -2,11 +2,11 @@ const { Types } = require("mongoose");
 const UserService = require("./user.service.js");
 
 // lấy thông tin của tôi
-const getMyProfile = async (req, res, next) => {
+const getMe = async (req, res, next) => {
   try {
     const userId = req.user.userId;
 
-    const user = await UserService.getMyProfile(userId);
+    const user = await UserService.getMe(userId);
 
     return res.status(200).json({
       success: true,
@@ -78,7 +78,7 @@ const getUserDetail = async (req, res, next) => {
 };
 
 module.exports = {
-  getMyProfile,
+  getMe,
   updateMyProfile,
   getUsers,
   getUserDetail,

@@ -50,7 +50,7 @@ const ChatWindow = () => {
 
   const activeConversationId = useParams().conversationId;
 
-  const currentUserId = useSelector((state) => state.auth.user?.id);
+  const currentUserId = useSelector((state) => state.user.currentUser?._id);
   const { currentConversation, typingUsers, statusUsers, images } = useSelector(
     (state) => state.conversations
   );

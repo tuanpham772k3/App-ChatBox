@@ -7,7 +7,7 @@ import { useLogout } from "@/hooks/useLogout";
 import ModalMyProfile from "./ModalMyProfile";
 import UserAvatar from "../ui/avatar/UserAvatar";
 
-const PopoverUserActions = ({ userInfo }) => {
+const PopoverUserActions = ({ currentUser }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const logout = useLogout();
@@ -41,7 +41,7 @@ const PopoverUserActions = ({ userInfo }) => {
           <div className="w-[180px]">
             <header className="border-b border-[var(--color-border)]">
               <h2 className="px-3 pb-2 text-lg font-medium text-[var(--color-text-primary)]">
-                {userInfo?.displayName}
+                {currentUser?.displayName}
               </h2>
             </header>
 
@@ -108,8 +108,8 @@ const PopoverUserActions = ({ userInfo }) => {
           className="w-12 h-12 rounded-full focus:ring-2 focus:ring-[var(--color-primary)]"
         >
           <UserAvatar
-            avatarUrl={userInfo?.avatar?.url}
-            name={userInfo?.displayName}
+            avatarUrl={currentUser?.avatar?.url}
+            name={currentUser?.displayName}
             size={48}
           />
         </button>

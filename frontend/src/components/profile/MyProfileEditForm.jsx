@@ -16,20 +16,20 @@ const years = Array.from({ length: 100 }, (_, i) => {
   return { label: year, value: year };
 });
 
-const MyProfileEditForm = ({ profile, onCancel, onSubmit }) => {
+const MyProfileEditForm = ({ currentUser, onCancel, onSubmit }) => {
   const [form] = Form.useForm();
 
   useEffect(() => {
-    if (!profile) return;
+    if (!currentUser) return;
 
     form.setFieldsValue({
-      displayName: profile.displayName,
-      gender: profile.gender || "male",
+      displayName: currentUser.displayName,
+      gender: currentUser.gender || "male",
       day: 7,
       month: 7,
       year: 2003,
     });
-  }, [profile, form]);
+  }, [currentUser, form]);
 
   const handleFinish = (values) => {
     const payload = {

@@ -5,7 +5,7 @@ import { Menu, User, Phone, Home, FileText } from "lucide-react";
 import { AiOutlineCloudUpload } from "react-icons/ai";
 import { useNotification } from "@/hooks/useNotification";
 import { useLayout } from "@/contexts/LayoutContext";
-import { updateMyProfile, getMyProfile } from "@/store/userSlice";
+import { updateMyProfile, getMe } from "@/store/userSlice";
 import UserAvatar from "@/components/ui/avatar/UserAvatar";
 
 const { TextArea } = Input;
@@ -22,7 +22,7 @@ const ProfilePage = () => {
 
   // Fetch profile khi mount
   useEffect(() => {
-    dispatch(getMyProfile());
+    dispatch(getMe());
   }, [dispatch]);
 
   // Xử lý ảnh preview

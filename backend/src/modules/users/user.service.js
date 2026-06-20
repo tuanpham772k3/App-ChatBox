@@ -4,7 +4,7 @@ const Relationship = require("../relationship/relationship.model.js");
 const cloudinary = require("../../config/cloudinary.js");
 
 const UserService = {
-  async getMyProfile(userId) {
+  async getMe(userId) {
     const user = await User.findById(userId).select(
       "-passwordHash -refreshTokenHash -refreshTokenExpiresAt"
     );

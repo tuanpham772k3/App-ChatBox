@@ -5,12 +5,12 @@ import userApi from "@/services/userApi";
  *  Thunk actions
  * ============================= */
 
-// Lấy thông tin user
-export const getMyProfile = createAsyncThunk(
+// Lấy người dùng đang đăng nhập
+export const getMe = createAsyncThunk(
   "user/getMyProfile",
   async (_, { rejectWithValue }) => {
     try {
-      const res = await userApi.getMyProfile();
+      const res = await userApi.getMe();
       return res.data; // user
     } catch (err) {
       return rejectWithValue(err);
@@ -18,7 +18,7 @@ export const getMyProfile = createAsyncThunk(
   }
 );
 
-// Cập nhật hồ sơ
+// Cập nhật hồ sơ người dùng đang đăng nhập
 export const updateMyProfile = createAsyncThunk(
   "user/updateMyProfile",
   async (payload, { rejectWithValue }) => {
@@ -64,7 +64,7 @@ export const getUserDetail = createAsyncThunk(
 const userSlice = createSlice({
   name: "user",
   initialState: {
-    profile: null,
+    currentUser: null,
     selectedUser: null,
 
     loading: false,
@@ -72,21 +72,21 @@ const userSlice = createSlice({
   },
   reducers: {
     clearUserProfile: (state) => {
-      state.profile = null;
+      state.currentUser = null;
       state.error = null;
     },
   },
   extraReducers: (builder) => {
     builder
       /* ----- getMyProfile ----- */
-      .addCase(getMyProfile.pending, (state) => {
+      .addCase(getMe.pending, (state) => {
         state.loading = true;
       })
-      .addCase(getMyProfile.fulfilled, (state, action) => {
+      .addCase(getMe.fulfilled, (state, action) => {
         state.loading = false;
-        state.profile = action.payload;
+        state.currentUser = action.payload;
       })
-      .addCase(getMyProfile.rejected, (state, action) => {
+      .addCase(getMe.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
@@ -97,7 +97,7 @@ const userSlice = createSlice({
       })
       .addCase(updateMyProfile.fulfilled, (state, action) => {
         state.loading = false;
-        state.profile = action.payload;
+        state.currentUser = action.payload;
       })
       .addCase(updateMyProfile.rejected, (state, action) => {
         state.loading = false;

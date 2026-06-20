@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { Spin } from "antd";
-import { MessageSquareText } from "lucide-react";
 
 import {
   clearConversationHistory,
@@ -25,7 +24,7 @@ const ConversationContainer = () => {
   const navigate = useNavigate();
   const activeConversationId = useParams().conversationId;
 
-  const currentUserId = useSelector((state) => state.auth.user?.id);
+  const currentUserId = useSelector((state) => state.user.currentUser?._id);
   const { conversations, statusUsers, loading } = useSelector(
     (state) => state.conversations
   );

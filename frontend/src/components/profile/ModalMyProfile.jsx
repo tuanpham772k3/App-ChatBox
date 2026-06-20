@@ -4,7 +4,7 @@ import { Typography } from "antd";
 import ImgCrop from "antd-img-crop";
 import { ArrowLeft, Camera, PencilLine } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import { getMyProfile } from "../../store/userSlice";
+import { getMe } from "../../store/userSlice";
 import { useNotification } from "@/hooks/useNotification";
 import UserProfileEditForm from "./MyProfileEditForm";
 import UserAvatar from "../ui/avatar/UserAvatar";
@@ -13,7 +13,7 @@ const { Text } = Typography;
 
 const ModalMyProfile = ({ isOpen, onCancel }) => {
   const dispatch = useDispatch();
-  const profile = useSelector((state) => state.user.profile);
+  const currentUser = useSelector((state) => state.user.currentUser);
   const notification = useNotification();
 
   const [view, setView] = useState("profile"); // profile || updateMyProfile || editAvatar
@@ -25,7 +25,7 @@ const ModalMyProfile = ({ isOpen, onCancel }) => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        await dispatch(getMyProfile()).unwrap();
+        await dispatch(getMe()).unwrap();
       } catch (error) {
         notification.error({
           message: "Lấy thông tin người dùng thất bại",
@@ -71,8 +71,8 @@ const ModalMyProfile = ({ isOpen, onCancel }) => {
                   <div className="absolute bottom-2 w-full flex items-center gap-4 px-4">
                     <div className="relative">
                       <UserAvatar
-                        name={profile?.displayName || "Người dùng"}
-                        avatarUrl={profile?.avatar?.url}
+                        name={currentUser?.displayName || "Người dùng"}
+                        avatarUrl={currentUser?.avatar?.url}
                         size={80}
                       />
                       <button
@@ -84,7 +84,7 @@ const ModalMyProfile = ({ isOpen, onCancel }) => {
                     </div>
                     <div className="flex items-center gap-2">
                       <h2 className="min-w-0 truncate text-lg font-medium">
-                        {profile?.displayName}
+                        {currentUser?.displayName}
                       </h2>
                       <Button
                         type="text"
@@ -108,11 +108,11 @@ const ModalMyProfile = ({ isOpen, onCancel }) => {
                   </Descriptions.Item>
 
                   <Descriptions.Item label="Email">
-                    <Text copyable>{profile?.email}</Text>
+                    <Text copyable>{currentUser?.email}</Text>
                   </Descriptions.Item>
 
                   <Descriptions.Item label="Bio">
-                    {profile?.bio || "..."}
+                    {currentUser?.bio || "..."}
                   </Descriptions.Item>
                 </Descriptions>
               </div>
@@ -145,7 +145,7 @@ const ModalMyProfile = ({ isOpen, onCancel }) => {
               </h2>
             </header>
             <UserProfileEditForm
-              profile={profile}
+              currentUser={currentUser}
               onCancel={() => modalTransition("profile")}
               onSubmit={(data) => {
                 console.log("SUBMIT:", data);

@@ -26,12 +26,12 @@ const AppProvider = ({ children }) => {
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <BrowserRouter>
-      <Provider store={store}>
+    <Provider store={store}>
+      <BrowserRouter>
         <AppProvider>
           <App />
         </AppProvider>
-      </Provider>
-    </BrowserRouter>
+      </BrowserRouter>
+    </Provider>
   </StrictMode>
 );
