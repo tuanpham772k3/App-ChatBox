@@ -2,12 +2,9 @@ const { Types } = require("mongoose");
 const User = require("../users/user.model.js");
 const Relationship = require("./relationship.model.js");
 const { AppError } = require("../../utils/AppError.js");
-const {
-  emitRelationshipEvent,
-} = require("../../sockets/emitters/relationship.emitter.js");
 
 const RelationshipService = {
-  async createFriendRequest(requesterId, recipientId, io) {
+  async createFriendRequest(requesterId, recipientId) {
     if (!Types.ObjectId.isValid(recipientId)) {
       throw new AppError("Invalid recipient id.", 400);
     }
@@ -43,20 +40,7 @@ const RelationshipService = {
 
     await relationship.populate("recipientId", "displayName avatar email");
 
-    // realtime
-    emitRelationshipEvent.friendRequestReceived({
-      io,
-      recipientId,
-      relationship,
-    });
-
-    emitRelationshipEvent.friendRequestSent({
-      io,
-      requesterId,
-      relationship,
-    });
-
-    return relationship;
+    return relationship.toObject();
   },
 
   async cancelFriendRequest(relationshipId, requesterId) {
@@ -73,9 +57,17 @@ const RelationshipService = {
       throw new AppError("You cannot cancel this friend request.", 403);
     }
 
+    const recipientId = relationship.recipientId;
+
     await relationship.deleteOne();
 
-    return null;
+    return {
+      realtimeData: {
+        relationshipId,
+        requesterId,
+        recipientId,
+      },
+    };
   },
 
   async acceptFriendRequest(relationshipId, recipientId) {
@@ -96,7 +88,7 @@ const RelationshipService = {
 
     await relationship.save();
 
-    return relationship;
+    return relationship.toObject();
   },
 
   async rejectFriendRequest(relationshipId, recipientId) {
@@ -113,9 +105,17 @@ const RelationshipService = {
       throw new AppError("You cannot reject this friend request.", 403);
     }
 
+    const requesterId = relationship.requesterId;
+
     await relationship.deleteOne();
 
-    return null;
+    return {
+      realtimeData: {
+        requesterId,
+        recipientId,
+        relationshipId,
+      },
+    };
   },
 
   async unfriend(userId, relationshipId) {
@@ -136,9 +136,18 @@ const RelationshipService = {
       throw new AppError("Users are not friends.", 400);
     }
 
+    const requesterId = relationship.requesterId;
+    const recipientId = relationship.recipientId;
+
     await relationship.deleteOne();
 
-    return null;
+    return {
+      realtimeData: {
+        requesterId,
+        recipientId,
+        relationshipId,
+      },
+    };
   },
 
   async blockUser(relationshipId, userId) {
@@ -160,7 +169,7 @@ const RelationshipService = {
 
     await relationship.save();
 
-    return relationship;
+    return relationship.toObject();
   },
 
   async unblockUser(relationshipId, userId) {

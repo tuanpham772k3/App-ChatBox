@@ -40,9 +40,9 @@ const emitRelationshipEvent = {
     });
   },
 
-  friendRemoved: ({ io, userA, userB, relationshipId }) => {
-    emitToUser(io, userA, "relationship:friend_removed", { relationshipId });
-    emitToUser(io, userB, "relationship:friend_removed", { relationshipId });
+  friendRemoved: ({ io, requesterId, recipientId, relationshipId }) => {
+    emitToUser(io, requesterId, "relationship:friend_removed", { relationshipId });
+    emitToUser(io, recipientId, "relationship:friend_removed", { relationshipId });
   },
 
   userBlocked: ({ io, blockerId, blockedUserId, relationship }) => {

@@ -113,7 +113,7 @@ const MessageService = {
       }
     );
 
-    return { message: message.toObject(), isNew: true };
+    return { message: message.toObject(), conversation, isNew: true };
   },
 
   /**
@@ -202,7 +202,7 @@ const MessageService = {
     await message.save();
 
     // ===== Update lastMessage nếu cần =====
-    await Conversation.findOneAndUpdate(
+    const conversation = await Conversation.findOneAndUpdate(
       {
         _id: message.conversationId,
         "lastMessage.messageId": message._id,
@@ -217,9 +217,20 @@ const MessageService = {
       {
         new: true,
       }
-    ).lean();
+    )
+      .select("participants lastMessage")
+      .populate("lastMessage.senderId", "displayName avatar")
+      .lean();
 
-    return message;
+    return {
+      message: message.toObject(),
+      realtimeData: {
+        messageId: message._id,
+        conversationId: message.conversationId,
+        conversation,
+        lastMessage: conversation.lastMessage,
+      },
+    };
   },
 
   /**
@@ -259,17 +270,17 @@ const MessageService = {
     message.isEdited = true;
     message.editedAt = new Date();
 
-    const updatedMessage = await message.save();
+    await message.save();
 
     // Nếu là lastMessage thì cập nhật
-    const conversation = await Conversation.findById(updatedMessage.conversationId);
+    const conversation = await Conversation.findById(message.conversationId);
 
     if (conversation?.lastMessage?.messageId?.equals(messageId)) {
-      conversation.lastMessage.content = updatedMessage.content;
+      conversation.lastMessage.content = message.content;
       await conversation.save();
     }
 
-    return updatedMessage;
+    return { message: message.toObject(), conversation: conversation.toObject() };
   },
 
   getMessageRealtimeData: async (messageId) => {

@@ -12,7 +12,6 @@ const socketAuthMiddleware = async (socket, next) => {
     const user = await User.findById(decoded.userId);
     if (!user) throw new Error("User not found");
 
-    socket.userId = decoded.userId;
     socket.user = user;
 
     next();

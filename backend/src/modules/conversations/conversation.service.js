@@ -470,7 +470,13 @@ const ConversationService = {
 
     await conversation.save();
 
-    return null;
+    return {
+      realtimeData: {
+        conversationId: conversation._id,
+        lastReadAt,
+        participants: conversation.participants,
+      },
+    };
   },
 
   /**

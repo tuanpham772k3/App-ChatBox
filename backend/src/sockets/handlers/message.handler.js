@@ -17,7 +17,7 @@ const registerMessageHandlers = (io, socket) => {
 
       const message = await Message.findOne({
         _id: messageId,
-        senderId: { $ne: socket.userId },
+        senderId: { $ne: socket.user._id },
       })
         .select("_id conversationId createdAt")
         .lean();
@@ -26,14 +26,14 @@ const registerMessageHandlers = (io, socket) => {
 
       const conversation = await Conversation.findOne({
         _id: message.conversationId,
-        "participants.userId": socket.userId,
+        "participants.userId": socket.user._id,
         isActive: true,
       }).select("participants");
 
       if (!conversation) return;
 
       const participant = conversation.participants.find((p) =>
-        p.userId?.equals(socket.userId)
+        p.userId?.equals(socket.user._id)
       );
 
       if (!participant) return;
@@ -49,7 +49,7 @@ const registerMessageHandlers = (io, socket) => {
       emitConversationEvent.messageDeliveredUpdated({
         io,
         conversationId: String(message.conversationId),
-        userId: String(socket.userId),
+        userId: String(socket.user._id),
         lastDeliveredAt: message.createdAt,
         participants: conversation.participants,
       });
@@ -71,14 +71,14 @@ const registerMessageHandlers = (io, socket) => {
 
       const conversation = await Conversation.findOne({
         _id: message.conversationId,
-        "participants.userId": socket.userId,
+        "participants.userId": socket.user._id,
         isActive: true,
       }).select("participants");
 
       if (!conversation) return;
 
       const participant = conversation.participants.find((p) =>
-        p.userId?.equals(socket.userId)
+        p.userId?.equals(socket.user._id)
       );
 
       if (!participant) return;
@@ -95,7 +95,7 @@ const registerMessageHandlers = (io, socket) => {
       emitConversationEvent.messageSeenUpdated({
         io,
         conversationId: String(message.conversationId),
-        userId: String(socket.userId),
+        userId: String(socket.user._id),
         lastReadAt: message.createdAt,
         participants: conversation.participants,
       });

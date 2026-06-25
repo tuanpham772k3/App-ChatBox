@@ -23,7 +23,7 @@ const registerConversationHandlers = (io, socket) => {
       }
 
       const isParticipant = conversation.participants.some(
-        (participant) => String(participant.userId) === String(socket.userId)
+        (participant) => String(participant.userId) === String(socket.user._id)
       );
 
       if (!isParticipant) {
@@ -36,12 +36,12 @@ const registerConversationHandlers = (io, socket) => {
       socket.join(`conversation_${conversationId}`);
 
       console.log(
-        `[SOCKET] User ${socket.userId} joined room conversation_${conversationId}`
+        `[SOCKET] User ${socket.user._id} joined room conversation_${conversationId}`
       );
     } catch (error) {
       console.error("join_conversation error:", {
         conversationId,
-        userId: socket.userId,
+        userId: socket.user._id,
         error,
       });
 
@@ -59,7 +59,7 @@ const registerConversationHandlers = (io, socket) => {
     socket.leave(`conversation_${conversationId}`);
 
     console.log(
-      `[SOCKET] User ${socket.userId} left room conversation_${conversationId}`
+      `[SOCKET] User ${socket.user._id} left room conversation_${conversationId}`
     );
   };
 
@@ -68,7 +68,7 @@ const registerConversationHandlers = (io, socket) => {
     if (!conversationId) return;
 
     socket.to(`conversation_${conversationId}`).emit("user_typing", {
-      userId: socket.userId,
+      userId: socket.user._id,
       conversationId,
     });
   };
@@ -78,7 +78,7 @@ const registerConversationHandlers = (io, socket) => {
     if (!conversationId) return;
 
     socket.to(`conversation_${conversationId}`).emit("user_stop_typing", {
-      userId: socket.userId,
+      userId: socket.user._id,
       conversationId,
     });
   };

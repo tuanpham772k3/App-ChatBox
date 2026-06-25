@@ -18,7 +18,7 @@ const createNewMessage = async (req, res, next) => {
       });
     }
 
-    const { message, isNew } = await MessageService.createMessage(
+    const { message, conversation, isNew } = await MessageService.createMessage(
       conversationId,
       userId,
       content,
@@ -26,18 +26,10 @@ const createNewMessage = async (req, res, next) => {
       clientMessageId
     );
 
-    // Server-authoritative publish: chỉ emit realtime khi message thật sự được tạo mới
+    // realtime
     if (isNew) {
-      try {
-        const io = getSocket();
-        const { message, conversation } = await MessageService.getMessageRealtimeData(
-          message._id
-        );
-        emitMessageEvent.created({ io, message, conversation, senderId: userId });
-      } catch (err) {
-        // Không fail request nếu realtime emit lỗi (demo-prod best practice)
-        console.error("[REALTIME] emitMessageCreated failed:", err);
-      }
+      const io = getSocket();
+      emitMessageEvent.created({ io, message, conversation, senderId: userId });
     }
 
     return res.status(201).json({
@@ -91,6 +83,7 @@ const deleteMessageById = async (req, res, next) => {
   try {
     const { messageId } = req.params;
     const { userId } = req.user;
+    const io = getSocket();
 
     if (!Types.ObjectId.isValid(messageId)) {
       return res.status(400).json({
@@ -99,27 +92,15 @@ const deleteMessageById = async (req, res, next) => {
       });
     }
 
-    const message = await MessageService.deleteMessageById(messageId, userId);
+    const result = await MessageService.deleteMessageById(messageId, userId);
 
-    // Emit realtime delete (server-authoritative)
-    try {
-      const io = getSocket();
-      const realtimeData = await MessageService.getMessageDeleteRealtimeData(messageId);
-      emitMessageEvent.deleted({
-        io,
-        messageId: String(realtimeData.messageId),
-        conversationId: String(realtimeData.conversationId),
-        conversation: realtimeData.conversation,
-        lastMessage: realtimeData.lastMessage,
-      });
-    } catch (err) {
-      console.error("[REALTIME] emitMessageDeleted failed:", err);
-    }
+    // realtime
+    emitMessageEvent.deleted({ io, ...result.realtimeData });
 
     return res.status(200).json({
       success: true,
       message: "Message deleted successfully",
-      data: message,
+      data: result.message,
     });
   } catch (error) {
     return next(error);
@@ -134,6 +115,7 @@ const editMessageById = async (req, res, next) => {
     const { userId } = req.user;
     const { messageId } = req.params;
     const newContent = req.body.content;
+    const io = getSocket();
 
     if (!Types.ObjectId.isValid(messageId)) {
       return res.status(400).json({
@@ -149,25 +131,15 @@ const editMessageById = async (req, res, next) => {
       });
     }
 
-    const message = await MessageService.editMessageById(messageId, userId, newContent);
+    const result = await MessageService.editMessageById(messageId, userId, newContent);
 
-    // Emit realtime edit (server-authoritative)
-    try {
-      const io = getSocket();
-      const realtimeData = await MessageService.getMessageRealtimeData(messageId);
-      emitMessageEvent.edited({
-        io,
-        message: realtimeData.message,
-        conversation: realtimeData.conversation,
-      });
-    } catch (err) {
-      console.error("[REALTIME] emitMessageEdited failed:", err);
-    }
+    // realtime
+    emitMessageEvent.edited({ io, ...result });
 
     return res.status(200).json({
       success: true,
       message: "Message edited successfully",
-      data: message,
+      data: result.message,
     });
   } catch (error) {
     return next(error);

@@ -12,6 +12,7 @@ const createPrivateConversation = async (req, res, next) => {
   try {
     const creatorId = req.user.userId;
     const { participantId } = req.body;
+    const io = getSocket();
 
     if (!participantId) {
       return res.status(400).json({
@@ -39,13 +40,8 @@ const createPrivateConversation = async (req, res, next) => {
       participantId
     );
 
-    // Server-authoritative publish: emit realtime ngay sau khi tạo conversation thành công
-    try {
-      const io = getSocket();
-      emitConversationEvent.created({ io, conversation });
-    } catch (err) {
-      console.error("[REALTIME] emitConversationCreated (private) failed:", err);
-    }
+    // realtime
+    emitConversationEvent.created({ io, conversation });
 
     return res.status(201).json({
       success: true,
@@ -64,6 +60,7 @@ const createGroupConversation = async (req, res, next) => {
   try {
     const creatorId = req.user.userId;
     const { name, memberIds, avatar = null } = req.body;
+    const io = getSocket();
 
     if (!name || typeof name !== "string" || name.trim().length === 0) {
       return res.status(400).json({
@@ -93,13 +90,8 @@ const createGroupConversation = async (req, res, next) => {
       avatar
     );
 
-    // Server-authoritative publish
-    try {
-      const io = getSocket();
-      emitConversationEvent.created({ io, conversation });
-    } catch (err) {
-      console.error("[REALTIME] emitConversationCreated (group) failed:", err);
-    }
+    // realtime
+    emitConversationEvent.created({ io, conversation });
 
     return res.status(201).json({
       success: true,
@@ -257,6 +249,7 @@ const markAsRead = async (req, res, next) => {
   try {
     const { userId } = req.user;
     const { conversationId } = req.params;
+    const io = getSocket();
 
     if (!Types.ObjectId.isValid(conversationId)) {
       return res.status(400).json({
@@ -265,22 +258,10 @@ const markAsRead = async (req, res, next) => {
       });
     }
 
-    await ConversationService.markAsRead(conversationId, userId);
+    const result = await ConversationService.markAsRead(conversationId, userId);
 
-    // Server-authoritative publish read receipt (nếu người khác đang join room)
-    try {
-      const io = getSocket();
-      const seenStatus = await ConversationService.getSeenStatus(conversationId, userId);
-      emitConversationEvent.messageSeenUpdated({
-        io,
-        conversationId: String(seenStatus.conversationId),
-        userId: String(seenStatus.userId),
-        lastReadAt: seenStatus.lastReadAt,
-        participants: seenStatus.participants,
-      });
-    } catch (err) {
-      console.error("[REALTIME] emitConversationRead failed:", err);
-    }
+    // realtime
+    emitConversationEvent.messageSeenUpdated({ io, userId, ...result.realtimeData });
 
     return res.status(200).json({
       success: true,

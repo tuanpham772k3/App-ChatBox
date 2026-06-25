@@ -29,7 +29,7 @@ const buildPendingDeliveredQuery = ({ conversationId, participant, userId }) => 
 
 const syncDeliveredPointersOnReconnect = async (io, socket) => {
   const conversations = await Conversation.find({
-    "participants.userId": socket.userId,
+    "participants.userId": socket.user._id,
     isActive: true,
   })
     .select("participants")
@@ -38,7 +38,7 @@ const syncDeliveredPointersOnReconnect = async (io, socket) => {
   await Promise.all(
     conversations.map(async (conversation) => {
       const participant = conversation.participants.find(
-        (p) => String(p.userId) === String(socket.userId)
+        (p) => String(p.userId) === String(socket.user._id)
       );
 
       if (!participant) return;
@@ -47,7 +47,7 @@ const syncDeliveredPointersOnReconnect = async (io, socket) => {
         buildPendingDeliveredQuery({
           conversationId: conversation._id,
           participant,
-          userId: socket.userId,
+          userId: socket.user._id,
         })
       )
         .select("createdAt")
@@ -59,7 +59,7 @@ const syncDeliveredPointersOnReconnect = async (io, socket) => {
       const updatedConversation = await Conversation.findOneAndUpdate(
         {
           _id: conversation._id,
-          "participants.userId": socket.userId,
+          "participants.userId": socket.user._id,
           isActive: true,
         },
         {
@@ -79,7 +79,7 @@ const syncDeliveredPointersOnReconnect = async (io, socket) => {
       emitConversationEvent.messageDeliveredUpdated({
         io,
         conversationId: String(conversation._id),
-        userId: String(socket.userId),
+        userId: String(socket.user._id),
         lastDeliveredAt: latestUndeliveredMessage.createdAt,
         participants: updatedConversation.participants,
       });
@@ -104,7 +104,7 @@ const initSocket = (server) => {
       console.log(`User connected: ${socket.user.displayName} (${socket.id})`);
 
       // Join room user_{userId}
-      socket.join(`user_${socket.userId}`);
+      socket.join(`user_${socket.user._id}`);
 
       socket.on("delivery_sync", async () => {
         try {
@@ -115,7 +115,7 @@ const initSocket = (server) => {
       });
 
       try {
-        await broadcastPresence(io, socket.userId, "online");
+        await broadcastPresence(io, socket.user._id, "online");
       } catch (err) {
         console.error("Broadcast online error:", err);
       }
@@ -125,15 +125,15 @@ const initSocket = (server) => {
         try {
           console.log(`User disconnected: ${socket.user?.displayName} (${socket.id})`);
 
-          const userRoom = io.sockets.adapter.rooms.get(`user_${socket.userId}`);
+          const userRoom = io.sockets.adapter.rooms.get(`user_${socket.user._id}`);
           const hasAnotherActiveSession = Boolean(userRoom && userRoom.size > 0);
 
           if (hasAnotherActiveSession) return;
 
-          await broadcastPresence(io, socket.userId, "offline");
+          await broadcastPresence(io, socket.user._id, "offline");
         } catch (err) {
           console.error("disconnect handler error:", {
-            userId: socket.userId,
+            userId: socket.user._id,
             error: err,
           });
         }

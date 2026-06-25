@@ -1,5 +1,8 @@
 const { getSocket } = require("../../sockets/socket");
 const RelationshipService = require("./relationship.service");
+const {
+  emitRelationshipEvent,
+} = require("../../sockets/emitters/relationship.emitter.js");
 
 const createFriendRequest = async (req, res, next) => {
   try {
@@ -23,9 +26,21 @@ const createFriendRequest = async (req, res, next) => {
 
     const relationship = await RelationshipService.createFriendRequest(
       requesterId,
-      recipientId,
-      io
+      recipientId
     );
+
+    // realtime
+    emitRelationshipEvent.friendRequestReceived({
+      io,
+      recipientId,
+      relationship,
+    });
+
+    emitRelationshipEvent.friendRequestSent({
+      io,
+      requesterId,
+      relationship,
+    });
 
     return res.status(201).json({
       success: true,
@@ -41,8 +56,17 @@ const cancelFriendRequest = async (req, res, next) => {
   try {
     const requesterId = req.user.userId;
     const { relationshipId } = req.params;
+    const io = getSocket();
 
-    await RelationshipService.cancelFriendRequest(relationshipId, requesterId);
+    const result = await RelationshipService.cancelFriendRequest(
+      relationshipId,
+      requesterId
+    );
+
+    emitRelationshipEvent.friendRequestCancelled({
+      io,
+      ...result.realtimeData,
+    });
 
     return res.status(200).json({
       success: true,
@@ -58,11 +82,19 @@ const acceptFriendRequest = async (req, res, next) => {
   try {
     const recipientId = req.user.userId;
     const { relationshipId } = req.params;
+    const io = getSocket();
 
     const relationship = await RelationshipService.acceptFriendRequest(
       relationshipId,
       recipientId
     );
+
+    emitRelationshipEvent.friendRequestAccepted({
+      io,
+      requesterId: relationship.requesterId._id,
+      recipientId: relationship.recipientId._id,
+      relationship,
+    });
 
     return res.status(200).json({
       success: true,
@@ -78,8 +110,17 @@ const rejectFriendRequest = async (req, res, next) => {
   try {
     const recipientId = req.user.userId;
     const { relationshipId } = req.params;
+    const io = getSocket();
 
-    await RelationshipService.rejectFriendRequest(relationshipId, recipientId);
+    const result = await RelationshipService.rejectFriendRequest(
+      relationshipId,
+      recipientId
+    );
+
+    emitRelationshipEvent.friendRequestRejected({
+      io,
+      ...result.realtimeData,
+    });
 
     return res.status(200).json({
       success: true,
@@ -95,8 +136,14 @@ const unfriend = async (req, res, next) => {
   try {
     const userId = req.user.userId;
     const { relationshipId } = req.params;
+    const io = getSocket();
 
-    await RelationshipService.unfriend(userId, relationshipId);
+    const result = await RelationshipService.unfriend(userId, relationshipId);
+
+    emitRelationshipEvent.friendRemoved({
+      io,
+      ...result.realtimeData,
+    });
 
     return res.status(200).json({
       success: true,
@@ -112,8 +159,22 @@ const blockUser = async (req, res, next) => {
   try {
     const userId = req.user.userId;
     const { relationshipId } = req.params;
+    const io = getSocket();
 
     const relationship = await RelationshipService.blockUser(relationshipId, userId);
+
+    //realtime
+    const blockedUserId =
+      relationship.requesterId._id.toString() === userId
+        ? relationship.recipientId._id
+        : relationship.requesterId._id;
+
+    emitRelationshipEvent.userBlocked({
+      io,
+      blockerId: userId,
+      blockedUserId,
+      relationship,
+    });
 
     return res.status(200).json({
       success: true,
@@ -129,8 +190,15 @@ const unblockUser = async (req, res, next) => {
   try {
     const userId = req.user.userId;
     const { relationshipId } = req.params;
+    const io = getSocket();
 
     await RelationshipService.unblockUser(relationshipId, userId);
+
+    emitRelationshipEvent.userUnblocked({
+      io,
+      userId,
+      relationshipId,
+    });
 
     return res.status(200).json({
       success: true,
