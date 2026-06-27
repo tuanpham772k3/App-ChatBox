@@ -27,19 +27,6 @@ export const logoutUser = createAsyncThunk(
   }
 );
 
-//refresh
-export const refreshToken = createAsyncThunk(
-  "auth/refreshToken",
-  async (_, { rejectWithValue }) => {
-    try {
-      const res = await authApi.refreshToken();
-      return res.data;
-    } catch (err) {
-      return rejectWithValue(err);
-    }
-  }
-);
-
 const authSlice = createSlice({
   name: "auth",
   initialState: {
@@ -67,11 +54,6 @@ const authSlice = createSlice({
       // logout
       .addCase(logoutUser.fulfilled, (state, action) => {
         state.accessToken = null;
-      })
-
-      // refresh
-      .addCase(refreshToken.fulfilled, (state, action) => {
-        state.accessToken = action.payload;
       });
   },
 });

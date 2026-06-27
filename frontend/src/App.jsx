@@ -20,9 +20,10 @@ import { useSocket } from "@/hooks/useSocket";
 
 import { connectSocket, disconnectSocket, initSocket } from "./lib/socket";
 import CommunityFriendInvitation from "./pages/CommunityFriendInvitation";
-import { refreshToken, setInitializing } from "./store/authSlice";
+import { setInitializing } from "./store/authSlice";
 import { getMe } from "./store/userSlice";
 import AppLoadingScreen from "./components/ui/AppLoadingScreen";
+import { refreshAccessToken } from "./lib/refreshManager";
 
 export const NotificationContext = createContext(null);
 
@@ -34,7 +35,7 @@ const ProtectedRoute = () => {
   useEffect(() => {
     const bootstrap = async () => {
       try {
-        await dispatch(refreshToken()).unwrap();
+        await refreshAccessToken();
         await dispatch(getMe()).unwrap();
       } catch (err) {
         console.log("No active session");

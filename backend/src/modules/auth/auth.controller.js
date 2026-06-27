@@ -153,27 +153,35 @@ const refreshToken = async (req, res, next) => {
 
     const hashed = hashToken(token);
 
-    const session = await Session.findOne({ refreshTokenHash: hashed });
+    const newRefreshToken = generateRefreshToken();
+    const newHash = hashToken(newRefreshToken);
+
+    const session = await Session.findOneAndUpdate(
+      {
+        refreshTokenHash: hashed,
+        expiresAt: {
+          $gt: new Date(),
+        },
+      },
+      {
+        $set: {
+          refreshTokenHash: newHash,
+          expiresAt: new Date(Date.now() + REFRESH_TOKEN_TTL),
+        },
+      },
+      {
+        new: true,
+      }
+    );
     if (!session) {
-      throw new AppError("Invalid refresh token", 403);
-    }
-    if (session.expiresAt < new Date()) {
-      throw new AppError("Refresh token expired", 403);
+      throw new AppError("Invalid refresh token", 401);
     }
 
     const accessToken = signAccessToken({
       userId: session.userId,
     });
 
-    const refreshToken = generateRefreshToken();
-    const refreshTokenHash = hashToken(refreshToken);
-
-    session.refreshTokenHash = refreshTokenHash;
-    session.expiresAt = new Date(Date.now() + REFRESH_TOKEN_TTL);
-
-    await session.save();
-
-    setRefreshCookie(res, refreshToken);
+    setRefreshCookie(res, newRefreshToken);
 
     return res.status(200).json({
       success: true,
