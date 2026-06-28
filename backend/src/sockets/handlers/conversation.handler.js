@@ -36,7 +36,7 @@ const registerConversationHandlers = (io, socket) => {
       socket.join(`conversation_${conversationId}`);
 
       console.log(
-        `[SOCKET] User ${socket.user._id} joined room conversation_${conversationId}`
+        `[SOCKET] User ${socket.user.displayName} joined room conversation_${conversationId}`
       );
     } catch (error) {
       console.error("join_conversation error:", {
