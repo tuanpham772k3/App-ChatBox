@@ -1,8 +1,4 @@
-const emitToUser = (io, userId, event, payload) => {
-  if (!io || !userId) return;
-
-  io.to(`user_${userId}`).emit(event, payload);
-};
+const { emitToUser } = require("../socket.helpers");
 
 const emitRelationshipEvent = {
   friendRequestReceived: ({ io, recipientId, relationship }) => {

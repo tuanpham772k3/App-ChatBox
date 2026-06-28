@@ -16,6 +16,7 @@ import {
   getConversationDetail,
   getConversationImages,
   leaveGroup,
+  setActiveConversation,
   togglePinConversation,
 } from "@/store/conversationsSlice";
 import { getDisplayInfo } from "@/utils/conversationHelper";
@@ -89,6 +90,15 @@ const ChatWindow = () => {
 
   const isOnline = partnerStatus?.presence === "online";
 
+  useEffect(() => {
+    dispatch(setActiveConversation(activeConversationId));
+
+    return () => {
+      dispatch(setActiveConversation(null));
+    };
+  }, [activeConversationId]);
+
+  // join conversation
   useEffect(() => {
     if (!activeConversationId) return;
 

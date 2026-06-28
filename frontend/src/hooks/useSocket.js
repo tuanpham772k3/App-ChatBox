@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { emitEvent, isSocketConnected, offEvent, onEvent } from "@/lib/socket";
+import { emitEvent, offEvent, onEvent } from "@/lib/socket";
 import {
   addConversation,
   removeConversationRealtime,
@@ -16,7 +16,7 @@ import { addIncomingMessage, removeMessage, updateMessage } from "@/store/messag
 
 export const useSocket = () => {
   const dispatch = useDispatch();
-  const currentUserId = useSelector((state) => state.auth.user?.id);
+  const currentUserId = useSelector((state) => state.user.currentUser?._id);
   const activeConversationId = useSelector(
     (state) => state.conversations.activeConversationId
   );
@@ -79,12 +79,6 @@ export const useSocket = () => {
       dispatch(removeMessage(messageId));
     };
 
-    const requestDeliverySync = () => {
-      emitEvent("sync_delivery");
-    };
-
-    onEvent("connect", requestDeliverySync);
-
     onEvent("user_status_changed", onStatusChanged);
     onEvent("user_typing", onTypingStart);
     onEvent("user_stop_typing", onTypingStop);
@@ -99,13 +93,7 @@ export const useSocket = () => {
     onEvent("message:edited", onMessageEdit);
     onEvent("message:deleted", onMessageDelete);
 
-    if (isSocketConnected()) {
-      requestDeliverySync();
-    }
-
     return () => {
-      offEvent("connect", requestDeliverySync);
-
       offEvent("user_status_changed", onStatusChanged);
       offEvent("user_typing", onTypingStart);
       offEvent("user_stop_typing", onTypingStop);
@@ -114,11 +102,11 @@ export const useSocket = () => {
       offEvent("conversation:last_message_updated", onConversationLastMessage);
 
       offEvent("message:unread_updated", onConversationUnread);
-      offEvent("message:read_updated", onConversationRead);
+      offEvent("message:seen_updated", onConversationRead);
       offEvent("message:delivered_updated", onConversationDelivered);
       offEvent("message:created", onMessageNew);
       offEvent("message:edited", onMessageEdit);
-      offEvent("message_deleted", onMessageDelete);
+      offEvent("message:deleted", onMessageDelete);
     };
   }, [activeConversationId, currentUserId, dispatch]);
 };

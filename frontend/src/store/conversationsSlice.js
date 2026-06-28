@@ -215,6 +215,7 @@ export const clearConversationHistory = createAsyncThunk(
 const conversationsSlice = createSlice({
   name: "conversations",
   initialState: {
+    activeConversationId: null,
     conversations: [],
     currentConversation: null,
     typingUsers: {},
@@ -271,18 +272,32 @@ const conversationsSlice = createSlice({
       const { conversationId, userId, lastReadAt } = action.payload;
 
       const conv = state.conversations.find((c) => c._id === conversationId);
-      if (!conv) return;
+      if (conv) {
+        conv.participants = conv.participants.map((p) => {
+          if (p.userId?._id !== userId) return p;
+          if (!isAtOrAfter(lastReadAt, p.lastReadAt)) return p;
 
-      conv.participants = conv.participants.map((p) => {
-        if (p.userId?._id !== userId) return p;
-        if (!isAtOrAfter(lastReadAt, p.lastReadAt)) return p;
+          return {
+            ...p,
+            unreadCount: 0,
+            lastReadAt,
+          };
+        });
+      }
 
-        return {
-          ...p,
-          unreadCount: 0,
-          lastReadAt,
-        };
-      });
+      if (state.currentConversation?._id === conversationId) {
+        state.currentConversation.participants =
+          state.currentConversation.participants.map((p) => {
+            if (p.userId?._id !== userId) return p;
+            if (!isAtOrAfter(lastReadAt, p.lastReadAt)) return p;
+
+            return {
+              ...p,
+              unreadCount: 0,
+              lastReadAt,
+            };
+          });
+      }
     },
 
     // Realtime da nhan: advance delivered pointer cua participant
@@ -290,17 +305,30 @@ const conversationsSlice = createSlice({
       const { conversationId, userId, lastDeliveredAt } = action.payload;
 
       const conv = state.conversations.find((c) => c._id === conversationId);
-      if (!conv) return;
+      if (conv) {
+        conv.participants = conv.participants.map((p) => {
+          if (p.userId?._id !== userId) return p;
+          if (!isAtOrAfter(lastDeliveredAt, p.lastDeliveredAt)) return p;
 
-      conv.participants = conv.participants.map((p) => {
-        if (p.userId?._id !== userId) return p;
-        if (!isAtOrAfter(lastDeliveredAt, p.lastDeliveredAt)) return p;
+          return {
+            ...p,
+            lastDeliveredAt,
+          };
+        });
+      }
 
-        return {
-          ...p,
-          lastDeliveredAt,
-        };
-      });
+      if (state.currentConversation?._id === conversationId) {
+        state.currentConversation.participants =
+          state.currentConversation.participants.map((p) => {
+            if (p.userId?._id !== userId) return p;
+            if (!isAtOrAfter(lastDeliveredAt, p.lastDeliveredAt)) return p;
+
+            return {
+              ...p,
+              lastDeliveredAt,
+            };
+          });
+      }
     },
 
     // User status
@@ -336,6 +364,10 @@ const conversationsSlice = createSlice({
       if (Object.keys(users).length === 0) {
         delete state.typingUsers[conversationId];
       }
+    },
+
+    setActiveConversation: (state, action) => {
+      state.activeConversationId = action.payload;
     },
   },
 
@@ -409,17 +441,17 @@ const conversationsSlice = createSlice({
         const { conversationId, userId } = action.meta.arg;
 
         const conv = state.conversations.find((c) => c._id === conversationId);
-        if (!conv) return;
-
-        conv.participants = conv.participants.map((p) =>
-          p.userId?._id === userId
-            ? {
-                ...p,
-                unreadCount: 0,
-                lastReadAt: conv.lastMessage?.createdAt || null,
-              }
-            : p
-        );
+        if (conv) {
+          conv.participants = conv.participants.map((p) =>
+            p.userId?._id === userId
+              ? {
+                  ...p,
+                  unreadCount: 0,
+                  lastReadAt: conv.lastMessage?.createdAt || null,
+                }
+              : p
+          );
+        }
       })
 
       // -------------------------------
@@ -460,11 +492,11 @@ const conversationsSlice = createSlice({
         const { conversationId, userId } = action.meta.arg;
 
         const conv = state.conversations.find((c) => c._id === conversationId);
-        if (!conv) return;
-
-        conv.participants = conv.participants.map((p) =>
-          p.userId?._id === userId ? { ...p, unreadCount, lastReadAt: null } : p
-        );
+        if (conv) {
+          conv.participants = conv.participants.map((p) =>
+            p.userId?._id === userId ? { ...p, unreadCount, lastReadAt: null } : p
+          );
+        }
       })
 
       // -------------------------------
@@ -501,5 +533,6 @@ export const {
   userStatus,
   userStartTyping,
   userStopTyping,
+  setActiveConversation,
 } = conversationsSlice.actions;
 export default conversationsSlice.reducer;

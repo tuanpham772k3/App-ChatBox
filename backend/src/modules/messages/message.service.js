@@ -18,7 +18,7 @@ const MessageService = {
       _id: conversationId,
       "participants.userId": senderId,
       isActive: true,
-    }).lean();
+    });
 
     if (!conversation) {
       throw new AppError("Conversation not found or access denied", 404);
@@ -79,41 +79,36 @@ const MessageService = {
 
     await message.populate("senderId", "displayName email avatar");
 
-    // Cập nhật conversation.lastMessage và tăng unreadCount cho participants khác
-    await Conversation.findOneAndUpdate(
-      { _id: conversationId },
-      {
-        $set: {
-          lastMessage: {
-            messageId: message._id,
-            senderId,
-            type,
-            content: type === "text" ? content.trim() : fileInfo?.filename || type,
-            file: fileInfo
-              ? {
-                  url: fileInfo.url,
-                  filename: fileInfo.filename,
-                  size: fileInfo.size,
-                }
-              : null,
-            isDeleted: false,
-            createdAt: message.createdAt,
-          },
-          updatedAt: new Date(),
-          "participants.$[p].deletedAt": null,
-        },
-        $inc: {
-          "participants.$[p].unreadCount": 1,
-        },
-      },
-      {
-        arrayFilters: [{ "p.userId": { $ne: senderId } }],
-        new: true,
-        lean: true,
-      }
-    );
+    conversation.lastMessage = {
+      messageId: message._id,
+      senderId,
+      type,
+      content: type === "text" ? content.trim() : fileInfo?.filename || type,
+      file: fileInfo
+        ? {
+            url: fileInfo.url,
+            filename: fileInfo.filename,
+            size: fileInfo.size,
+          }
+        : null,
+      isDeleted: false,
+      createdAt: message.createdAt,
+    };
+    conversation.updatedAt = new Date();
+    conversation.participants.forEach((participant) => {
+      if (participant.userId.equals(senderId)) return;
 
-    return { message: message.toObject(), conversation, isNew: true };
+      participant.unreadCount += 1;
+      participant.deletedAt = null;
+    });
+
+    await conversation.save();
+
+    return {
+      message: message.toObject(),
+      conversation: conversation.toObject(),
+      isNew: true,
+    };
   },
 
   /**
