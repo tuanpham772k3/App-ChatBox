@@ -59,7 +59,7 @@ const registerConversationHandlers = (io, socket) => {
     socket.leave(`conversation_${conversationId}`);
 
     console.log(
-      `[SOCKET] User ${socket.user._id} left room conversation_${conversationId}`
+      `[SOCKET] User ${socket.user.displayName} left room conversation_${conversationId}`
     );
   };
 
