@@ -92,6 +92,19 @@ export const cancelFriendRequest = createAsyncThunk(
   }
 );
 
+export const unfriend = createAsyncThunk(
+  "relationship/unfriend",
+  async (relationshipId, thunkAPI) => {
+    try {
+      await relationshipApi.unfriend(relationshipId);
+
+      return relationshipId;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error);
+    }
+  }
+);
+
 const initialState = {
   friends: [],
   sentRequests: [],
@@ -104,7 +117,43 @@ const initialState = {
 const relationshipSlice = createSlice({
   name: "relationship",
   initialState,
-  reducers: {},
+  reducers: {
+    friendRequestReceivedRealtime(state, action) {
+      state.receivedRequests.unshift(action.payload);
+    },
+
+    friendRequestAcceptedRealtime(state, action) {
+      state.sentRequests = state.sentRequests.filter(
+        (item) => item.relationshipId !== action.payload.relationshipId
+      );
+
+      state.friends.unshift(action.payload);
+    },
+
+    friendRequestRejectedRealtime(state, action) {
+      const { relationshipId } = action.payload;
+
+      state.sentRequests = state.sentRequests.filter(
+        (item) => item.relationshipId !== relationshipId
+      );
+    },
+
+    friendRequestCancelledRealtime(state, action) {
+      const { relationshipId } = action.payload;
+
+      state.receivedRequests = state.receivedRequests.filter(
+        (item) => item.relationshipId !== relationshipId
+      );
+    },
+
+    friendRemovedRealtime(state, action) {
+      const { relationshipId } = action.payload;
+
+      state.friends = state.friends.filter(
+        (friend) => friend.relationshipId !== relationshipId
+      );
+    },
+  },
 
   extraReducers: (builder) => {
     builder
@@ -135,26 +184,31 @@ const relationshipSlice = createSlice({
 
       // Accept Request
       .addCase(acceptFriendRequest.fulfilled, (state, action) => {
-        const relationship = action.payload;
-
         state.receivedRequests = state.receivedRequests.filter(
-          (item) => item._id !== relationship._id
+          (item) => item.relationshipId !== action.payload.relationshipId
         );
 
-        state.friends.unshift(relationship);
+        state.friends.unshift(action.payload);
       })
 
       // Reject Request
       .addCase(rejectFriendRequest.fulfilled, (state, action) => {
         state.receivedRequests = state.receivedRequests.filter(
-          (item) => item._id !== action.payload
+          (item) => item.relationshipId !== action.payload
         );
       })
 
       // Cancel Request
       .addCase(cancelFriendRequest.fulfilled, (state, action) => {
         state.sentRequests = state.sentRequests.filter(
-          (item) => item._id !== action.payload
+          (item) => item.relationshipId !== action.payload
+        );
+      })
+
+      // remove friend
+      .addCase(unfriend.fulfilled, (state, action) => {
+        state.friends = state.friends.filter(
+          (friend) => friend.relationshipId !== action.payload
         );
       })
 
@@ -169,4 +223,11 @@ const relationshipSlice = createSlice({
   },
 });
 
+export const {
+  friendRequestReceivedRealtime,
+  friendRequestAcceptedRealtime,
+  friendRequestRejectedRealtime,
+  friendRequestCancelledRealtime,
+  friendRemovedRealtime,
+} = relationshipSlice.actions;
 export default relationshipSlice.reducer;

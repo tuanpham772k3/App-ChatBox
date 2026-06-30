@@ -8,7 +8,7 @@ import UserAvatar from "@/components/ui/avatar/UserAvatar";
 import PopoverFriendActions from "@/components/community/PopoverFriendActions";
 import { createPrivateConversation } from "@/store/conversationsSlice";
 import { useNotification } from "@/hooks/useNotification";
-import { getFriends } from "@/store/relationshipSlice";
+import { getFriends, unfriend } from "@/store/relationshipSlice";
 
 /** Yellow pill shown under friend name */
 const FriendTag = ({ label }) => (
@@ -19,7 +19,7 @@ const FriendTag = ({ label }) => (
 );
 
 /** Single friend row */
-const FriendRow = ({ friend, onOpenChat }) => (
+const FriendRow = ({ friend, onOpenChat, onRemoveFriend }) => (
   <li className="group flex items-center hover:bg-[var(--color-hover)] rounded-xl transition-colors cursor-pointer">
     <button
       onClick={() => onOpenChat(friend)}
@@ -39,20 +39,27 @@ const FriendRow = ({ friend, onOpenChat }) => (
       opacity-100 sm:opacity-0 sm:group-hover:opacity-100
       transition-opacity duration-150"
     >
-      <PopoverFriendActions />
+      <PopoverFriendActions
+        onRemoveFriend={() => onRemoveFriend(friend.relationshipId)}
+      />
     </div>
   </li>
 );
 
 /** Alphabetical group (e.g. "B" or "Bạn mới") */
-const FriendGroup = ({ label, friends, onOpenChat }) => (
+const FriendGroup = ({ label, friends, onOpenChat, onRemoveFriend }) => (
   <li>
     <p className="text-xs font-semibold text-[var(--color-text-secondary)] px-3 pt-3 pb-1.5">
       {label}
     </p>
     <ul className="flex flex-col gap-0.5">
       {friends.map((f) => (
-        <FriendRow key={f._id} friend={f} onOpenChat={onOpenChat} />
+        <FriendRow
+          key={f._id}
+          friend={f}
+          onOpenChat={onOpenChat}
+          onRemoveFriend={onRemoveFriend}
+        />
       ))}
     </ul>
   </li>
@@ -65,6 +72,7 @@ const CommunityFriends = () => {
   const location = useLocation();
 
   const { friends, loading } = useSelector((state) => state.relationship);
+  console.log("🚀 ~ CommunityFriends ~ friends:", friends);
   const [search, setSearch] = useState("");
 
   const notification = useNotification();
@@ -107,7 +115,22 @@ const CommunityFriends = () => {
       navigate(`/community/chat/${conversation._id}`);
     } catch (error) {
       notification.error({
-        message: "Không thể mở cuộc trò chuyện",
+        message: "Đã có lỗi xảy ra",
+        description: error.message,
+      });
+    }
+  };
+
+  const handleRemoveFriend = async (relationshipId) => {
+    try {
+      await dispatch(unfriend(relationshipId)).unwrap();
+
+      notification.success({
+        message: "Đã xóa người này khỏi danh sách bạn bè",
+      });
+    } catch (error) {
+      notification.error({
+        message: "Đã có lỗi xảy ra",
         description: error.message,
       });
     }
@@ -221,6 +244,7 @@ const CommunityFriends = () => {
                     label={group.label}
                     friends={group.friends}
                     onOpenChat={handleOpenChat}
+                    onRemoveFriend={handleRemoveFriend}
                   />
                 ))}
               </ul>

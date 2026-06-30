@@ -38,7 +38,16 @@ const RelationshipService = {
       status: "pending",
     });
 
-    await relationship.populate("recipientId", "displayName avatar email");
+    await relationship.populate([
+      {
+        path: "recipientId",
+        select: "displayName avatar email",
+      },
+      {
+        path: "requesterId",
+        select: "displayName avatar email",
+      },
+    ]);
 
     return relationship.toObject();
   },
@@ -57,17 +66,9 @@ const RelationshipService = {
       throw new AppError("You cannot cancel this friend request.", 403);
     }
 
-    const recipientId = relationship.recipientId;
-
     await relationship.deleteOne();
 
-    return {
-      realtimeData: {
-        relationshipId,
-        requesterId,
-        recipientId,
-      },
-    };
+    return relationship.toObject();
   },
 
   async acceptFriendRequest(relationshipId, recipientId) {
@@ -88,6 +89,11 @@ const RelationshipService = {
 
     await relationship.save();
 
+    await relationship.populate([
+      { path: "requesterId", select: "displayName avatar email" },
+      { path: "recipientId", select: "displayName avatar email" },
+    ]);
+
     return relationship.toObject();
   },
 
@@ -105,17 +111,9 @@ const RelationshipService = {
       throw new AppError("You cannot reject this friend request.", 403);
     }
 
-    const requesterId = relationship.requesterId;
-
     await relationship.deleteOne();
 
-    return {
-      realtimeData: {
-        requesterId,
-        recipientId,
-        relationshipId,
-      },
-    };
+    return relationship.toObject();
   },
 
   async unfriend(userId, relationshipId) {
@@ -136,18 +134,9 @@ const RelationshipService = {
       throw new AppError("Users are not friends.", 400);
     }
 
-    const requesterId = relationship.requesterId;
-    const recipientId = relationship.recipientId;
-
     await relationship.deleteOne();
 
-    return {
-      realtimeData: {
-        requesterId,
-        recipientId,
-        relationshipId,
-      },
-    };
+    return relationship.toObject();
   },
 
   async blockUser(relationshipId, userId) {
@@ -193,21 +182,33 @@ const RelationshipService = {
   },
 
   async getSentRequests(userId) {
-    return await Relationship.find({
+    const relationships = await Relationship.find({
       requesterId: userId,
       status: "pending",
     })
       .populate("recipientId", "displayName avatar email")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return relationships.map((relationship) => ({
+      relationshipId: relationship._id,
+      ...relationship.recipientId,
+    }));
   },
 
   async getReceivedRequests(userId) {
-    return await Relationship.find({
+    const relationships = await Relationship.find({
       recipientId: userId,
       status: "pending",
     })
       .populate("requesterId", "displayName avatar email")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return relationships.map((relationship) => ({
+      relationshipId: relationship._id,
+      ...relationship.requesterId,
+    }));
   },
 
   async getFriends(userId) {
@@ -227,9 +228,15 @@ const RelationshipService = {
       .lean();
 
     const friends = relationships.map((relationship) => {
-      return relationship.requesterId._id.toString() === userId
+      const isRequester = relationship.requesterId._id.toString() === userId;
+      const friendData = isRequester
         ? relationship.recipientId
         : relationship.requesterId;
+
+      return {
+        relationshipId: relationship._id,
+        ...friendData,
+      };
     });
 
     return friends;

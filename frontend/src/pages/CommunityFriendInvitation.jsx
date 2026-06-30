@@ -7,6 +7,7 @@ import ModalUserProfile from "@/components/community/ModalUserProfile";
 import {
   acceptFriendRequest,
   cancelFriendRequest,
+  createFriendRequest,
   getReceivedRequests,
   getSentRequests,
   rejectFriendRequest,
@@ -45,6 +46,7 @@ const CommunityFriendInvitation = () => {
 
   const { receivedRequests, sentRequests } = useSelector((state) => state.relationship);
   const { selectedUser } = useSelector((state) => state.user);
+  console.log("🚀 ~ CommunityFriendInvitation ~ selectedUser:", selectedUser);
 
   const [modal, setModal] = useState(false);
 
@@ -52,9 +54,32 @@ const CommunityFriendInvitation = () => {
 
   const isCommunityFriends = location.pathname === "/community/friend-invitation";
 
+  useEffect(() => {
+    dispatch(getReceivedRequests());
+    dispatch(getSentRequests());
+  }, []);
+
   const handleSelectUser = (user) => {
     setModal(true);
     dispatch(getUserDetail(user._id));
+  };
+
+  const handleCreateFriendRequest = async (e, userId) => {
+    e.stopPropagation();
+    try {
+      await dispatch(createFriendRequest(userId)).unwrap();
+
+      notification.success({
+        message: "Đã gửi yêu cầu kết bạn",
+      });
+
+      setModal(false);
+    } catch (error) {
+      notification.error({
+        message: "Gửi yêu cầu kết bạn thất bại!",
+        description: error.message || "Vui lòng thử lại sau",
+      });
+    }
   };
 
   const handleAcceptRequest = async (e, relationshipId) => {
@@ -65,6 +90,8 @@ const CommunityFriendInvitation = () => {
       notification.success({
         message: "Đã chấp nhận yêu cầu kết bạn.",
       });
+
+      setModal(false);
     } catch (error) {
       notification.error({
         message: "Chấp nhận yêu cầu kết bạn thất bại!",
@@ -81,6 +108,8 @@ const CommunityFriendInvitation = () => {
       notification.success({
         message: "Đã từ chối yêu cầu kết bạn.",
       });
+
+      setModal(false);
     } catch (error) {
       notification.error({
         message: "Từ chối yêu cầu kết bạn thất bại!",
@@ -97,6 +126,8 @@ const CommunityFriendInvitation = () => {
       notification.success({
         message: "Đã hủy yêu cầu kết bạn.",
       });
+
+      setModal(false);
     } catch (error) {
       notification.error({
         message: "Hủy yêu cầu kết bạn thất bại!",
@@ -104,11 +135,6 @@ const CommunityFriendInvitation = () => {
       });
     }
   };
-
-  useEffect(() => {
-    dispatch(getReceivedRequests());
-    dispatch(getSentRequests());
-  }, []);
 
   return (
     <>
@@ -158,13 +184,13 @@ const CommunityFriendInvitation = () => {
               {receivedRequests.map((r) => (
                 <FriendCard
                   key={r?._id}
-                  name={r?.requesterId?.displayName}
-                  avatarUrl={r?.requesterId?.avatar?.url}
-                  onSelect={() => handleSelectUser(r?.requesterId)}
+                  name={r?.displayName}
+                  avatarUrl={r?.avatar?.url}
+                  onSelect={() => handleSelectUser(r)}
                   actions={
                     <>
                       <button
-                        onClick={(e) => handleRejectRequest(e, r?._id)}
+                        onClick={(e) => handleRejectRequest(e, r?.relationshipId)}
                         type="button"
                         className="flex-1 h-8 rounded-md font-medium
                         text-[var(--color-text-primary)]
@@ -175,7 +201,7 @@ const CommunityFriendInvitation = () => {
                       </button>
 
                       <button
-                        onClick={(e) => handleAcceptRequest(e, r?._id)}
+                        onClick={(e) => handleAcceptRequest(e, r?.relationshipId)}
                         type="button"
                         className="flex-1 h-8 rounded-md text-white font-medium
                         bg-[var(--color-primary)] hover:opacity-90
@@ -200,13 +226,13 @@ const CommunityFriendInvitation = () => {
               {sentRequests.map((s) => (
                 <FriendCard
                   key={s?._id}
-                  name={s?.recipientId?.displayName}
-                  avatarUrl={s?.recipientId?.avatar?.url}
-                  onSelect={() => handleSelectUser(s?.recipientId)}
+                  name={s?.displayName}
+                  avatarUrl={s?.avatar?.url}
+                  onSelect={() => handleSelectUser(s)}
                   actions={
                     <>
                       <button
-                        onClick={(e) => handleCancelRequest(e, s?._id)}
+                        onClick={(e) => handleCancelRequest(e, s?.relationshipId)}
                         type="button"
                         className="flex-1 h-8 rounded-md font-medium
                         text-[var(--color-text-primary)]
@@ -266,6 +292,7 @@ const CommunityFriendInvitation = () => {
         isOpen={modal}
         onCancel={() => setModal(false)}
         selectedUser={selectedUser}
+        onCreateRequest={handleCreateFriendRequest}
         onAcceptRequest={handleAcceptRequest}
         onCancelRequest={handleCancelRequest}
       />

@@ -3,7 +3,7 @@ import { Popover } from "antd";
 import { Ellipsis } from "lucide-react";
 import MenuActions from "../ui/popover/MenuActions";
 
-const PopoverFriendActions = () => {
+const PopoverFriendActions = ({ onRemoveFriend }) => {
   const [open, setOpen] = useState(false);
 
   const friendActions = [
@@ -20,6 +20,7 @@ const PopoverFriendActions = () => {
       danger: true,
       onClick: () => {
         setOpen(false);
+        onRemoveFriend();
       },
     },
   ];

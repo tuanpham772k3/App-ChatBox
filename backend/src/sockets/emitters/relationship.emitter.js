@@ -1,55 +1,28 @@
 const { emitToUser } = require("../socket.helpers");
 
 const emitRelationshipEvent = {
-  friendRequestReceived: ({ io, recipientId, relationship }) => {
-    console.log("friend_request_received:", relationship);
-
-    emitToUser(io, recipientId, "relationship:friend_request_received", relationship);
+  friendRequestReceived: ({ io, recipientId, payload }) => {
+    emitToUser(io, recipientId, "relationship:friend_request_received", payload);
   },
 
-  friendRequestSent: ({ io, requesterId, relationship }) => {
-    emitToUser(io, requesterId, "relationship:friend_request_sent", relationship);
+  friendRequestAccepted: ({ io, requesterId, payload }) => {
+    emitToUser(io, requesterId, "relationship:friend_request_accepted", payload);
   },
 
-  friendRequestAccepted: ({ io, requesterId, recipientId, relationship }) => {
-    emitToUser(io, requesterId, "relationship:friend_request_accepted", relationship);
-    emitToUser(io, recipientId, "relationship:friend_request_received", relationship);
-  },
-
-  friendRequestRejected: ({ io, requesterId, recipientId, relationshipId }) => {
+  friendRequestRejected: ({ io, requesterId, relationshipId }) => {
     emitToUser(io, requesterId, "relationship:friend_request_rejected", {
       relationshipId,
     });
-
-    emitToUser(io, recipientId, "relationship:friend_request_rejected", {
-      relationshipId,
-    });
   },
 
-  friendRequestCancelled: ({ io, requesterId, recipientId, relationshipId }) => {
-    emitToUser(io, requesterId, "relationship:friend_request_cancelled", {
-      relationshipId,
-    });
-
+  friendRequestCancelled: ({ io, recipientId, relationshipId }) => {
     emitToUser(io, recipientId, "relationship:friend_request_cancelled", {
       relationshipId,
     });
   },
 
-  friendRemoved: ({ io, requesterId, recipientId, relationshipId }) => {
-    emitToUser(io, requesterId, "relationship:friend_removed", { relationshipId });
-    emitToUser(io, recipientId, "relationship:friend_removed", { relationshipId });
-  },
-
-  userBlocked: ({ io, blockerId, blockedUserId, relationship }) => {
-    emitToUser(io, blockerId, "relationship:user_blocked", relationship);
-    emitToUser(io, blockedUserId, "relationship:user_blocked", relationship);
-  },
-
-  userUnblocked: ({ io, userId, relationshipId }) => {
-    emitToUser(io, userId, "relationship:user_unblocked", {
-      relationshipId,
-    });
+  friendRemoved: ({ io, unfriendedUserId, relationshipId }) => {
+    emitToUser(io, unfriendedUserId, "relationship:friend_removed", { relationshipId });
   },
 };
 

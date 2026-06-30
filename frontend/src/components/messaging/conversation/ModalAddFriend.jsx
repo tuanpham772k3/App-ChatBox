@@ -68,6 +68,8 @@ const ModalAddFriend = ({ isOpen, onCancel }) => {
       notification.success({
         message: "Đã gửi yêu cầu kết bạn",
       });
+
+      onCancel();
     } catch (error) {
       notification.error({
         message: "Gửi yêu cầu kết bạn thất bại!",

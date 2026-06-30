@@ -13,6 +13,13 @@ import {
   userStopTyping,
 } from "@/store/conversationsSlice";
 import { addIncomingMessage, removeMessage, updateMessage } from "@/store/messagesSlice";
+import {
+  friendRemovedRealtime,
+  friendRequestAcceptedRealtime,
+  friendRequestCancelledRealtime,
+  friendRequestReceivedRealtime,
+  friendRequestRejectedRealtime,
+} from "@/store/relationshipSlice";
 
 export const useSocket = () => {
   const dispatch = useDispatch();
@@ -44,6 +51,28 @@ export const useSocket = () => {
 
     const onConversationLastMessage = (data) => {
       dispatch(updateConversationLastMessage(data));
+    };
+
+    const onFriendRequestReceived = (relationship) => {
+      dispatch(friendRequestReceivedRealtime(relationship));
+    };
+
+    const onFriendRequestAccepted = (relationship) => {
+      dispatch(friendRequestAcceptedRealtime(relationship));
+    };
+
+    const onFriendRequestRejected = (data) => {
+      console.log("đến");
+
+      dispatch(friendRequestRejectedRealtime(data));
+    };
+
+    const onFriendRequestCancelled = (data) => {
+      dispatch(friendRequestCancelledRealtime(data));
+    };
+
+    const onFriendRemoved = (data) => {
+      dispatch(friendRemovedRealtime(data));
     };
 
     const onConversationUnread = (data) => {
@@ -86,6 +115,12 @@ export const useSocket = () => {
     onEvent("conversation:created", onNewConversation);
     onEvent("conversation:last_message_updated", onConversationLastMessage);
 
+    onEvent("relationship:friend_request_received", onFriendRequestReceived);
+    onEvent("relationship:friend_request_accepted", onFriendRequestAccepted);
+    onEvent("relationship:friend_request_rejected", onFriendRequestRejected);
+    onEvent("relationship:friend_request_cancelled", onFriendRequestCancelled);
+    onEvent("relationship:friend_removed", onFriendRemoved);
+
     onEvent("message:unread_updated", onConversationUnread);
     onEvent("message:seen_updated", onConversationRead);
     onEvent("message:delivered_updated", onConversationDelivered);
@@ -100,6 +135,12 @@ export const useSocket = () => {
 
       offEvent("conversation:created", onNewConversation);
       offEvent("conversation:last_message_updated", onConversationLastMessage);
+
+      offEvent("relationship:friend_request_received", onFriendRequestReceived);
+      offEvent("relationship:friend_request_accepted", onFriendRequestAccepted);
+      offEvent("relationship:friend_request_rejected", onFriendRequestRejected);
+      offEvent("relationship:friend_request_cancelled", onFriendRequestCancelled);
+      offEvent("relationship:friend_removed", onFriendRemoved);
 
       offEvent("message:unread_updated", onConversationUnread);
       offEvent("message:seen_updated", onConversationRead);
