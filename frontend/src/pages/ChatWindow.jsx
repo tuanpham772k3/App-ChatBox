@@ -53,7 +53,7 @@ const ChatWindow = () => {
   const activeConversationId = useParams().conversationId;
 
   const currentUserId = useSelector((state) => state.user.currentUser?._id);
-  const { currentConversation, typingUsers, statusUsers, images } = useSelector(
+  const { currentConversation, typingUsers, images } = useSelector(
     (state) => state.conversations
   );
   const { selectedUser } = useSelector((state) => state.user);
@@ -85,11 +85,8 @@ const ChatWindow = () => {
     [currentConversation, currentUserId]
   );
 
-  const partnerStatus = displayInfo.partnerId
-    ? statusUsers[displayInfo.partnerId] || displayInfo.partner?.userId
-    : null;
-
-  const isOnline = partnerStatus?.presence === "online";
+  const isOnline =
+    !displayInfo.isGroup && displayInfo.partner?.userId?.presence === "online";
 
   useEffect(() => {
     dispatch(setActiveConversation(activeConversationId));

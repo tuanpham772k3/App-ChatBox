@@ -228,7 +228,7 @@ const RelationshipService = {
       .lean();
 
     const friends = relationships.map((relationship) => {
-      const isRequester = relationship.requesterId._id.toString() === userId;
+      const isRequester = relationship.requesterId._id.toString() === userId.toString();
       const friendData = isRequester
         ? relationship.recipientId
         : relationship.requesterId;

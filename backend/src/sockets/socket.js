@@ -23,11 +23,7 @@ const initSocket = (server) => {
       // Join room user_{userId}
       socket.join(`user_${socket.user._id}`);
 
-      try {
-        await broadcastPresence(io, socket.user._id, "online");
-      } catch (err) {
-        console.error("Broadcast online error:", err);
-      }
+      await broadcastPresence(io, socket.user._id, "online");
 
       // Xử lý disconnect
       socket.on("disconnect", async () => {

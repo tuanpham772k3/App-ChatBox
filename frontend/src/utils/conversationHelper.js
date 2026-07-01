@@ -87,15 +87,23 @@ export const getDisplayInfo = (conversation, currentUserId) => {
 
   return {
     id: conversation._id,
+
     isGroup,
+
     partner,
-    partnerId: partner?.userId?._id,
     currentUser,
+
     participants: mappedParticipants,
+
     displayName: isGroup ? name : partner?.userId?.displayName || "Người dùng",
     displayAvatar: isGroup ? null : partner?.userId?.avatar?.url || null,
-    lastMsgSender: lastMsg.sender,
-    lastMsgContent: lastMsg.content,
-    lastMsgTime: lastMsg.time,
+
+    lastMsgSender: lastMsg?.sender,
+    lastMsgContent: lastMsg?.content,
+    lastMsgTime: lastMsg?.time,
+
+    // Thông tin hiển thị cho cho chính mình trong conversation
+    isPinned: Boolean(currentUser?.pinnedAt),
+    unreadCount: currentUser?.unreadCount || 0,
   };
 };

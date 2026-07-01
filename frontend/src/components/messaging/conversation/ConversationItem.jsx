@@ -12,10 +12,8 @@ const ConversationItem = ({
   onTogglePin,
   onMarkUnread,
   onClearHistory,
-  isOnline,
 }) => {
-  const isPinned = Boolean(display.currentUser?.pinnedAt);
-  const unreadCount = display.currentUser?.unreadCount || 0;
+  const isOnline = !display?.isGroup && display?.partner?.userId?.presence === "online";
 
   return (
     <li
@@ -32,12 +30,12 @@ const ConversationItem = ({
       >
         {/* Avatar */}
         <span className="relative shrink-0">
-          {display.isGroup ? (
-            <GroupAvatar users={display.participants} size={50} />
+          {display?.isGroup ? (
+            <GroupAvatar users={display?.participants} size={50} />
           ) : (
             <UserAvatar
-              name={display.displayName || "Người dùng"}
-              avatarUrl={display.displayAvatar}
+              name={display?.displayName || "Người dùng"}
+              avatarUrl={display?.displayAvatar}
               size={50}
             />
           )}
@@ -54,22 +52,22 @@ const ConversationItem = ({
         <span className="flex-1 flex flex-col gap-1 min-w-0 text-left">
           <span
             className={`truncate text-sm text-[var(--color-text-primary)] ${
-              unreadCount > 0 && "font-medium"
+              display?.unreadCount > 0 && "font-medium"
             }`}
           >
-            {display.displayName}
+            {display?.displayName}
           </span>
 
           <span
             className={`truncate text-xs shrink-0 ${
-              unreadCount > 0
+              display?.unreadCount > 0
                 ? "text-[var(--color-text-primary)]"
                 : "text-[var(--color-text-secondary)]"
             }`}
           >
-            {display.lastMsgSender && (
+            {display?.lastMsgSender && (
               <>
-                {display.lastMsgSender}: <span>{display.lastMsgContent}</span>
+                {display?.lastMsgSender}: <span>{display?.lastMsgContent}</span>
               </>
             )}
           </span>
@@ -80,12 +78,12 @@ const ConversationItem = ({
         {/* Top row */}
         <div className="relative w-full flex items-center justify-end">
           <time className="touch-hide whitespace-nowrap text-[11px] text-[var(--color-text-secondary)] hidden lg:block lg:group-hover:opacity-0 transition-opacity duration-150">
-            {display.lastMsgTime}
+            {display?.lastMsgTime}
           </time>
 
           <div className="touch-always-visible lg:absolute lg:right-0 flex items-center justify-center lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150">
             <PopoverConversationAction
-              isPinned={isPinned}
+              isPinned={display?.isPinned}
               onTogglePin={onTogglePin}
               onMarkUnread={onMarkUnread}
               onClearHistory={onClearHistory}
@@ -96,15 +94,15 @@ const ConversationItem = ({
 
         {/* Bottom row */}
         <div className="min-h-5 flex items-center gap-1">
-          {isPinned && (
+          {display?.isPinned && (
             <span className="text-[var(--color-primary)] shrink-0" title="Đã ghim">
               <Pin size={14} className="rotate-45" />
             </span>
           )}
 
-          {unreadCount > 0 && (
+          {display?.unreadCount > 0 && (
             <span className="min-w-5 h-5 px-1 text-[10px] flex items-center justify-center rounded-full bg-red-600 text-white font-medium">
-              {unreadCount > 99 ? "99+" : unreadCount}
+              {display?.unreadCount > 99 ? "99+" : display?.unreadCount}
             </span>
           )}
         </div>

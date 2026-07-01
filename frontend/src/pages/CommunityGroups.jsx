@@ -2,12 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { SlArrowLeft } from "react-icons/sl";
 import { HiOutlineUserGroup } from "react-icons/hi2";
-import {
-  Search,
-  ArrowUpDown,
-  ListFilter,
-  ChevronDown,
-} from "lucide-react";
+import { Search, ArrowUpDown, ListFilter, ChevronDown } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { getConversations } from "@/store/conversationsSlice";
 import { useNotification } from "@/hooks/useNotification";

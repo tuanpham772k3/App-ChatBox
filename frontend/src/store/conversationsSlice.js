@@ -219,7 +219,6 @@ const conversationsSlice = createSlice({
     conversations: [],
     currentConversation: null,
     typingUsers: {},
-    statusUsers: {},
     images: [],
     loading: null,
     error: null,
@@ -332,13 +331,47 @@ const conversationsSlice = createSlice({
     },
 
     // User status
-    userStatus: (state, action) => {
+    userStatusChanged: (state, action) => {
       const { userId, presence, lastSeenAt } = action.payload;
 
-      state.statusUsers[userId] = {
-        presence,
-        lastSeenAt,
-      };
+      state.conversations = state.conversations.map((conv) => {
+        const participant = conv.participants.find((p) => p.userId?._id === userId);
+        if (!participant) return conv;
+
+        return {
+          ...conv,
+          participants: conv.participants.map((p) =>
+            p.userId?._id === userId
+              ? {
+                  ...p,
+                  userId: {
+                    ...p.userId,
+                    presence,
+                    lastSeenAt,
+                  },
+                }
+              : p
+          ),
+        };
+      });
+
+      state.currentConversation = state.currentConversation
+        ? {
+            ...state.currentConversation,
+            participants: state.currentConversation.participants.map((p) =>
+              p.userId?._id === userId
+                ? {
+                    ...p,
+                    userId: {
+                      ...p.userId,
+                      presence,
+                      lastSeenAt,
+                    },
+                  }
+                : p
+            ),
+          }
+        : null;
     },
 
     // User typing
@@ -530,7 +563,7 @@ export const {
   updateConversationUnreadCount,
   syncReadStatusRealtime,
   syncDeliveredStatusRealtime,
-  userStatus,
+  userStatusChanged,
   userStartTyping,
   userStopTyping,
   setActiveConversation,

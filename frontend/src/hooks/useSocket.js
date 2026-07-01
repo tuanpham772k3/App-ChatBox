@@ -9,7 +9,7 @@ import {
   updateConversationLastMessage,
   updateConversationUnreadCount,
   userStartTyping,
-  userStatus,
+  userStatusChanged,
   userStopTyping,
 } from "@/store/conversationsSlice";
 import { addIncomingMessage, removeMessage, updateMessage } from "@/store/messagesSlice";
@@ -30,7 +30,7 @@ export const useSocket = () => {
 
   useEffect(() => {
     const onStatusChanged = (data) => {
-      dispatch(userStatus(data));
+      dispatch(userStatusChanged(data));
     };
 
     const onTypingStart = (data) => {
@@ -62,8 +62,6 @@ export const useSocket = () => {
     };
 
     const onFriendRequestRejected = (data) => {
-      console.log("đến");
-
       dispatch(friendRequestRejectedRealtime(data));
     };
 

@@ -28,8 +28,6 @@ const DrawerConversationInfo = ({
   onOpenMediaGallery,
   images,
 }) => {
-  const isPinned = Boolean(displayInfo.currentUser?.pinnedAt);
-
   return (
     <Drawer
       open={open}
@@ -87,15 +85,15 @@ const DrawerConversationInfo = ({
                 aria-label="Gim"
                 onClick={onTogglePin}
                 className={`rotate-45 p-2 bg-[var(--color-surface)]  rounded-full ${
-                  isPinned
+                  displayInfo.isPinned
                     ? "bg-[var(--color-primary)]/20 text-[var(--color-primary)]"
                     : "hover:bg-[var(--color-hover)]"
                 }`}
               >
-                {isPinned ? <PinOff size={20} /> : <Pin size={20} />}
+                {displayInfo.isPinned ? <PinOff size={20} /> : <Pin size={20} />}
               </button>
               <span className="text-center text-xs">
-                {isPinned ? "Bỏ ghim hội thoại" : "Ghim hội thoại"}
+                {displayInfo.isPinned ? "Bỏ ghim hội thoại" : "Ghim hội thoại"}
               </span>
             </div>
             {/* Action Item */}

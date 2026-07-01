@@ -25,9 +25,7 @@ const ConversationContainer = () => {
   const activeConversationId = useParams().conversationId;
 
   const currentUserId = useSelector((state) => state.user.currentUser?._id);
-  const { conversations, statusUsers, loading } = useSelector(
-    (state) => state.conversations
-  );
+  const { conversations, loading } = useSelector((state) => state.conversations);
 
   const CATEGORY = {
     ALL: "all",
@@ -248,15 +246,6 @@ const ConversationContainer = () => {
                       const displayInfo =
                         getDisplayInfo(conversation, currentUserId) || {};
 
-                      // status
-                      const partnerStatus = displayInfo.partnerId
-                        ? statusUsers[displayInfo.partnerId] ||
-                          displayInfo.partner?.userId
-                        : null;
-
-                      const isOnline =
-                        !displayInfo.isGroup && partnerStatus?.presence === "online";
-
                       return (
                         // CONVERSATION ITEM
                         <ConversationItem
@@ -274,7 +263,6 @@ const ConversationContainer = () => {
                           onClearHistory={() =>
                             handleClearConversationHistory(conversation._id)
                           }
-                          isOnline={isOnline}
                         />
                       );
                     })}
