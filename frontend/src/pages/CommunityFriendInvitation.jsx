@@ -15,6 +15,7 @@ import {
 import UserAvatar from "@/components/ui/avatar/UserAvatar";
 import { useNotification } from "@/hooks/useNotification";
 import { getUserDetail } from "@/store/userSlice";
+import { createPrivateConversation } from "@/store/conversationsSlice";
 
 const FriendCard = ({ name, avatarUrl, onSelect, actions }) => {
   return (
@@ -46,7 +47,6 @@ const CommunityFriendInvitation = () => {
 
   const { receivedRequests, sentRequests } = useSelector((state) => state.relationship);
   const { selectedUser } = useSelector((state) => state.user);
-  console.log("🚀 ~ CommunityFriendInvitation ~ selectedUser:", selectedUser);
 
   const [modal, setModal] = useState(false);
 
@@ -131,6 +131,22 @@ const CommunityFriendInvitation = () => {
     } catch (error) {
       notification.error({
         message: "Hủy yêu cầu kết bạn thất bại!",
+        description: error.message || "Vui lòng thử lại sau",
+      });
+    }
+  };
+
+  const handleMessage = async (e, user) => {
+    e.stopPropagation();
+    if (!user?._id) return;
+
+    try {
+      const conversation = await dispatch(createPrivateConversation(user._id)).unwrap();
+      setModal(false);
+      navigate(`/community/chat/${conversation._id}`);
+    } catch (error) {
+      notification.error({
+        message: "Không thể mở cuộc trò chuyện",
         description: error.message || "Vui lòng thử lại sau",
       });
     }
@@ -292,6 +308,7 @@ const CommunityFriendInvitation = () => {
         isOpen={modal}
         onCancel={() => setModal(false)}
         selectedUser={selectedUser}
+        onMessage={handleMessage}
         onCreateRequest={handleCreateFriendRequest}
         onAcceptRequest={handleAcceptRequest}
         onCancelRequest={handleCancelRequest}

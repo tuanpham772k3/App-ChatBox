@@ -7,7 +7,6 @@ import {
   ArrowUpDown,
   ListFilter,
   ChevronDown,
-  MoreHorizontal,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { getConversations } from "@/store/conversationsSlice";

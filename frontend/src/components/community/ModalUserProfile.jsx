@@ -8,6 +8,7 @@ const ModalUserProfile = ({
   isOpen,
   onCancel,
   selectedUser,
+  onMessage,
   onCreateRequest,
   onAcceptRequest,
   onCancelRequest,
@@ -62,6 +63,7 @@ const ModalUserProfile = ({
                 <>
                   <button
                     type="button"
+                    onClick={(e) => onMessage?.(e, selectedUser)}
                     className="flex-1 h-8 rounded-sm font-medium text-white
                 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)]
                 active:bg-[var(--color-primary-active)]"
@@ -84,6 +86,7 @@ const ModalUserProfile = ({
                   </button>
                   <button
                     type="button"
+                    onClick={(e) => onMessage?.(e, selectedUser)}
                     className="flex-1 h-8 rounded-sm font-medium text-white
                 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)]
                 active:bg-[var(--color-primary-active)]"
@@ -106,6 +109,7 @@ const ModalUserProfile = ({
                   </button>
                   <button
                     type="button"
+                    onClick={(e) => onMessage?.(e, selectedUser)}
                     className="flex-1 h-8 rounded-sm font-medium text-white
                 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)]
                 active:bg-[var(--color-primary-active)]"
@@ -128,6 +132,7 @@ const ModalUserProfile = ({
                   </button>
                   <button
                     type="button"
+                    onClick={(e) => onMessage?.(e, selectedUser)}
                     className="flex-1 h-8 rounded-sm font-medium text-white
                 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)]
                 active:bg-[var(--color-primary-active)]"

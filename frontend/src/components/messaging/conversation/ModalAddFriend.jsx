@@ -8,11 +8,14 @@ import userApi from "@/services/userApi";
 import UserAvatar from "@/components/ui/avatar/UserAvatar";
 import { getUserDetail } from "@/store/userSlice";
 import { createFriendRequest } from "@/store/relationshipSlice";
+import { createPrivateConversation } from "@/store/conversationsSlice";
+import { useNavigate } from "react-router-dom";
 
 const { Text } = Typography;
 
 const ModalAddFriend = ({ isOpen, onCancel }) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const { selectedUser } = useSelector((state) => state.user);
 
@@ -74,6 +77,22 @@ const ModalAddFriend = ({ isOpen, onCancel }) => {
       notification.error({
         message: "Gửi yêu cầu kết bạn thất bại!",
         description: error.message || "Vui lòng thử lại sau",
+      });
+    }
+  };
+
+  const handleMessage = async (e, userId) => {
+    e.stopPropagation();
+    if (!userId) return;
+
+    try {
+      const conversation = await dispatch(createPrivateConversation(userId)).unwrap();
+      onCancel();
+      navigate(`/chat/${conversation._id}`);
+    } catch (error) {
+      notification.error({
+        message: "Khong the mo cuoc tro chuyen",
+        description: error.message || "Vui long thu lai sau",
       });
     }
   };
@@ -200,6 +219,7 @@ const ModalAddFriend = ({ isOpen, onCancel }) => {
                   </button>
                   <button
                     type="button"
+                    onClick={(e) => handleMessage(e, selectedUser?._id)}
                     className="flex-1 h-8 rounded-sm font-medium text-white
                     bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)]
                     active:bg-[var(--color-primary-active)]"

@@ -220,34 +220,45 @@ const Messages = ({
             >
               {relationshipStatus === "not_friend" ? (
                 <>
-                  <span className="text-[13px]">Người này có đủ trình không?</span>
+                  <span className="text-[13px]">
+                    Bạn có muốn kết bạn với người này không?
+                  </span>
                   <button
                     type="button"
                     onClick={onCreateFriendRequest}
                     className="text-sm py-1 px-4 bg-[var(--color-surface)]
                     hover:bg-[var(--color-hover)] active:bg-[var(--color-active)]"
                   >
-                    Chiêu mộ
+                    Kết bạn
                   </button>
                 </>
               ) : relationshipStatus === "pending_sent" ? (
                 <span className="text-[13px]">
-                  Bạn đã cho người khác cơ hội làm bạn với mình
+                  Đã gửi lời mời kết bạn, chờ người này chấp nhận
                 </span>
               ) : relationshipStatus === "pending_received" ? (
                 <>
-                  <span className="text-[13px]">
-                    Người này đang van xin được kết bạn với bạn
-                  </span>
+                  <span className="text-[13px]">Đã nhận lời mời kết bạn</span>
 
-                  <button
-                    type="button"
-                    onClick={onAcceptFriendRequest}
-                    className="text-sm py-1 px-4 bg-[var(--color-surface)]
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={onAcceptFriendRequest}
+                      className="text-sm py-1 px-4 bg-[var(--color-surface)]
                     hover:bg-[var(--color-hover)] active:bg-[var(--color-active)]"
-                  >
-                    Cho phép
-                  </button>
+                    >
+                      Đồng ý
+                    </button>
+
+                    <button
+                      type="button"
+                      // onClick={onAcceptFriendRequest}
+                      className="text-sm py-1 px-4 bg-[var(--color-surface)]
+                    hover:bg-[var(--color-hover)] active:bg-[var(--color-active)]"
+                    >
+                      Từ chối
+                    </button>
+                  </div>
                 </>
               ) : relationshipStatus === "blocked_by_me" ? (
                 <>

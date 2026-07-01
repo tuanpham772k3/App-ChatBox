@@ -13,6 +13,7 @@ import ModalAddMembers from "../components/messaging/chat/ModalAddMembers";
 
 import {
   clearConversationHistory,
+  createPrivateConversation,
   getConversationDetail,
   getConversationImages,
   leaveGroup,
@@ -212,9 +213,10 @@ const ChatWindow = () => {
     dispatch(getUserDetail(userId));
   };
 
-  const handleCreateFriendRequest = async () => {
+  const handleCreateFriendRequest = async (e, userId) => {
+    e?.stopPropagation?.();
     try {
-      await dispatch(createFriendRequest(displayInfo?.partnerId)).unwrap();
+      await dispatch(createFriendRequest(userId || displayInfo?.partnerId)).unwrap();
       notification.success({
         message: "Đã gửi yêu cầu kết bạn",
       });
@@ -226,10 +228,11 @@ const ChatWindow = () => {
     }
   };
 
-  const handleAcceptFriendRequest = async () => {
+  const handleAcceptFriendRequest = async (e, relationshipId) => {
+    e?.stopPropagation?.();
     try {
       await dispatch(
-        acceptFriendRequest(currentConversation?.relationship?._id)
+        acceptFriendRequest(relationshipId || currentConversation?.relationship?._id)
       ).unwrap();
       notification.success({
         message: "Đã chấp nhận yêu cầu kết bạn",
@@ -242,10 +245,11 @@ const ChatWindow = () => {
     }
   };
 
-  const handleCancelFriendRequest = async () => {
+  const handleCancelFriendRequest = async (e, relationshipId) => {
+    e?.stopPropagation?.();
     try {
       await dispatch(
-        cancelFriendRequest(currentConversation?.relationship?._id)
+        cancelFriendRequest(relationshipId || currentConversation?.relationship?._id)
       ).unwrap();
       notification.success({
         message: "Đã hủy yêu cầu kết bạn",
@@ -254,6 +258,22 @@ const ChatWindow = () => {
       notification.error({
         message: "Hủy yêu cầu kết bạn thất bại",
         description: error.message || "Có lỗi xảy ra",
+      });
+    }
+  };
+
+  const handleMessage = async (e, user) => {
+    e?.stopPropagation?.();
+    if (!user?._id) return;
+
+    try {
+      const conversation = await dispatch(createPrivateConversation(user._id)).unwrap();
+      setOpenModal(null);
+      navigate(`/chat/${conversation._id}`);
+    } catch (error) {
+      notification.error({
+        message: "Khong the mo cuoc tro chuyen",
+        description: error.message || "Vui long thu lai sau",
       });
     }
   };
@@ -351,9 +371,10 @@ const ChatWindow = () => {
         isOpen={openModal === MODAL.PROFILE}
         onCancel={() => setOpenModal(null)}
         selectedUser={selectedUser}
-        onCreateFriendRequest={handleCreateFriendRequest}
-        onAcceptFriendRequest={handleAcceptFriendRequest}
-        onCancelFriendRequest={handleCancelFriendRequest}
+        onMessage={handleMessage}
+        onCreateRequest={handleCreateFriendRequest}
+        onAcceptRequest={handleAcceptFriendRequest}
+        onCancelRequest={handleCancelFriendRequest}
       />
     </section>
   );

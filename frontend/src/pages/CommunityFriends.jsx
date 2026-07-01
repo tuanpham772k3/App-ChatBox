@@ -86,26 +86,28 @@ const CommunityFriends = () => {
   const TOTAL_FRIENDS = friends.length;
 
   const visibleGroups = useMemo(() => {
+    // Lọc theo tên
     const filtered = friends.filter((friend) =>
       friend.displayName.toLowerCase().includes(search.toLowerCase())
     );
 
-    return Object.values(
-      filtered.reduce((groups, friend) => {
-        const label = friend.displayName[0].toUpperCase();
+    // Nhóm bạn bè theo chữ cái đầu tiên của tên
+    const groups = {};
 
-        if (!groups[label]) {
-          groups[label] = {
-            label,
-            friends: [],
-          };
-        }
+    for (const friend of filtered) {
+      const label = friend.displayName[0].toUpperCase();
 
-        groups[label].friends.push(friend);
+      if (!groups[label]) {
+        groups[label] = {
+          label,
+          friends: [],
+        };
+      }
 
-        return groups;
-      }, {})
-    );
+      groups[label].friends.push(friend);
+    }
+
+    return Object.values(groups);
   }, [friends, search]);
 
   const handleOpenChat = async (friend) => {
