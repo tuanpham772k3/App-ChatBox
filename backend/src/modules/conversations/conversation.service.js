@@ -160,25 +160,18 @@ const ConversationService = {
       Conversation.countDocuments(query),
     ]);
 
-    // =========================
-    // Lấy danh sách user còn lại
-    // =========================
-
+    // Lấy danh sách userId của các conversation 1-1 để kiểm tra friend hay stranger
     const otherUserIds = conversations
       .filter((conversation) => conversation.type === "private")
       .map((conversation) => {
-        const otherParticipant = conversation.participants.find(
+        const partner = conversation.participants.find(
           (participant) => participant.userId._id.toString() !== userId.toString()
         );
 
-        return otherParticipant?.userId._id;
-      })
-      .filter(Boolean);
+        return partner?.userId._id;
+      });
 
-    // =========================
-    // Lấy tất cả bạn bè trong 1 query
-    // =========================
-
+    // Lấy danh sách relationship đã accepted giữa userId và các otherUserIds
     const relationships = await Relationship.find({
       status: "accepted",
       $or: [
@@ -199,10 +192,7 @@ const ConversationService = {
       .select("requesterId recipientId")
       .lean();
 
-    // =========================
-    // Tạo set friend lookup O(1)
-    // =========================
-
+    // Tạo Set để dễ dàng kiểm tra friend hay stranger
     const friendIds = new Set();
 
     relationships.forEach((relationship) => {
@@ -216,30 +206,23 @@ const ConversationService = {
       }
     });
 
-    // =========================
-    // Gắn category cho conversation
-    // =========================
-
+    // Format conversations để thêm conversationCategory: "friend" | "stranger" | "group"
     const formattedConversations = conversations.map((conversation) => {
-      // Group chat
-      if (conversation.type === "group") {
-        return {
-          ...conversation,
-          conversationCategory: "group",
-        };
+      let conversationCategory = "group";
+
+      if (conversation.type === "private") {
+        const partner = conversation.participants.find(
+          (participant) => participant.userId._id.toString() !== userId.toString()
+        );
+
+        const partnerId = partner.userId._id.toString();
+
+        conversationCategory = friendIds.has(partnerId) ? "friend" : "stranger";
       }
-
-      const otherParticipant = conversation.participants.find(
-        (participant) => participant.userId._id.toString() !== userId.toString()
-      );
-
-      const otherUserId = otherParticipant?.userId._id?.toString();
-
-      const isFriend = friendIds.has(otherUserId);
 
       return {
         ...conversation,
-        conversationCategory: isFriend ? "friend" : "stranger",
+        conversationCategory,
       };
     });
 
@@ -380,25 +363,22 @@ const ConversationService = {
       throw new AppError("Conversation not found or access denied", 404);
     }
 
+    // Format conversation để thêm relationship nếu là private
     if (conversation.type === "private") {
-      const targetParticipant = conversation.participants.find(
+      const partner = conversation.participants.find(
         (p) => p.userId._id.toString() !== userId
       );
 
-      if (!targetParticipant) {
-        throw new AppError("Target participant not found", 404);
-      }
-
-      const targetUserId = targetParticipant.userId._id;
+      const partnerId = partner.userId._id;
 
       const relationship = await Relationship.findOne({
         $or: [
           {
             requesterId: userId,
-            recipientId: targetUserId,
+            recipientId: partnerId,
           },
           {
-            requesterId: targetUserId,
+            requesterId: partnerId,
             recipientId: userId,
           },
         ],
