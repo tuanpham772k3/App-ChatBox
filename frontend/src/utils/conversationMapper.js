@@ -81,7 +81,7 @@ const getLastMessageView = (lastMsg, currentUserId) => {
 
 // Tạo ViewModel hiển thị từ conversation API (Redux domain model).
 // Component UI chỉ nên dùng object trả về từ hàm này, không đọc trực tiếp participant.userId.
-export const getDisplayInfo = (conversation, currentUserId) => {
+export const mapConversationForDisplay = (conversation, currentUserId) => {
   if (!conversation) return null;
 
   const { participants = [], type, name, lastMessage } = conversation;

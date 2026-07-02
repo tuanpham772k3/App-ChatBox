@@ -1,4 +1,4 @@
-export const buildMessageMeta = (messages, currentUserId) => {
+export const mapMessagesForDisplay = (messages, currentUserId) => {
   return messages.map((msg, index) => {
     const prevMsg = messages[index - 1];
     const nextMsg = messages[index + 1];

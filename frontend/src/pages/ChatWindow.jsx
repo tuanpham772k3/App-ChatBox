@@ -20,7 +20,7 @@ import {
   setActiveConversation,
   togglePinConversation,
 } from "@/store/conversationsSlice";
-import { getDisplayInfo } from "@/utils/conversationHelper";
+import { mapConversationForDisplay } from "@/utils/conversationMapper";
 import { emitEvent } from "@/lib/socket";
 import ModalLeaveGroup from "../components/messaging/chat/ModalLeaveGroup";
 import { useNotification } from "@/hooks/useNotification";
@@ -70,7 +70,7 @@ const ChatWindow = () => {
   const notification = useNotification();
 
   const displayInfo = useMemo(
-    () => getDisplayInfo(currentConversation, currentUserId) || {},
+    () => mapConversationForDisplay(currentConversation, currentUserId) || {},
     [currentConversation, currentUserId]
   );
 

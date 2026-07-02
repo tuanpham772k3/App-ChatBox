@@ -16,7 +16,7 @@ import ConversationItem from "./ConversationItem";
 import ModalCreateGroup from "./ModalCreateGroup";
 import ModalAddFriend from "./ModalAddFriend";
 
-import { getDisplayInfo } from "@/utils/conversationHelper";
+import { mapConversationForDisplay } from "@/utils/conversationMapper";
 import { useNotification } from "@/hooks/useNotification";
 
 const ConversationContainer = () => {
@@ -154,7 +154,7 @@ const ConversationContainer = () => {
       const keyword = trimmed.toLowerCase();
 
       results = results.filter((conversation) => {
-        const displayInfo = getDisplayInfo(conversation, currentUserId);
+        const displayInfo = mapConversationForDisplay(conversation, currentUserId);
 
         return displayInfo?.displayName?.toLowerCase().includes(keyword);
       });
@@ -244,7 +244,7 @@ const ConversationContainer = () => {
                   <>
                     {filteredConversations.map((conversation) => {
                       const displayInfo =
-                        getDisplayInfo(conversation, currentUserId) || {};
+                        mapConversationForDisplay(conversation, currentUserId) || {};
 
                       return (
                         // CONVERSATION ITEM

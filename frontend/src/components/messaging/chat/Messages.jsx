@@ -12,7 +12,7 @@ import "yet-another-react-lightbox/styles.css";
 
 import { clearMessages, fetchConversationMessages } from "@/store/messagesSlice";
 import { syncReadStatusRealtime } from "@/store/conversationsSlice";
-import { buildMessageMeta } from "@/utils/messageHelper";
+import { mapMessagesForDisplay } from "@/utils/messageMapper";
 import { emitEvent } from "@/lib/socket";
 import { useNotification } from "@/hooks/useNotification";
 import messagesApi from "@/services/messagesApi";
@@ -200,9 +200,9 @@ const Messages = ({
     setLightboxOpen(true);
   };
 
-  // Build message metadata
-  const messagesWithMeta = useMemo(() => {
-    return buildMessageMeta(messages, currentUserId);
+  // Map messages for display (show/hide date, time, avatar, etc.)
+  const displayMessages = useMemo(() => {
+    return mapMessagesForDisplay(messages, currentUserId);
   }, [messages, currentUserId]);
 
   return (
@@ -291,7 +291,7 @@ const Messages = ({
             Chưa có tin nhắn nào
           </li>
         ) : (
-          messagesWithMeta.map((msg, index) => {
+          displayMessages.map((msg, index) => {
             return (
               <React.Fragment key={msg._id}>
                 {msg.meta.showDate && <MessageDateDivider date={msg.createdAt} />}

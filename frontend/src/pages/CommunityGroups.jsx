@@ -6,7 +6,7 @@ import { Search, ArrowUpDown, ListFilter, ChevronDown } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { getConversations } from "@/store/conversationsSlice";
 import { useNotification } from "@/hooks/useNotification";
-import { getDisplayInfo } from "@/utils/conversationHelper";
+import { mapConversationForDisplay } from "@/utils/conversationMapper";
 import GroupAvatar from "@/components/ui/avatar/GroupAvatar";
 import PopoverGroupActions from "@/components/community/PopoverGroupActions";
 import { Spin } from "antd";
@@ -190,7 +190,9 @@ const CommunityGroups = () => {
                   <GroupRow
                     key={group._id}
                     group={group}
-                    members={getDisplayInfo(group, currentUserId)?.members || []}
+                    members={
+                      mapConversationForDisplay(group, currentUserId)?.members || []
+                    }
                     onOpenChat={handleOpenChat}
                   />
                 ))}
