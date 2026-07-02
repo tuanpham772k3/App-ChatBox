@@ -36,7 +36,7 @@ const ChatHeader = ({
         <div className="hidden sm:flex">
           {displayInfo.isGroup ? (
             <button type="button">
-              <GroupAvatar users={displayInfo.participants} size={48} />
+              <GroupAvatar users={displayInfo.members || []} size={48} />
             </button>
           ) : (
             <button
@@ -78,7 +78,7 @@ const ChatHeader = ({
               className="min-w-0 truncate flex items-center gap-1 text-xs md:text-sm text-[var(--color-text-primary)] hover:text-[var(--color-primary)] transition-colors"
             >
               <UsersRound size={16} className="shrink-0" />
-              <span>{`${displayInfo.participants.length} thành viên`}</span>
+              <span>{`${displayInfo.members?.length ?? 0} thành viên`}</span>
             </button>
           ) : (
             <span className="text-xs md:text-sm text-[var(--color-text-secondary)]">

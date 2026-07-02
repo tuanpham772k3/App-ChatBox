@@ -13,7 +13,7 @@ const ConversationItem = ({
   onMarkUnread,
   onClearHistory,
 }) => {
-  const isOnline = !display?.isGroup && display?.partner?.userId?.presence === "online";
+  const isOnline = display?.isOnline;
 
   return (
     <li
@@ -31,7 +31,7 @@ const ConversationItem = ({
         {/* Avatar */}
         <span className="relative shrink-0">
           {display?.isGroup ? (
-            <GroupAvatar users={display?.participants} size={50} />
+            <GroupAvatar users={display?.members || []} size={50} />
           ) : (
             <UserAvatar
               name={display?.displayName || "Người dùng"}
@@ -65,10 +65,12 @@ const ConversationItem = ({
                 : "text-[var(--color-text-secondary)]"
             }`}
           >
-            {display?.lastMsgSender && (
+            {display?.lastMsgSender ? (
               <>
-                {display?.lastMsgSender}: <span>{display?.lastMsgContent}</span>
+                {display.lastMsgSender}: <span>{display.lastMsgContent}</span>
               </>
+            ) : (
+              display?.lastMsgContent
             )}
           </span>
         </span>

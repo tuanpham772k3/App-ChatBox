@@ -53,7 +53,7 @@ const DrawerConversationInfo = ({
         <div className="flex flex-col items-center gap-2 p-4 border-b-4 border-[var(--color-border)]">
           {/* Avatar || Group avatar */}
           {displayInfo.isGroup ? (
-            <GroupAvatar users={displayInfo.participants || []} size={60} />
+            <GroupAvatar users={displayInfo.members || []} size={60} />
           ) : (
             <UserAvatar
               name={displayInfo.displayName}
@@ -129,7 +129,7 @@ const DrawerConversationInfo = ({
             className="w-full flex items-center gap-2 px-4 py-3 text-sm text-[var(--color-text-primary)] hover:bg-[var(--color-hover)] rounded"
           >
             <UsersRound size={20} />
-            <span>{`${displayInfo?.participants?.length} thành viên`}</span>
+            <span>{`${displayInfo?.members?.length ?? 0} thành viên`}</span>
           </button>
         </div>
 

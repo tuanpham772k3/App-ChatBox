@@ -93,8 +93,8 @@ const DrawerMembersInfo = ({
                   {/* Avatar */}
                   <div className="relative">
                     <UserAvatar
-                      avatarUrl={member?.avatarUrl}
-                      name={member?.name}
+                      avatarUrl={member.avatarUrl}
+                      name={member.displayName}
                       size={40}
                     />
 
@@ -108,7 +108,7 @@ const DrawerMembersInfo = ({
                   {/* Tên & vai trò */}
                   <div className="min-w-0 flex flex-col justify-center">
                     <h3 className="truncate text-sm font-medium text-[var(--color-text-primary)]">
-                      {member?.name}
+                      {member.displayName}
                     </h3>
 
                     {member?.role === "owner" && (

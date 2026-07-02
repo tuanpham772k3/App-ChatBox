@@ -1,27 +1,37 @@
-/**
- * Xử lý dữ liệu hiển thị thông tin conversation
- * @param {Object} conversation - đối tượng conversation
- * @param {string} currentUserId - id của chính mình
- * @returns {Object|null} thông tin hiển thị của conversation
- */
-const getPartner = (participants, currentUserId) => {
+const DEFAULT_USER_LABEL = "Người dùng";
+const CURRENT_USER_LABEL = "Bạn";
+const EMPTY_LAST_MESSAGE = {
+  sender: "",
+  content: "Chưa có tin nhắn",
+  time: "",
+};
+
+const findPartnerParticipant = (participants, currentUserId) => {
   return participants.find((p) => p.userId?._id !== currentUserId);
 };
 
-const getCurrentUser = (participants, currentUserId) => {
+const findCurrentParticipant = (participants, currentUserId) => {
   return participants.find((p) => p.userId?._id === currentUserId);
 };
 
-const mapParticipants = (participants, currentUserId) => {
-  return participants.map((p) => {
-    return {
-      id: p.userId?._id,
-      name:
-        p.userId?._id === currentUserId ? "Bạn" : p.userId?.displayName || "Người dùng",
-      avatarUrl: p.userId?.avatar?.url || null,
-      role: p.role,
-    };
-  });
+// Map một participant API → MemberView cho UI.
+export const toMemberView = (participant, currentUserId) => {
+  const id = participant.userId?._id;
+  const isMe = id === currentUserId;
+
+  return {
+    id,
+    displayName: isMe
+      ? CURRENT_USER_LABEL
+      : participant.userId?.displayName || DEFAULT_USER_LABEL,
+    avatarUrl: participant.userId?.avatar?.url || null,
+    role: participant.role,
+    presence: participant.userId?.presence || null,
+  };
+};
+
+export const mapMembers = (participants = [], currentUserId) => {
+  return participants.map((participant) => toMemberView(participant, currentUserId));
 };
 
 const formatConversationTime = (isoString) => {
@@ -55,55 +65,55 @@ const formatConversationTime = (isoString) => {
   ).padStart(2, "0")}`;
 };
 
-const getLastMessageInfo = (lastMsg, currentUserId) => {
+const getLastMessageView = (lastMsg, currentUserId) => {
   if (!lastMsg) {
-    return {
-      sender: "",
-      content: "Chưa có tin nhắn",
-      time: "",
-    };
+    return { ...EMPTY_LAST_MESSAGE };
   }
 
   const isMe = lastMsg.senderId?._id === currentUserId;
 
   return {
-    sender: isMe ? "Bạn" : lastMsg.senderId?.displayName || "",
+    sender: isMe ? CURRENT_USER_LABEL : lastMsg.senderId?.displayName || "",
     content: lastMsg.content || "",
     time: lastMsg.createdAt ? formatConversationTime(lastMsg.createdAt) : "",
   };
 };
 
+// Tạo ViewModel hiển thị từ conversation API (Redux domain model).
+// Component UI chỉ nên dùng object trả về từ hàm này, không đọc trực tiếp participant.userId.
 export const getDisplayInfo = (conversation, currentUserId) => {
   if (!conversation) return null;
 
   const { participants = [], type, name, lastMessage } = conversation;
 
-  const partner = getPartner(participants, currentUserId);
-  const currentUser = getCurrentUser(participants, currentUserId);
-  const mappedParticipants = mapParticipants(participants, currentUserId);
-  const lastMsg = getLastMessageInfo(lastMessage, currentUserId);
+  const partnerParticipant = findPartnerParticipant(participants, currentUserId);
+  const currentParticipant = findCurrentParticipant(participants, currentUserId);
+  const members = mapMembers(participants, currentUserId);
+  const lastMessageView = getLastMessageView(lastMessage, currentUserId);
 
   const isGroup = type === "group";
 
   return {
     id: conversation._id,
-
     isGroup,
 
-    partner,
-    currentUser,
+    displayName: isGroup
+      ? name || DEFAULT_USER_LABEL
+      : partnerParticipant?.userId?.displayName || DEFAULT_USER_LABEL,
+    displayAvatar: isGroup ? null : partnerParticipant?.userId?.avatar?.url || null,
 
-    participants: mappedParticipants,
+    isOnline: !isGroup && partnerParticipant?.userId?.presence === "online",
+    partnerId: isGroup ? null : partnerParticipant?.userId?._id || null,
 
-    displayName: isGroup ? name : partner?.userId?.displayName || "Người dùng",
-    displayAvatar: isGroup ? null : partner?.userId?.avatar?.url || null,
+    me: currentParticipant ? toMemberView(currentParticipant, currentUserId) : null,
+    members,
 
-    lastMsgSender: lastMsg?.sender,
-    lastMsgContent: lastMsg?.content,
-    lastMsgTime: lastMsg?.time,
+    lastMessage: lastMessageView,
+    lastMsgSender: lastMessageView.sender,
+    lastMsgContent: lastMessageView.content,
+    lastMsgTime: lastMessageView.time,
 
-    // Thông tin hiển thị cho cho chính mình trong conversation
-    isPinned: Boolean(currentUser?.pinnedAt),
-    unreadCount: currentUser?.unreadCount || 0,
+    isPinned: Boolean(currentParticipant?.pinnedAt),
+    unreadCount: currentParticipant?.unreadCount || 0,
   };
 };

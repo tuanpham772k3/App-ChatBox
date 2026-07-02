@@ -69,24 +69,23 @@ const ChatWindow = () => {
 
   const notification = useNotification();
 
-  const typingNames = useMemo(() => {
-    if (!activeConversationId) return [];
-    if (!currentConversation) return [];
-
-    const typingMap = typingUsers[activeConversationId] || {};
-
-    return currentConversation.participants
-      .filter((p) => typingMap[p.userId._id] && p.userId._id !== currentUserId)
-      .map((p) => p.userId.displayName);
-  }, [activeConversationId, typingUsers, currentConversation, currentUserId]);
-
   const displayInfo = useMemo(
     () => getDisplayInfo(currentConversation, currentUserId) || {},
     [currentConversation, currentUserId]
   );
 
-  const isOnline =
-    !displayInfo.isGroup && displayInfo.partner?.userId?.presence === "online";
+  const typingNames = useMemo(() => {
+    if (!activeConversationId) return [];
+    if (!displayInfo.members?.length) return [];
+
+    const typingMap = typingUsers[activeConversationId] || {};
+
+    return displayInfo.members
+      .filter((member) => typingMap[member.id] && member.id !== currentUserId)
+      .map((member) => member.displayName);
+  }, [activeConversationId, typingUsers, displayInfo.members, currentUserId]);
+
+  const isOnline = displayInfo.isOnline;
 
   useEffect(() => {
     dispatch(setActiveConversation(activeConversationId));
@@ -329,7 +328,7 @@ const ChatWindow = () => {
         onClose={() => setOpenDrawer(null)}
         onOpenAddMembers={() => setOpenModal(MODAL.ADD)}
         currentUserId={currentUserId}
-        members={displayInfo.participants || []}
+        members={displayInfo.members || []}
         onRemoveMember={(memberId) => {
           setSelectedMemberId(memberId);
           setOpenModal(MODAL.REMOVE);
@@ -360,8 +359,8 @@ const ChatWindow = () => {
         onClose={() => setOpenModal(null)}
         onLeave={handleLeaveGroup}
         conversationId={activeConversationId}
-        currentUser={displayInfo?.currentUser}
-        members={displayInfo?.participants}
+        me={displayInfo?.me}
+        members={displayInfo?.members}
       />
 
       <ModalUserProfile

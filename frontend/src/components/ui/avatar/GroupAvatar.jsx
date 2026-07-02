@@ -24,9 +24,9 @@ const GroupAvatar = ({ users, size = 48 }) => {
 
         return (
           <UserAvatar
-            key={user?.id || user.userId?._id}
-            avatarUrl={user?.avatarUrl || user?.userId?.avatar?.url}
-            name={user?.name || user?.userId?.displayName}
+            key={user.id}
+            avatarUrl={user.avatarUrl}
+            name={user.displayName}
             className="absolute"
             size={itemSize}
             style={pos}
@@ -34,7 +34,7 @@ const GroupAvatar = ({ users, size = 48 }) => {
         );
       })}
 
-      {users.length >= 5 && (
+      {users?.length >= 5 && (
         <div
           className="absolute bottom-0 right-0 flex items-center justify-center
           bg-[var(--color-chat)] text-[var(--color-text-secondary)] font-semibold

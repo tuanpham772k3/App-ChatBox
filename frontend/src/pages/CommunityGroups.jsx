@@ -6,6 +6,7 @@ import { Search, ArrowUpDown, ListFilter, ChevronDown } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { getConversations } from "@/store/conversationsSlice";
 import { useNotification } from "@/hooks/useNotification";
+import { getDisplayInfo } from "@/utils/conversationHelper";
 import GroupAvatar from "@/components/ui/avatar/GroupAvatar";
 import PopoverGroupActions from "@/components/community/PopoverGroupActions";
 import { Spin } from "antd";
@@ -19,13 +20,13 @@ const GroupTag = ({ label }) => (
 );
 
 /** Single group row */
-const GroupRow = ({ group, onOpenChat }) => (
+const GroupRow = ({ group, members, onOpenChat }) => (
   <li className="group flex items-center hover:bg-[var(--color-hover)] rounded-xl transition-colors cursor-pointer">
     <button
       onClick={() => onOpenChat(group._id)}
       className="flex-1 flex items-center gap-3 px-3 py-2.5 text-left"
     >
-      <GroupAvatar users={group.participants} size={48} />
+      <GroupAvatar users={members} size={48} />
       <div className="flex flex-col min-w-0">
         <span className="text-sm font-semibold text-[var(--color-text-primary)] truncate">
           {group.name}
@@ -51,6 +52,7 @@ const CommunityGroups = () => {
   const location = useLocation();
 
   const { conversations, loading } = useSelector((state) => state.conversations);
+  const currentUserId = useSelector((state) => state.user.currentUser?._id);
 
   const [search, setSearch] = useState("");
 
@@ -185,7 +187,12 @@ const CommunityGroups = () => {
             ) : visibleGroups.length > 0 ? (
               <ul className="flex flex-col gap-2">
                 {visibleGroups.map((group) => (
-                  <GroupRow key={group._id} group={group} onOpenChat={handleOpenChat} />
+                  <GroupRow
+                    key={group._id}
+                    group={group}
+                    members={getDisplayInfo(group, currentUserId)?.members || []}
+                    onOpenChat={handleOpenChat}
+                  />
                 ))}
               </ul>
             ) : (

@@ -8,14 +8,14 @@ const ModalLeaveGroup = ({
   onClose,
   onLeave,
   conversationId,
-  currentUser,
+  me,
   members = [],
 }) => {
   const dispatch = useDispatch();
   const [newOwnerId, setNewOwnerId] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const isOwner = currentUser?.role === "owner";
+  const isOwner = me?.role === "owner";
 
   const handleLeave = async () => {
     try {
@@ -41,7 +41,7 @@ const ModalLeaveGroup = ({
   };
 
   // Filter member có thể làm owner (trừ chính mình)
-  const availableMembers = members.filter((m) => m.id !== currentUser?.id);
+  const availableMembers = members.filter((m) => m.id !== me?.id);
 
   return (
     <Modal
@@ -67,7 +67,7 @@ const ModalLeaveGroup = ({
             value={newOwnerId}
             onChange={setNewOwnerId}
             options={availableMembers.map((m) => ({
-              label: m.name,
+              label: m.displayName,
               value: m.id,
             }))}
           />
