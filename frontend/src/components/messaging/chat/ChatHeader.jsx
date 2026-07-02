@@ -12,7 +12,6 @@ const ChatHeader = ({
   onSelectAvatarUser,
   displayInfo,
   typingNames,
-  isOnline,
 }) => {
   const typingText =
     typingNames.length > 2
@@ -49,7 +48,7 @@ const ChatHeader = ({
                 avatarUrl={displayInfo.displayAvatar}
                 size={48}
               />
-              {isOnline && (
+              {displayInfo.isOnline && (
                 <span
                   className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[var(--color-app)] rounded-full"
                   aria-label="Online"
@@ -82,7 +81,7 @@ const ChatHeader = ({
             </button>
           ) : (
             <span className="text-xs md:text-sm text-[var(--color-text-secondary)]">
-              {isOnline ? "Đang hoạt động" : "Ngoại tuyến"}
+              {displayInfo.isOnline ? "Đang hoạt động" : "Ngoại tuyến"}
             </span>
           )}
         </div>

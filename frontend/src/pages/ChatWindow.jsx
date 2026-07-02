@@ -85,8 +85,6 @@ const ChatWindow = () => {
       .map((member) => member.displayName);
   }, [activeConversationId, typingUsers, displayInfo.members, currentUserId]);
 
-  const isOnline = displayInfo.isOnline;
-
   useEffect(() => {
     dispatch(setActiveConversation(activeConversationId));
 
@@ -289,7 +287,6 @@ const ChatWindow = () => {
         onSelectAvatarUser={handleSelectAvatarUser}
         displayInfo={displayInfo}
         typingNames={typingNames}
-        isOnline={isOnline}
       />
 
       <div className="min-h-0 flex-1 overflow-hidden">

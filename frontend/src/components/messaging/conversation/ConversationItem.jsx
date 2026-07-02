@@ -13,8 +13,6 @@ const ConversationItem = ({
   onMarkUnread,
   onClearHistory,
 }) => {
-  const isOnline = display?.isOnline;
-
   return (
     <li
       className={`group min-w-0 max-w-full flex-1 flex items-center justify-between px-2 py-3 cursor-pointer rounded-lg transition-colors ${
@@ -40,7 +38,7 @@ const ConversationItem = ({
             />
           )}
 
-          {isOnline && (
+          {display?.isOnline && (
             <span
               className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[var(--color-app)] rounded-full"
               aria-label="Online"
