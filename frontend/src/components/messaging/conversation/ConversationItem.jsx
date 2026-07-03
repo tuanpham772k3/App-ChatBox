@@ -1,18 +1,103 @@
-import React from "react";
+import React, { use } from "react";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import { Pin } from "lucide-react";
 import GroupAvatar from "@/components/ui/avatar/GroupAvatar";
-import PopoverConversationAction from "./PopoverConversationActions";
 import UserAvatar from "@/components/ui/avatar/UserAvatar";
+import PopoverConversationAction from "./PopoverConversationActions";
+import { mapConversationForDisplay } from "@/utils/conversationMapper";
+import { useNotification } from "@/hooks/useNotification";
 
-const ConversationItem = ({
-  isActive,
-  display,
-  onSelect,
-  onRemove,
-  onTogglePin,
-  onMarkUnread,
-  onClearHistory,
-}) => {
+const ConversationItem = ({ conversation, currentUserId, activeConversationId }) => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const notification = useNotification();
+
+  const display = mapConversationForDisplay(conversation, currentUserId) || {};
+  const isActive = activeConversationId === conversation._id;
+
+  // Chọn hội thoại
+  const handleSelectConversation = () => {
+    if (isActive) return;
+
+    navigate(`/chat/${conversation._id}`);
+  };
+
+  // Xóa hội thoại phía tôi
+  const handleRemoveConversationForMe = async () => {
+    try {
+      await dispatch(deleteConversationForMe(conversation._id)).unwrap();
+
+      if (isActive) {
+        navigate("/chat", { replace: true });
+      }
+
+      notification.success({
+        message: "Đã xóa hội thoại",
+      });
+    } catch (error) {
+      notification.error({
+        message: "Xóa hội thoại phía tôi thất bại",
+        description: error.message || "Có lỗi xảy ra",
+      });
+    }
+  };
+
+  // Ghim hoặc bỏ ghim hội thoại
+  const handleTogglePin = async () => {
+    try {
+      await dispatch(
+        togglePinConversation({ conversationId: conversation._id, userId: currentUserId })
+      ).unwrap();
+    } catch (error) {
+      notification.error({
+        message: "Cập nhật ghim hội thoại thất bại",
+        description: error.message || "Có lỗi xảy ra",
+      });
+    }
+  };
+
+  // Đánh dấu hội thoại là chưa đọc
+  const handleMarkAsUnread = async () => {
+    try {
+      await dispatch(
+        markConversationAsUnread({
+          conversationId: conversation._id,
+          userId: currentUserId,
+        })
+      ).unwrap();
+    } catch (error) {
+      notification.error({
+        message: "Đánh dấu chưa đọc thất bại",
+        description: error.message || "Có lỗi xảy ra",
+      });
+    }
+  };
+
+  // Xóa lịch sử trò chuyện
+  const handleClearHistory = async () => {
+    try {
+      await dispatch(
+        clearConversationHistory({
+          conversationId: conversation._id,
+          userId: currentUserId,
+        })
+      ).unwrap();
+
+      if (isActive) {
+        navigate("/chat", { replace: true });
+      }
+
+      notification.success({ message: "Đã xóa lịch sử trò chuyện" });
+    } catch (error) {
+      notification.error({
+        message: "Xóa lịch sử trò chuyện thất bại",
+        description: error.message || "Có lỗi xảy ra",
+      });
+    }
+  };
+
   return (
     <li
       className={`group min-w-0 max-w-full flex-1 flex items-center justify-between px-2 py-3 cursor-pointer rounded-lg transition-colors ${
@@ -23,7 +108,7 @@ const ConversationItem = ({
     >
       <button
         type="button"
-        onClick={onSelect}
+        onClick={handleSelectConversation}
         className="min-w-0 flex flex-1 items-center gap-3 text-left"
       >
         {/* Avatar */}
@@ -74,7 +159,10 @@ const ConversationItem = ({
         </span>
       </button>
 
-      <div onClick={onSelect} className="min-w-7 flex shrink-0 flex-col items-end gap-1">
+      <div
+        onClick={handleSelectConversation}
+        className="min-w-7 flex shrink-0 flex-col items-end gap-1"
+      >
         {/* Top row */}
         <div className="relative w-full flex items-center justify-end">
           <time className="touch-hide whitespace-nowrap text-[11px] text-[var(--color-text-secondary)] hidden lg:block lg:group-hover:opacity-0 transition-opacity duration-150">
@@ -84,10 +172,10 @@ const ConversationItem = ({
           <div className="touch-always-visible lg:absolute lg:right-0 flex items-center justify-center lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150">
             <PopoverConversationAction
               isPinned={display?.isPinned}
-              onTogglePin={onTogglePin}
-              onMarkUnread={onMarkUnread}
-              onClearHistory={onClearHistory}
-              onRemove={onRemove}
+              onTogglePin={handleTogglePin}
+              onMarkUnread={handleMarkAsUnread}
+              onClearHistory={handleClearHistory}
+              onRemove={handleRemoveConversationForMe}
             />
           </div>
         </div>

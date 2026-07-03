@@ -1,15 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { Spin } from "antd";
 
-import {
-  clearConversationHistory,
-  deleteConversationForMe,
-  getConversations,
-  markConversationAsUnread,
-  togglePinConversation,
-} from "@/store/conversationsSlice";
+import { getConversations } from "@/store/conversationsSlice";
 
 import ConversationHeader from "./ConversationHeader";
 import ConversationItem from "./ConversationItem";
@@ -19,20 +13,19 @@ import ModalAddFriend from "./ModalAddFriend";
 import { mapConversationForDisplay } from "@/utils/conversationMapper";
 import { useNotification } from "@/hooks/useNotification";
 
+const CATEGORY = {
+  ALL: "all",
+  FRIEND: "friend",
+  GROUP: "group",
+  STRANGER: "stranger",
+};
+
 const ConversationContainer = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const activeConversationId = useParams().conversationId;
 
   const currentUserId = useSelector((state) => state.user.currentUser?._id);
   const { conversations, loading } = useSelector((state) => state.conversations);
-
-  const CATEGORY = {
-    ALL: "all",
-    FRIEND: "friend",
-    GROUP: "group",
-    STRANGER: "stranger",
-  };
 
   const [category, setCategory] = useState(CATEGORY.ALL);
   const [searchInput, setSearchInput] = useState("");
@@ -41,80 +34,19 @@ const ConversationContainer = () => {
   const notification = useNotification();
 
   useEffect(() => {
-    dispatch(getConversations())
-      .unwrap()
-      .catch((err) => {
+    const fetchConversations = async () => {
+      try {
+        await dispatch(getConversations()).unwrap();
+      } catch (error) {
         notification.error({
           message: "Lấy danh sách hội thoại thất bại",
-          description: err.message || "Có lỗi xảy ra",
+          description: error.message || "Có lỗi xảy ra",
         });
-      });
+      }
+    };
+
+    fetchConversations();
   }, [dispatch]);
-
-  const handleSelectConversation = (nextConversationId) => {
-    if (activeConversationId === nextConversationId) return;
-
-    navigate(`/chat/${nextConversationId}`);
-  };
-
-  // Xóa hội thoại phía tôi
-  const removeConversationForMe = (conversationId) => {
-    dispatch(deleteConversationForMe(conversationId))
-      .unwrap()
-      .then(() => {
-        if (activeConversationId === conversationId) {
-          navigate("/messages", { replace: true });
-        }
-        notification.success({
-          message: "Đã xóa hội thoại",
-        });
-      })
-      .catch((err) => {
-        notification.error({
-          message: "Xóa hội thoại phía tôi thất bại",
-          description: err.message || "Có lỗi xảy ra",
-        });
-      });
-  };
-
-  const handleTogglePinConversation = (conversationId) => {
-    dispatch(togglePinConversation({ conversationId, userId: currentUserId }))
-      .unwrap()
-      .catch((err) => {
-        notification.error({
-          message: "Cập nhật ghim hội thoại thất bại",
-          description: err.message || "Có lỗi xảy ra",
-        });
-      });
-  };
-
-  const handleMarkConversationUnread = (conversationId) => {
-    dispatch(markConversationAsUnread({ conversationId, userId: currentUserId }))
-      .unwrap()
-      .catch((err) => {
-        notification.error({
-          message: "Đánh dấu chưa đọc thất bại",
-          description: err.message || "Có lỗi xảy ra",
-        });
-      });
-  };
-
-  const handleClearConversationHistory = (conversationId) => {
-    dispatch(clearConversationHistory({ conversationId, userId: currentUserId }))
-      .unwrap()
-      .then(() => {
-        if (activeConversationId === conversationId) {
-          navigate("/messages", { replace: true });
-        }
-        notification.success({ message: "Đã xóa lịch sử trò chuyện" });
-      })
-      .catch((err) => {
-        notification.error({
-          message: "Xóa lịch sử trò chuyện thất bại",
-          description: err.message || "Có lỗi xảy ra",
-        });
-      });
-  };
 
   // Lọc hội thoại
   const filteredConversations = useMemo(() => {
@@ -242,30 +174,14 @@ const ConversationContainer = () => {
                   </li>
                 ) : (
                   <>
-                    {filteredConversations.map((conversation) => {
-                      const displayInfo =
-                        mapConversationForDisplay(conversation, currentUserId) || {};
-
-                      return (
-                        // CONVERSATION ITEM
-                        <ConversationItem
-                          key={conversation._id}
-                          isActive={activeConversationId === conversation._id}
-                          display={displayInfo}
-                          onSelect={() => handleSelectConversation(conversation._id)}
-                          onRemove={() => removeConversationForMe(conversation._id)}
-                          onTogglePin={() =>
-                            handleTogglePinConversation(conversation._id)
-                          }
-                          onMarkUnread={() =>
-                            handleMarkConversationUnread(conversation._id)
-                          }
-                          onClearHistory={() =>
-                            handleClearConversationHistory(conversation._id)
-                          }
-                        />
-                      );
-                    })}
+                    {filteredConversations.map((conversation) => (
+                      <ConversationItem
+                        key={conversation._id}
+                        conversation={conversation}
+                        currentUserId={currentUserId}
+                        activeConversationId={activeConversationId}
+                      />
+                    ))}
                   </>
                 )}
               </ul>
