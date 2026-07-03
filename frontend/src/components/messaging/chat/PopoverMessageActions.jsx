@@ -3,7 +3,7 @@ import { Popover } from "antd";
 import { EllipsisVertical, Pencil, Trash } from "lucide-react";
 import MenuActions from "../../ui/popover/MenuActions";
 
-const PopoverMessageActions = ({ msg, onEditClick, onDeleteMessage }) => {
+const PopoverMessageActions = ({ msg, onEditMessage, onDeleteMessage }) => {
   const [open, setOpen] = useState(false);
 
   const handleDelete = () => {
@@ -12,7 +12,7 @@ const PopoverMessageActions = ({ msg, onEditClick, onDeleteMessage }) => {
   };
 
   const handleEdit = () => {
-    onEditClick(msg);
+    onEditMessage(msg);
     setOpen(false);
   };
 

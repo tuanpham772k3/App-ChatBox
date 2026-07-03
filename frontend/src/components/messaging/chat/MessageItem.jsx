@@ -2,21 +2,69 @@ import React from "react";
 import { Check, CheckCheck, Clock, TriangleAlert } from "lucide-react";
 import PopoverMessageActions from "./PopoverMessageActions";
 import UserAvatar from "@/components/ui/avatar/UserAvatar";
+import messagesApi from "@/services/messagesApi";
+
+const MESSAGE_STATUS = {
+  sending: {
+    Icon: Clock,
+    label: "Đang gửi",
+  },
+  sent: {
+    Icon: Check,
+    label: "Đã gửi",
+  },
+  delivered: {
+    Icon: CheckCheck,
+    label: "Đã nhận",
+  },
+  failed: {
+    Icon: TriangleAlert,
+    label: "Lỗi",
+  },
+};
+
+const getReaders = (participants, currentUserId, messageCreatedAt) => {
+  if (!participants) return [];
+
+  return participants.filter((p) => {
+    if (p.userId?._id === currentUserId) return false;
+
+    return (
+      p.lastReadAt &&
+      new Date(p.lastReadAt).getTime() >= new Date(messageCreatedAt).getTime()
+    );
+  });
+};
+
+const getDeliveredRecipients = (participants, currentUserId, messageCreatedAt) => {
+  if (!participants) return [];
+
+  return participants.filter((p) => {
+    if (p.userId?._id === currentUserId) return false;
+
+    return (
+      p.lastDeliveredAt &&
+      new Date(p.lastDeliveredAt).getTime() >= new Date(messageCreatedAt).getTime()
+    );
+  });
+};
 
 const MessageItem = ({
   msg,
   currentUserId,
   currentConversation,
-  isMine,
-  showTime,
-  showName,
-  showAvatar,
   isLastMessage,
   onPreviewImage,
-  onDeleteMessage,
-  onEditClick,
+  setEditingMessage,
   onSelectAvatarUser,
 }) => {
+  // Lấy thông tin tin nhắn
+  const isMine = msg.meta.isMine;
+  const showTime = msg.meta.showTime;
+  const showName = msg.meta.showName;
+  const showAvatar = msg.meta.showAvatar;
+
+  // Lấy thời gian gửi tin nhắn và thời gian chỉnh sửa tin nhắn
   const msgTimeDate = new Date(msg.createdAt);
   const msgTime = msgTimeDate.toLocaleTimeString([], {
     hour: "2-digit",
@@ -30,70 +78,52 @@ const MessageItem = ({
     minute: "2-digit",
   });
 
-  const isMessageAtOrBeforePointer = (pointerAt, messageCreatedAt) => {
-    if (!pointerAt || !messageCreatedAt) return false;
-    return new Date(pointerAt).getTime() >= new Date(messageCreatedAt).getTime();
-  };
-
-  const getReceiptParticipants = (
-    participants,
-    currentUserId,
-    messageCreatedAt,
-    pointerAtKey
-  ) => {
-    if (!participants) return [];
-
-    return participants.filter((p) => {
-      if (p.userId?._id === currentUserId) return false;
-      return isMessageAtOrBeforePointer(p[pointerAtKey], messageCreatedAt);
-    });
-  };
-
-  const totalParticipants = currentConversation?.participants.length - 1;
-
+  // Lấy danh sách người đã đọc và người nhận đã nhận tin nhắn
   const readers =
     isMine && isLastMessage
-      ? getReceiptParticipants(
-          currentConversation?.participants,
-          currentUserId,
-          msg.createdAt,
-          "lastReadAt"
-        )
+      ? getReaders(currentConversation?.participants, currentUserId, msg.createdAt)
       : [];
 
   const deliveredRecipients =
     isMine && isLastMessage
-      ? getReceiptParticipants(
+      ? getDeliveredRecipients(
           currentConversation?.participants,
           currentUserId,
-          msg.createdAt,
-          "lastDeliveredAt"
+          msg.createdAt
         )
       : [];
 
-  const MESSAGE_STATUS = {
-    sending: {
-      Icon: Clock,
-      label: "Đang gửi",
-    },
-    sent: {
-      Icon: Check,
-      label: "Đã gửi",
-    },
-    delivered: {
-      Icon: CheckCheck,
-      label: "Đã nhận",
-    },
-    failed: {
-      Icon: TriangleAlert,
-      label: "Lỗi",
-    },
+  // trạng thái tin nhắn
+  const totalParticipants = currentConversation?.participants.length - 1;
+
+  const status =
+    msg.status === "sending" || msg.status === "failed"
+      ? msg.status
+      : deliveredRecipients.length === totalParticipants
+      ? "delivered"
+      : "sent";
+  const statusConfig = MESSAGE_STATUS[status];
+
+  // xóa tin nhắn
+  const handleDeleteMessage = async () => {
+    try {
+      await messagesApi.deleteMessageById(msg._id);
+    } catch (error) {
+      notification.error({
+        message: "Gỡ tin nhắn thất bại",
+        description: error.message || "Có lỗi xảy ra",
+      });
+    }
   };
 
-  const localStatus = ["sending", "failed"].includes(msg.status) ? msg.status : null;
-  const inferredStatus =
-    deliveredRecipients.length === totalParticipants ? "delivered" : "sent";
-  const statusConfig = MESSAGE_STATUS[localStatus || inferredStatus];
+  // chỉnh sửa tin nhắn
+  const handleEditMessage = () => {
+    setEditingMessage({
+      id: msg._id,
+      content: msg.content,
+      originalContent: msg.content,
+    });
+  };
 
   return (
     <li className={`${showAvatar ? "mt-4" : "mt-1"} list-none`}>
@@ -119,8 +149,8 @@ const MessageItem = ({
           <div className="touch-always-visible self-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-150">
             <PopoverMessageActions
               msg={msg}
-              onEditClick={onEditClick}
-              onDeleteMessage={onDeleteMessage}
+              onEditMessage={handleEditMessage}
+              onDeleteMessage={handleDeleteMessage}
             />
           </div>
         )}

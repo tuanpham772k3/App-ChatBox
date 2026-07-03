@@ -10,12 +10,11 @@ import { useInView } from "react-intersection-observer";
 import "yet-another-react-lightbox/plugins/thumbnails.css";
 import "yet-another-react-lightbox/styles.css";
 
-import { clearMessages, fetchConversationMessages } from "@/store/messagesSlice";
+import { clearMessages, getConversationMessages } from "@/store/messagesSlice";
 import { syncReadStatusRealtime } from "@/store/conversationsSlice";
 import { mapMessagesForDisplay } from "@/utils/messageMapper";
 import { emitEvent } from "@/lib/socket";
 import { useNotification } from "@/hooks/useNotification";
-import messagesApi from "@/services/messagesApi";
 import MessageItem from "./MessageItem";
 
 const MessageDateDivider = ({ date }) => {
@@ -76,7 +75,7 @@ const Messages = ({
     lastReadAtRef.current = null;
 
     dispatch(
-      fetchConversationMessages({
+      getConversationMessages({
         conversationId: conversationId,
         cursor: null,
       })
@@ -138,7 +137,7 @@ const Messages = ({
     const prevHeight = el.scrollHeight;
 
     dispatch(
-      fetchConversationMessages({
+      getConversationMessages({
         conversationId: conversationId,
         cursor,
       })
@@ -157,26 +156,6 @@ const Messages = ({
         });
       });
   }, [inView]);
-
-  // ===== Actions =====
-  const handleDeleteMessage = async (messageId) => {
-    try {
-      await messagesApi.deleteMessageById(messageId);
-    } catch (error) {
-      notification.error({
-        message: "Gỡ tin nhắn thất bại",
-        description: error.message || "Có lỗi xảy ra",
-      });
-    }
-  };
-
-  const handleEditClick = (msg) => {
-    setEditingMessage({
-      id: msg._id,
-      content: msg.content,
-      originalContent: msg.content,
-    });
-  };
 
   // ===== Lightbox =====
   const imageMessages = useMemo(
@@ -291,27 +270,22 @@ const Messages = ({
             Chưa có tin nhắn nào
           </li>
         ) : (
-          displayMessages.map((msg, index) => {
-            return (
-              <React.Fragment key={msg._id}>
-                {msg.meta.showDate && <MessageDateDivider date={msg.createdAt} />}
-                <MessageItem
-                  msg={msg}
-                  currentUserId={currentUserId}
-                  currentConversation={currentConversation}
-                  isMine={msg.meta.isMine}
-                  showTime={msg.meta.showTime}
-                  showName={msg.meta.showName}
-                  showAvatar={msg.meta.showAvatar}
-                  isLastMessage={index === messages.length - 1}
-                  onPreviewImage={handlePreviewImage}
-                  onDeleteMessage={handleDeleteMessage}
-                  onEditClick={handleEditClick}
-                  onSelectAvatarUser={onSelectAvatarUser}
-                />
-              </React.Fragment>
-            );
-          })
+          displayMessages.map((msg, index) => (
+            <React.Fragment key={msg._id}>
+              {msg.meta.showDate && <MessageDateDivider date={msg.createdAt} />}
+
+              <MessageItem
+                key={msg._id}
+                msg={msg}
+                currentUserId={currentUserId}
+                currentConversation={currentConversation}
+                isLastMessage={index === messages.length - 1}
+                onPreviewImage={handlePreviewImage}
+                setEditingMessage={setEditingMessage}
+                onSelectAvatarUser={onSelectAvatarUser}
+              />
+            </React.Fragment>
+          ))
         )}
       </ul>
 

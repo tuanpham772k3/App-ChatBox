@@ -33,7 +33,7 @@ export const createNewMessage = createAsyncThunk(
 );
 
 // Lấy danh sách tin nhắn theo conversation
-export const fetchConversationMessages = createAsyncThunk(
+export const getConversationMessages = createAsyncThunk(
   "messages/fetchByConversation",
   async ({ conversationId, cursor }, { rejectWithValue }) => {
     try {
@@ -168,11 +168,11 @@ const messagesSlice = createSlice({
       // -------------------------------
       // FETCH MESSAGES
       // -------------------------------
-      .addCase(fetchConversationMessages.pending, (state) => {
+      .addCase(getConversationMessages.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchConversationMessages.fulfilled, (state, action) => {
+      .addCase(getConversationMessages.fulfilled, (state, action) => {
         const { messages, nextCursor, hasMore } = action.payload;
 
         if (!state.cursor) {
@@ -189,7 +189,7 @@ const messagesSlice = createSlice({
         state.hasMore = hasMore;
         state.loading = false;
       })
-      .addCase(fetchConversationMessages.rejected, (state, action) => {
+      .addCase(getConversationMessages.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

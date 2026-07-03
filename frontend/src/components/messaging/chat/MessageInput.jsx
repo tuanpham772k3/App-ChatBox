@@ -118,7 +118,7 @@ const MessageInput = ({
   const handleOnchange = (e) => {
     const value = e.target.value;
 
-    if (id) {
+    if (isEditing) {
       setEditingMessage((prev) => ({
         ...prev,
         content: value,

@@ -49,7 +49,6 @@ const ChatWindow = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-
   const activeConversationId = useParams().conversationId;
 
   const currentUserId = useSelector((state) => state.user.currentUser?._id);
@@ -90,6 +89,14 @@ const ChatWindow = () => {
 
     return () => {
       dispatch(setActiveConversation(null));
+      setOpenDrawer(null);
+      setOpenModal(null);
+      setSelectedMemberId(null);
+      setEditingMessage({
+        id: null,
+        content: "",
+        originalContent: "",
+      });
     };
   }, [activeConversationId]);
 
@@ -110,33 +117,39 @@ const ChatWindow = () => {
 
   useEffect(() => {
     if (!activeConversationId) return;
-
-    dispatch(getConversationDetail(activeConversationId)).unwrap().catch(console.error);
+    const fetchConversationDetail = async () => {
+      try {
+        await dispatch(getConversationDetail(activeConversationId)).unwrap();
+      } catch (error) {
+        notification.error({
+          message: "Lấy thông tin hội thoại thất bại",
+          description: error.message || "Có lỗi xảy ra",
+        });
+      }
+    };
+    fetchConversationDetail();
   }, [activeConversationId, dispatch]);
 
   useEffect(() => {
     if (openDrawer === DRAWER.INFO && activeConversationId) {
-      dispatch(
-        getConversationImages({
-          conversationId: activeConversationId,
-          limit: 8,
-        })
-      )
-        .unwrap()
-        .catch(console.error);
+      const fetchImages = async () => {
+        try {
+          await dispatch(
+            getConversationImages({
+              conversationId: activeConversationId,
+              limit: 8,
+            })
+          ).unwrap();
+        } catch (error) {
+          notification.error({
+            message: "Lấy ảnh thất bại",
+            description: error.message || "Có lỗi xảy ra",
+          });
+        }
+      };
+      fetchImages();
     }
-  }, [openDrawer, activeConversationId, dispatch]);
-
-  useEffect(() => {
-    setOpenDrawer(null);
-    setOpenModal(null);
-    setSelectedMemberId(null);
-    setEditingMessage({
-      id: null,
-      content: "",
-      originalContent: "",
-    });
-  }, [activeConversationId]);
+  }, [openDrawer, activeConversationId]);
 
   const handleTogglePinConversation = () => {
     if (!activeConversationId || !currentUserId) return;
@@ -155,43 +168,36 @@ const ChatWindow = () => {
       });
   };
 
-  const handleClearHistory = () => {
+  const handleClearHistory = async () => {
     if (!activeConversationId || !currentUserId) return;
-    dispatch(
-      clearConversationHistory({
-        conversationId: activeConversationId,
-        userId: currentUserId,
-      })
-    )
-      .unwrap()
-      .then(() => {
-        notification.success({ message: "Đã xóa lịch sử trò chuyện" });
-      })
-      .catch((err) => {
-        notification.error({
-          message: "Xóa lịch sử trò chuyện thất bại",
-          description: err.message || "Có lỗi xảy ra",
-        });
+    try {
+      await dispatch(
+        clearConversationHistory({
+          conversationId: activeConversationId,
+          userId: currentUserId,
+        })
+      ).unwrap();
+    } catch (error) {
+      notification.error({
+        message: "Xóa lịch sử trò chuyện thất bại",
+        description: error.message || "Có lỗi xảy ra",
       });
+    }
 
     setOpenDrawer(null);
   };
 
-  const handleLeaveGroup = () => {
+  const handleLeaveGroup = async () => {
     if (!activeConversationId) return;
-    dispatch(leaveGroup(activeConversationId))
-      .unwrap()
-      .then(() => {
-        navigate("/messages/empty", { replace: true });
-        notification.success({ message: "Rời nhóm thành công" });
-        setOpenModal(null);
-      })
-      .catch((err) => {
-        notification.error({
-          message: "Rời nhóm thất bại",
-          description: err.message || "Có lỗi xảy ra",
-        });
+
+    try {
+      await dispatch(leaveGroup(activeConversationId)).unwrap();
+    } catch (error) {
+      notification.error({
+        message: "Rời nhóm thất bại",
+        description: error.message || "Có lỗi xảy ra",
       });
+    }
   };
 
   const handleBackToConversations = () => {
@@ -202,9 +208,17 @@ const ChatWindow = () => {
     }
   };
 
-  const handleSelectAvatarUser = (userId) => {
+  const handleSelectAvatarUser = async (userId) => {
     setOpenModal(MODAL.PROFILE);
-    dispatch(getUserDetail(userId));
+
+    try {
+      await dispatch(getUserDetail(userId)).unwrap();
+    } catch (error) {
+      notification.error({
+        message: "Lấy thông tin người dùng thất bại",
+        description: error.message || "Có lỗi xảy ra",
+      });
+    }
   };
 
   const handleCreateFriendRequest = async (e, userId) => {
@@ -256,7 +270,7 @@ const ChatWindow = () => {
     }
   };
 
-  const handleMessage = async (e, user) => {
+  const handleOpenChat = async (e, user) => {
     e?.stopPropagation?.();
     if (!user?._id) return;
 
@@ -364,7 +378,7 @@ const ChatWindow = () => {
         isOpen={openModal === MODAL.PROFILE}
         onCancel={() => setOpenModal(null)}
         selectedUser={selectedUser}
-        onMessage={handleMessage}
+        onOpenChat={handleOpenChat}
         onCreateRequest={handleCreateFriendRequest}
         onAcceptRequest={handleAcceptFriendRequest}
         onCancelRequest={handleCancelFriendRequest}
