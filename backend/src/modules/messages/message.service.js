@@ -197,34 +197,39 @@ const MessageService = {
     await message.save();
 
     // ===== Update lastMessage nếu cần =====
-    const conversation = await Conversation.findOneAndUpdate(
-      {
-        _id: message.conversationId,
-        "lastMessage.messageId": message._id,
-      },
-      {
-        $set: {
-          "lastMessage.content": "This message has been deleted.",
-          "lastMessage.file": null,
-          "lastMessage.isDeleted": true,
-        },
-      },
-      {
-        new: true,
-      }
-    )
+    const conversation = await Conversation.findById(message.conversationId)
       .select("participants lastMessage")
-      .populate("lastMessage.senderId", "displayName avatar")
       .lean();
+
+    if (!conversation) {
+      throw new AppError("Conversation not found", 404);
+    }
+
+    const isLastMessage =
+      String(conversation.lastMessage?.messageId) === String(message._id);
+
+    let updatedConversation = null;
+
+    if (isLastMessage) {
+      updatedConversation = await Conversation.findByIdAndUpdate(
+        message.conversationId,
+        {
+          $set: {
+            "lastMessage.content": message.content,
+            "lastMessage.file": null,
+            "lastMessage.isDeleted": true,
+          },
+        },
+        { new: true }
+      )
+        .select("participants lastMessage")
+        .populate("lastMessage.senderId", "displayName avatar email")
+        .lean();
+    }
 
     return {
       message: message.toObject(),
-      realtimeData: {
-        messageId: message._id,
-        conversationId: message.conversationId,
-        conversation,
-        lastMessage: conversation.lastMessage,
-      },
+      conversation: updatedConversation,
     };
   },
 

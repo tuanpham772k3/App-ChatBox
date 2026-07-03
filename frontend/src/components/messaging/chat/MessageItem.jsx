@@ -3,6 +3,7 @@ import { Check, CheckCheck, Clock, TriangleAlert } from "lucide-react";
 import PopoverMessageActions from "./PopoverMessageActions";
 import UserAvatar from "@/components/ui/avatar/UserAvatar";
 import messagesApi from "@/services/messagesApi";
+import { useNotification } from "@/hooks/useNotification";
 
 const MESSAGE_STATUS = {
   sending: {
@@ -58,6 +59,8 @@ const MessageItem = ({
   setEditingMessage,
   onSelectAvatarUser,
 }) => {
+  const notification = useNotification();
+
   // Lấy thông tin tin nhắn
   const isMine = msg.meta.isMine;
   const showTime = msg.meta.showTime;

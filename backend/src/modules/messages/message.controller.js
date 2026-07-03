@@ -92,15 +92,24 @@ const deleteMessageById = async (req, res, next) => {
       });
     }
 
-    const result = await MessageService.deleteMessageById(messageId, userId);
+    const { message, conversation } = await MessageService.deleteMessageById(
+      messageId,
+      userId
+    );
 
     // realtime
-    emitMessageEvent.deleted({ io, ...result.realtimeData });
+    emitMessageEvent.deleted({
+      io,
+      messageId: message._id,
+      conversationId: message.conversationId,
+      conversation,
+      lastMessage: conversation?.lastMessage,
+    });
 
     return res.status(200).json({
       success: true,
       message: "Message deleted successfully",
-      data: result.message,
+      data: message,
     });
   } catch (error) {
     return next(error);
