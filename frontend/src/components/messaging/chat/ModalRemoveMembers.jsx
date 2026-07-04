@@ -1,17 +1,22 @@
 import React from "react";
 import { useDispatch } from "react-redux";
-import { Checkbox, Modal } from "antd";
+import { Modal } from "antd";
 import { useNotification } from "@/hooks/useNotification";
 import { removeMemberFromGroup } from "@/store/conversationsSlice";
 
-const ModalRemoveMembers = ({ isOpen, onCancel, memberId, conversationId }) => {
+const ModalRemoveMembers = ({ isOpen, onCancel, activeConversationId, member }) => {
   const dispatch = useDispatch();
   const notification = useNotification();
 
   // Xóa thành viên
   const handleRemoveMembersToGroup = async () => {
     try {
-      await dispatch(removeMemberFromGroup({ conversationId, memberId })).unwrap();
+      await dispatch(
+        removeMemberFromGroup({
+          conversationId: activeConversationId,
+          memberId: member.id,
+        })
+      ).unwrap();
       onCancel();
     } catch (error) {
       notification.error({
@@ -31,12 +36,8 @@ const ModalRemoveMembers = ({ isOpen, onCancel, memberId, conversationId }) => {
       cancelText="Đóng"
       title="Xác nhận xóa thành viên"
     >
-      <div className="space-y-4 border-y-1 border-[var(--color-border)] py-4">
-        <h3>Xóa thành viên này khỏi nhóm?</h3>
-        <div className="flex gap-2">
-          <Checkbox />
-          <span>Chặn người này tham gia lại</span>
-        </div>
+      <div className="py-4">
+        <p>Xóa thành viên này khỏi nhóm: {member?.displayName}</p>
       </div>
     </Modal>
   );

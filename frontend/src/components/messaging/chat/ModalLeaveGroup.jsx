@@ -1,23 +1,18 @@
 import React, { useState } from "react";
 import { Modal, Select } from "antd";
 import { useDispatch } from "react-redux";
-import { transferGroupOwnership } from "@/store/conversationsSlice";
+import { leaveGroup, transferGroupOwnership } from "@/store/conversationsSlice";
 
-const ModalLeaveGroup = ({
-  isOpen,
-  onClose,
-  onLeave,
-  conversationId,
-  me,
-  members = [],
-}) => {
+const ModalLeaveGroup = ({ isOpen, onClose, conversationId, me, members = [] }) => {
   const dispatch = useDispatch();
   const [newOwnerId, setNewOwnerId] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const isOwner = me?.role === "owner";
+  // Filter member có thể làm owner (trừ chính mình)
+  const availableMembers = members.filter((m) => m.id !== me?.id);
 
-  const handleLeave = async () => {
+  const handleLeaveGroup = async () => {
     try {
       setLoading(true);
 
@@ -28,26 +23,28 @@ const ModalLeaveGroup = ({
         await dispatch(transferGroupOwnership({ conversationId, newOwnerId })).unwrap();
       }
 
-      if (onLeave) {
-        await onLeave();
-      }
+      await dispatch(leaveGroup(conversationId)).unwrap();
+
+      notification.success({
+        message: "Rời nhóm thành công",
+      });
 
       onClose();
-    } catch (err) {
-      console.log("Lỗi rời nhóm:", err);
+    } catch (error) {
+      notification.error({
+        message: "Rời nhóm thất bại",
+        description: error.message || "Có lỗi xảy ra",
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  // Filter member có thể làm owner (trừ chính mình)
-  const availableMembers = members.filter((m) => m.id !== me?.id);
-
   return (
     <Modal
       open={isOpen}
       onCancel={onClose}
-      onOk={handleLeave}
+      onOk={handleLeaveGroup}
       confirmLoading={loading}
       width="min(calc(100vw - 2rem), 25rem)"
       okText="Xác nhận"

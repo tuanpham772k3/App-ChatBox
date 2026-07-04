@@ -7,7 +7,7 @@ import { addMemberToGroup } from "@/store/conversationsSlice";
 import { useNotification } from "@/hooks/useNotification";
 import { getFriends } from "@/store/relationshipSlice";
 
-const ModalAddMembers = ({ isOpen, onCancel, conversationId }) => {
+const ModalAddMembers = ({ isOpen, onCancel, activeConversationId }) => {
   const dispatch = useDispatch();
 
   const { friends, loading } = useSelector((state) => state.relationship);
@@ -53,7 +53,10 @@ const ModalAddMembers = ({ isOpen, onCancel, conversationId }) => {
       }
 
       await dispatch(
-        addMemberToGroup({ conversationId, memberIds: selectedUsers })
+        addMemberToGroup({
+          conversationId: activeConversationId,
+          memberIds: selectedUsers,
+        })
       ).unwrap();
 
       setSelectedUsers([]);

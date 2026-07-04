@@ -7,22 +7,17 @@ import MessageInput from "../components/messaging/chat/MessageInput";
 import Messages from "../components/messaging/chat/Messages";
 import DrawerConversationInfo from "../components/messaging/chat/DrawerConversationInfo";
 import DrawerMembersInfo from "../components/messaging/chat/DrawerMembersInfo";
-import DrawerMediaGallery from "../components/messaging/chat/DrawerMediaGallery";
-import ModalRemoveMembers from "../components/messaging/chat/ModalRemoveMembers";
 import ModalAddMembers from "../components/messaging/chat/ModalAddMembers";
 
 import {
   clearConversationHistory,
   createPrivateConversation,
   getConversationDetail,
-  getConversationImages,
-  leaveGroup,
   setActiveConversation,
   togglePinConversation,
 } from "@/store/conversationsSlice";
 import { mapConversationForDisplay } from "@/utils/conversationMapper";
 import { emitEvent } from "@/lib/socket";
-import ModalLeaveGroup from "../components/messaging/chat/ModalLeaveGroup";
 import { useNotification } from "@/hooks/useNotification";
 import { getUserDetail } from "@/store/userSlice";
 import ModalUserProfile from "@/components/community/ModalUserProfile";
@@ -34,15 +29,12 @@ import {
 
 const MODAL = {
   ADD: "add_members",
-  REMOVE: "remove_members",
-  LEAVE: "leave_group",
   PROFILE: "user_profile",
 };
 
 const DRAWER = {
   INFO: "conversation_info",
   MEMBERS: "members_info",
-  MEDIA: "media",
 };
 
 const ChatWindow = () => {
@@ -52,14 +44,12 @@ const ChatWindow = () => {
   const activeConversationId = useParams().conversationId;
 
   const currentUserId = useSelector((state) => state.user.currentUser?._id);
-  const { currentConversation, typingUsers, images } = useSelector(
+  const { currentConversation, typingUsers } = useSelector(
     (state) => state.conversations
   );
-  const { selectedUser } = useSelector((state) => state.user);
 
   const [openModal, setOpenModal] = useState(null);
   const [openDrawer, setOpenDrawer] = useState(null);
-  const [selectedMemberId, setSelectedMemberId] = useState(null);
   const [editingMessage, setEditingMessage] = useState({
     id: null,
     content: "",
@@ -84,22 +74,6 @@ const ChatWindow = () => {
       .map((member) => member.displayName);
   }, [activeConversationId, typingUsers, displayInfo.members, currentUserId]);
 
-  useEffect(() => {
-    dispatch(setActiveConversation(activeConversationId));
-
-    return () => {
-      dispatch(setActiveConversation(null));
-      setOpenDrawer(null);
-      setOpenModal(null);
-      setSelectedMemberId(null);
-      setEditingMessage({
-        id: null,
-        content: "",
-        originalContent: "",
-      });
-    };
-  }, [activeConversationId]);
-
   // join conversation
   useEffect(() => {
     if (!activeConversationId) return;
@@ -108,15 +82,26 @@ const ChatWindow = () => {
       conversationId: activeConversationId,
     });
 
+    dispatch(setActiveConversation(activeConversationId));
+
     return () => {
       emitEvent("conversation:leave", {
         conversationId: activeConversationId,
+      });
+
+      dispatch(setActiveConversation(null));
+
+      setEditingMessage({
+        id: null,
+        content: "",
+        originalContent: "",
       });
     };
   }, [activeConversationId]);
 
   useEffect(() => {
     if (!activeConversationId) return;
+
     const fetchConversationDetail = async () => {
       try {
         await dispatch(getConversationDetail(activeConversationId)).unwrap();
@@ -127,45 +112,26 @@ const ChatWindow = () => {
         });
       }
     };
+
     fetchConversationDetail();
   }, [activeConversationId, dispatch]);
 
-  useEffect(() => {
-    if (openDrawer === DRAWER.INFO && activeConversationId) {
-      const fetchImages = async () => {
-        try {
-          await dispatch(
-            getConversationImages({
-              conversationId: activeConversationId,
-              limit: 8,
-            })
-          ).unwrap();
-        } catch (error) {
-          notification.error({
-            message: "Lấy ảnh thất bại",
-            description: error.message || "Có lỗi xảy ra",
-          });
-        }
-      };
-      fetchImages();
-    }
-  }, [openDrawer, activeConversationId]);
-
-  const handleTogglePinConversation = () => {
+  const handleTogglePinConversation = async () => {
     if (!activeConversationId || !currentUserId) return;
-    dispatch(
-      togglePinConversation({
-        conversationId: activeConversationId,
-        userId: currentUserId,
-      })
-    )
-      .unwrap()
-      .catch((err) => {
-        notification.error({
-          message: "Cập nhật ghim hội thoại thất bại",
-          description: err.message || "Có lỗi xảy ra",
-        });
+
+    try {
+      await dispatch(
+        togglePinConversation({
+          conversationId: activeConversationId,
+          userId: currentUserId,
+        })
+      ).unwrap();
+    } catch (error) {
+      notification.error({
+        message: "Cập nhật ghim hội thoại thất bại",
+        description: error.message || "Có lỗi xảy ra",
       });
+    }
   };
 
   const handleClearHistory = async () => {
@@ -185,40 +151,6 @@ const ChatWindow = () => {
     }
 
     setOpenDrawer(null);
-  };
-
-  const handleLeaveGroup = async () => {
-    if (!activeConversationId) return;
-
-    try {
-      await dispatch(leaveGroup(activeConversationId)).unwrap();
-    } catch (error) {
-      notification.error({
-        message: "Rời nhóm thất bại",
-        description: error.message || "Có lỗi xảy ra",
-      });
-    }
-  };
-
-  const handleBackToConversations = () => {
-    if (location.pathname.startsWith("/community")) {
-      navigate("/community");
-    } else {
-      navigate("/chat");
-    }
-  };
-
-  const handleSelectAvatarUser = async (userId) => {
-    setOpenModal(MODAL.PROFILE);
-
-    try {
-      await dispatch(getUserDetail(userId)).unwrap();
-    } catch (error) {
-      notification.error({
-        message: "Lấy thông tin người dùng thất bại",
-        description: error.message || "Có lỗi xảy ra",
-      });
-    }
   };
 
   const handleCreateFriendRequest = async (e, userId) => {
@@ -270,6 +202,27 @@ const ChatWindow = () => {
     }
   };
 
+  const handleBackToConversations = () => {
+    if (location.pathname.startsWith("/community")) {
+      navigate("/community");
+    } else {
+      navigate("/chat");
+    }
+  };
+
+  const handleOpenUserProfile = async (userId) => {
+    setOpenModal(MODAL.PROFILE);
+
+    try {
+      await dispatch(getUserDetail(userId)).unwrap();
+    } catch (error) {
+      notification.error({
+        message: "Lấy thông tin người dùng thất bại",
+        description: error.message || "Có lỗi xảy ra",
+      });
+    }
+  };
+
   const handleOpenChat = async (e, user) => {
     e?.stopPropagation?.();
     if (!user?._id) return;
@@ -298,7 +251,7 @@ const ChatWindow = () => {
         onOpenConversationInfo={() => setOpenDrawer(DRAWER.INFO)}
         onOpenAddMembers={() => setOpenModal(MODAL.ADD)}
         onOpenMembersInfo={() => setOpenDrawer(DRAWER.MEMBERS)}
-        onSelectAvatarUser={handleSelectAvatarUser}
+        onOpenUserProfile={handleOpenUserProfile}
         displayInfo={displayInfo}
         typingNames={typingNames}
       />
@@ -306,10 +259,10 @@ const ChatWindow = () => {
       <div className="min-h-0 flex-1 overflow-hidden">
         <Messages
           currentUserId={currentUserId}
-          conversationId={activeConversationId}
+          activeConversationId={activeConversationId}
           currentConversation={currentConversation}
           setEditingMessage={setEditingMessage}
-          onSelectAvatarUser={handleSelectAvatarUser}
+          onOpenUserProfile={handleOpenUserProfile}
           onCreateFriendRequest={handleCreateFriendRequest}
           onAcceptFriendRequest={handleAcceptFriendRequest}
         />
@@ -317,7 +270,7 @@ const ChatWindow = () => {
 
       <MessageInput
         currentUserId={currentUserId}
-        conversationId={activeConversationId}
+        activeConversationId={activeConversationId}
         editingMessage={editingMessage}
         setEditingMessage={setEditingMessage}
       />
@@ -326,58 +279,31 @@ const ChatWindow = () => {
         open={openDrawer === DRAWER.INFO}
         onClose={() => setOpenDrawer(null)}
         displayInfo={displayInfo}
+        activeConversationId={activeConversationId}
         onTogglePin={handleTogglePinConversation}
         onClearHistory={handleClearHistory}
         onOpenLeaveGroup={() => setOpenModal(MODAL.LEAVE)}
         onOpenMembersInfo={() => setOpenDrawer(DRAWER.MEMBERS)}
-        onOpenMediaGallery={() => setOpenDrawer(DRAWER.MEDIA)}
-        images={images}
       />
 
       <DrawerMembersInfo
         open={openDrawer === DRAWER.MEMBERS}
         onClose={() => setOpenDrawer(null)}
         onOpenAddMembers={() => setOpenModal(MODAL.ADD)}
+        activeConversationId={activeConversationId}
         currentUserId={currentUserId}
         members={displayInfo.members || []}
-        onRemoveMember={(memberId) => {
-          setSelectedMemberId(memberId);
-          setOpenModal(MODAL.REMOVE);
-        }}
-      />
-
-      <DrawerMediaGallery
-        open={openDrawer === DRAWER.MEDIA}
-        onClose={() => setOpenDrawer(DRAWER.INFO)}
-        images={images}
       />
 
       <ModalAddMembers
         isOpen={openModal === MODAL.ADD}
         onCancel={() => setOpenModal(null)}
-        conversationId={activeConversationId}
-      />
-
-      <ModalRemoveMembers
-        isOpen={openModal === MODAL.REMOVE}
-        onCancel={() => setOpenModal(null)}
-        conversationId={activeConversationId}
-        memberId={selectedMemberId}
-      />
-
-      <ModalLeaveGroup
-        isOpen={openModal === MODAL.LEAVE}
-        onClose={() => setOpenModal(null)}
-        onLeave={handleLeaveGroup}
-        conversationId={activeConversationId}
-        me={displayInfo?.me}
-        members={displayInfo?.members}
+        activeConversationId={activeConversationId}
       />
 
       <ModalUserProfile
         isOpen={openModal === MODAL.PROFILE}
         onCancel={() => setOpenModal(null)}
-        selectedUser={selectedUser}
         onOpenChat={handleOpenChat}
         onCreateRequest={handleCreateFriendRequest}
         onAcceptRequest={handleAcceptFriendRequest}

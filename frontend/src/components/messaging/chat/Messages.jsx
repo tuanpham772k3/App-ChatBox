@@ -39,10 +39,10 @@ const MessageDateDivider = ({ date }) => {
 
 const Messages = ({
   currentUserId,
-  conversationId,
+  activeConversationId,
   currentConversation,
   setEditingMessage,
-  onSelectAvatarUser,
+  onOpenUserProfile,
   onCreateFriendRequest,
   onAcceptFriendRequest,
 }) => {
@@ -67,7 +67,7 @@ const Messages = ({
 
   // ===== Load initial messages =====
   useEffect(() => {
-    if (!conversationId) return;
+    if (!activeConversationId) return;
 
     dispatch(clearMessages());
 
@@ -76,15 +76,15 @@ const Messages = ({
 
     dispatch(
       getConversationMessages({
-        conversationId: conversationId,
+        conversationId: activeConversationId,
         cursor: null,
       })
     );
-  }, [conversationId, dispatch]);
+  }, [activeConversationId, dispatch]);
 
   // ===== Read pointer: server is source of truth, client emits latest seen message =====
   useEffect(() => {
-    if (!conversationId || !currentUserId || messages.length === 0) return;
+    if (!activeConversationId || !currentUserId || messages.length === 0) return;
 
     const latestMessage = messages[messages.length - 1];
     if (!latestMessage?._id || latestMessage.isTemp) return;
@@ -96,12 +96,12 @@ const Messages = ({
 
     dispatch(
       syncReadStatusRealtime({
-        conversationId: conversationId,
+        conversationId: activeConversationId,
         userId: currentUserId,
         lastReadAt: latestMessage.createdAt,
       })
     );
-  }, [conversationId, currentUserId, dispatch, messages]);
+  }, [activeConversationId, currentUserId, dispatch, messages]);
 
   // ===== Auto scroll =====
   useEffect(() => {
@@ -129,7 +129,7 @@ const Messages = ({
   useEffect(() => {
     if (!inView) return;
     if (!hasMore || loading) return;
-    if (!conversationId) return;
+    if (!activeConversationId) return;
 
     const el = containerRef.current;
     if (!el) return;
@@ -138,7 +138,7 @@ const Messages = ({
 
     dispatch(
       getConversationMessages({
-        conversationId: conversationId,
+        conversationId: activeConversationId,
         cursor,
       })
     )
@@ -241,18 +241,18 @@ const Messages = ({
                 </>
               ) : relationshipStatus === "blocked_by_me" ? (
                 <>
-                  <span className="text-[13px]">Bạn đã ghét họ</span>
+                  <span className="text-[13px]">Bạn đã chặn người này</span>
 
                   <button
                     type="button"
                     className="text-sm py-1 px-4 bg-[var(--color-surface)]
                     hover:bg-[var(--color-hover)] active:bg-[var(--color-active)]"
                   >
-                    Bỏ ghét
+                    Bỏ chặn
                   </button>
                 </>
               ) : relationshipStatus === "blocked_by_other" ? (
-                <span className="text-[13px]">Bạn đã bị người này tẩy chay</span>
+                <span className="text-[13px]">Bạn đã bị người này chặn</span>
               ) : null}
             </div>
           </li>
@@ -282,7 +282,7 @@ const Messages = ({
                 isLastMessage={index === messages.length - 1}
                 onPreviewImage={handlePreviewImage}
                 setEditingMessage={setEditingMessage}
-                onSelectAvatarUser={onSelectAvatarUser}
+                onOpenUserProfile={onOpenUserProfile}
               />
             </React.Fragment>
           ))

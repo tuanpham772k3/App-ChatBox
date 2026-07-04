@@ -3,16 +3,18 @@ import { Descriptions, Modal } from "antd";
 import { HiOutlineUsers } from "react-icons/hi2";
 import { MdBlock } from "react-icons/md";
 import UserAvatar from "../ui/avatar/UserAvatar";
+import { useSelector } from "react-redux";
 
 const ModalUserProfile = ({
   isOpen,
   onCancel,
-  selectedUser,
   onOpenChat,
   onCreateRequest,
   onAcceptRequest,
   onCancelRequest,
 }) => {
+  const { selectedUser } = useSelector((state) => state.user);
+
   return (
     <Modal
       open={isOpen}

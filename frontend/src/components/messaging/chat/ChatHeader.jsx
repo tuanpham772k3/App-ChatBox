@@ -9,7 +9,7 @@ const ChatHeader = ({
   onOpenConversationInfo,
   onOpenAddMembers,
   onOpenMembersInfo,
-  onSelectAvatarUser,
+  onOpenUserProfile,
   displayInfo,
   typingNames,
 }) => {
@@ -39,7 +39,7 @@ const ChatHeader = ({
             </button>
           ) : (
             <button
-              onClick={() => onSelectAvatarUser(displayInfo?.partnerId)}
+              onClick={() => onOpenUserProfile(displayInfo?.partnerId)}
               type="button"
               className="relative"
             >
