@@ -57,7 +57,7 @@ const MessageItem = ({
   isLastMessage,
   onPreviewImage,
   setEditingMessage,
-  onSelectAvatarUser,
+  onOpenUserProfile,
 }) => {
   const notification = useNotification();
 
@@ -137,7 +137,7 @@ const MessageItem = ({
       >
         {/* --- Avatar ---*/}
         {showAvatar ? (
-          <button type="button" onClick={() => onSelectAvatarUser(msg?.senderId?._id)}>
+          <button type="button" onClick={() => onOpenUserProfile(msg?.senderId?._id)}>
             <UserAvatar
               name={msg.senderId?.displayName || "Người dùng"}
               avatarUrl={msg.senderId?.avatar?.url}

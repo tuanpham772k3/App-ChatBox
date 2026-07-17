@@ -299,6 +299,7 @@ const ChatWindow = () => {
         isOpen={openModal === MODAL.ADD}
         onCancel={() => setOpenModal(null)}
         activeConversationId={activeConversationId}
+        currentConversation={currentConversation}
       />
 
       <ModalUserProfile

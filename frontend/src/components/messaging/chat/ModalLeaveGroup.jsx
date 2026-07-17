@@ -2,11 +2,16 @@ import React, { useState } from "react";
 import { Modal, Select } from "antd";
 import { useDispatch } from "react-redux";
 import { leaveGroup, transferGroupOwnership } from "@/store/conversationsSlice";
+import { useNotification } from "@/hooks/useNotification";
+import { useNavigate } from "react-router-dom";
 
 const ModalLeaveGroup = ({ isOpen, onClose, conversationId, me, members = [] }) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [newOwnerId, setNewOwnerId] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  const notification = useNotification();
 
   const isOwner = me?.role === "owner";
   // Filter member có thể làm owner (trừ chính mình)
@@ -30,6 +35,7 @@ const ModalLeaveGroup = ({ isOpen, onClose, conversationId, me, members = [] }) 
       });
 
       onClose();
+      navigate("/chat");
     } catch (error) {
       notification.error({
         message: "Rời nhóm thất bại",
@@ -40,10 +46,15 @@ const ModalLeaveGroup = ({ isOpen, onClose, conversationId, me, members = [] }) 
     }
   };
 
+  const handleCancel = () => {
+    setNewOwnerId(null);
+    onClose?.();
+  };
+
   return (
     <Modal
       open={isOpen}
-      onCancel={onClose}
+      onCancel={handleCancel}
       onOk={handleLeaveGroup}
       confirmLoading={loading}
       width="min(calc(100vw - 2rem), 25rem)"

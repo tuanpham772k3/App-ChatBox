@@ -7,7 +7,12 @@ import { addMemberToGroup } from "@/store/conversationsSlice";
 import { useNotification } from "@/hooks/useNotification";
 import { getFriends } from "@/store/relationshipSlice";
 
-const ModalAddMembers = ({ isOpen, onCancel, activeConversationId }) => {
+const ModalAddMembers = ({
+  isOpen,
+  onCancel,
+  activeConversationId,
+  currentConversation,
+}) => {
   const dispatch = useDispatch();
 
   const { friends, loading } = useSelector((state) => state.relationship);
@@ -16,6 +21,10 @@ const ModalAddMembers = ({ isOpen, onCancel, activeConversationId }) => {
   const [searchText, setSearchText] = useState("");
 
   const notification = useNotification();
+
+  const existingMemberIds = new Set(
+    currentConversation?.participants.map((p) => p.userId._id) || []
+  );
 
   useEffect(() => {
     dispatch(getFriends());
@@ -90,7 +99,7 @@ const ModalAddMembers = ({ isOpen, onCancel, activeConversationId }) => {
         />
 
         {/* User List */}
-        <div className="flex-1 min-h-0 flex flex-col gap-1 overflow-y-auto custom-scrollbar">
+        <ul className="flex-1 min-h-0 flex flex-col gap-1 overflow-y-auto custom-scrollbar">
           {loading ? (
             <div className="w-full flex items-center justify-center">
               <Spin />
@@ -102,12 +111,15 @@ const ModalAddMembers = ({ isOpen, onCancel, activeConversationId }) => {
               <UserSelectItem
                 key={user._id}
                 user={user}
-                isSelected={selectedUsers.includes(user._id)}
+                disabled={existingMemberIds.has(user._id)}
+                isSelected={
+                  existingMemberIds.has(user._id) || selectedUsers.includes(user._id)
+                }
                 onToggle={() => toggleUser(user._id)}
               />
             ))
           )}
-        </div>
+        </ul>
       </div>
     </Modal>
   );
