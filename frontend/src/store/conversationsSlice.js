@@ -247,12 +247,12 @@ const conversationsSlice = createSlice({
       const idx = state.conversations.findIndex((c) => c._id === conversationId);
       if (idx === -1) return;
 
-      const conv = state.conversations[idx];
-      conv.lastMessage = lastMessage;
+      const conversation = state.conversations[idx];
+      conversation.lastMessage = lastMessage;
 
       // move to top
       state.conversations.splice(idx, 1);
-      state.conversations.unshift(conv);
+      state.conversations.unshift(conversation);
     },
 
     // Realtime unread
@@ -274,7 +274,9 @@ const conversationsSlice = createSlice({
       if (conv) {
         conv.participants = conv.participants.map((p) => {
           if (p.userId?._id !== userId) return p;
-          if (!isAtOrAfter(lastReadAt, p.lastReadAt)) return p;
+          if (p.lastReadAt && new Date(lastReadAt) < new Date(p.lastReadAt)) {
+            return p;
+          }
 
           return {
             ...p,
@@ -288,7 +290,9 @@ const conversationsSlice = createSlice({
         state.currentConversation.participants =
           state.currentConversation.participants.map((p) => {
             if (p.userId?._id !== userId) return p;
-            if (!isAtOrAfter(lastReadAt, p.lastReadAt)) return p;
+            if (p.lastReadAt && new Date(lastReadAt) < new Date(p.lastReadAt)) {
+              return p;
+            }
 
             return {
               ...p,
@@ -307,7 +311,12 @@ const conversationsSlice = createSlice({
       if (conv) {
         conv.participants = conv.participants.map((p) => {
           if (p.userId?._id !== userId) return p;
-          if (!isAtOrAfter(lastDeliveredAt, p.lastDeliveredAt)) return p;
+          if (
+            p.lastDeliveredAt &&
+            new Date(lastDeliveredAt) < new Date(p.lastDeliveredAt)
+          ) {
+            return p;
+          }
 
           return {
             ...p,
@@ -320,7 +329,12 @@ const conversationsSlice = createSlice({
         state.currentConversation.participants =
           state.currentConversation.participants.map((p) => {
             if (p.userId?._id !== userId) return p;
-            if (!isAtOrAfter(lastDeliveredAt, p.lastDeliveredAt)) return p;
+            if (
+              p.lastDeliveredAt &&
+              new Date(lastDeliveredAt) < new Date(p.lastDeliveredAt)
+            ) {
+              return p;
+            }
 
             return {
               ...p,

@@ -1,4 +1,8 @@
-const { emitToParticipants, emitToUser } = require("../socket.helpers.js");
+const {
+  emitToParticipants,
+  emitToUser,
+  emitToConversation,
+} = require("../socket.helpers.js");
 
 const emitConversationEvent = {
   created: ({ io, conversation }) => {
@@ -12,14 +16,14 @@ const emitConversationEvent = {
     );
   },
 
-  messageSeenUpdated: ({ io, userId, conversationId, participants, lastReadAt }) => {
+  messageSeenUpdated: ({ io, userId, conversationId, lastReadAt }) => {
     const payload = {
       conversationId,
       userId,
       lastReadAt,
     };
 
-    emitToParticipants(io, participants, "message:seen_updated", payload);
+    emitToConversation(io, conversationId, "message:seen_updated", payload);
   },
 
   messageDeliveredUpdated: ({

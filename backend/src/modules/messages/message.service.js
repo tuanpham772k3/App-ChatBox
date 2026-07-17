@@ -103,10 +103,11 @@ const MessageService = {
     });
 
     await conversation.save();
+    await conversation.populate("lastMessage.senderId", "displayName email avatar");
 
     return {
-      message: message.toObject(),
-      conversation: conversation.toObject(),
+      message,
+      conversation,
       isNew: true,
     };
   },
@@ -165,12 +166,7 @@ const MessageService = {
     };
   },
 
-  /**
-   *Xóa tin nhắn
-   * @param {string} messageId - ID của tin nhắn
-   * @param {string} userId - ID của user
-   * @returns {object} - Kết quả xóa tin nhắn
-   */
+  // xóa tin nhắn
   deleteMessageById: async (messageId, userId) => {
     const message = await Message.findById(messageId).populate(
       "senderId",
@@ -189,7 +185,6 @@ const MessageService = {
       return message;
     }
 
-    // ===== Soft delete =====
     message.isDeleted = true;
     message.content = "This message has been deleted.";
     message.file = null;
@@ -197,10 +192,9 @@ const MessageService = {
     await message.save();
 
     // ===== Update lastMessage nếu cần =====
-    const conversation = await Conversation.findById(message.conversationId)
-      .select("participants lastMessage")
-      .lean();
-
+    const conversation = await Conversation.findById(message.conversationId).select(
+      "participants lastMessage"
+    );
     if (!conversation) {
       throw new AppError("Conversation not found", 404);
     }
@@ -208,38 +202,27 @@ const MessageService = {
     const isLastMessage =
       String(conversation.lastMessage?.messageId) === String(message._id);
 
-    let updatedConversation = null;
-
     if (isLastMessage) {
-      updatedConversation = await Conversation.findByIdAndUpdate(
-        message.conversationId,
-        {
-          $set: {
-            "lastMessage.content": message.content,
-            "lastMessage.file": null,
-            "lastMessage.isDeleted": true,
-          },
-        },
-        { new: true }
-      )
-        .select("participants lastMessage")
-        .populate("lastMessage.senderId", "displayName avatar email")
-        .lean();
+      conversation.lastMessage.content = message.content;
+      conversation.lastMessage.file = null;
+      conversation.lastMessage.isDeleted = true;
+
+      await conversation.save();
+
+      await conversation.populate("lastMessage.senderId", "displayName avatar email");
     }
 
     return {
-      message: message.toObject(),
-      conversation: updatedConversation,
+      message,
+      realtimeData: {
+        participants: conversation.participants,
+        lastMessage: conversation.lastMessage,
+        isLastMessage,
+      },
     };
   },
 
-  /**
-   * Chỉnh sửa tin nhắn
-   * @param {string} messageId - ID của tin nhắn
-   * @param {string} userId - ID của user
-   * @param {string} newContent - Nội dung mới của tin nhắn
-   * @returns {object} - Tin nhắn đã được chỉnh sửa
-   */
+  // Chỉnh sửa tin nhắn
   editMessageById: async (messageId, userId, newContent) => {
     const message = await Message.findById(messageId).populate(
       "senderId",
@@ -272,56 +255,30 @@ const MessageService = {
 
     await message.save();
 
-    // Nếu là lastMessage thì cập nhật
-    const conversation = await Conversation.findById(message.conversationId);
+    // === Nếu là lastMessage thì cập nhật ===
+    const conversation = await Conversation.findById(message.conversationId).select(
+      "participants lastMessage"
+    );
+    if (!conversation) {
+      throw new AppError("Conversation not found", 404);
+    }
 
-    if (conversation?.lastMessage?.messageId?.equals(messageId)) {
+    const isLastMessage = conversation.lastMessage.messageId.equals(messageId);
+
+    if (isLastMessage) {
       conversation.lastMessage.content = message.content;
       await conversation.save();
-    }
 
-    return { message: message.toObject(), conversation: conversation.toObject() };
-  },
-
-  getMessageRealtimeData: async (messageId) => {
-    const message = await Message.findById(messageId)
-      .populate("senderId", "displayName email avatar")
-      .lean();
-    if (!message) {
-      throw new AppError("Message not found", 404);
-    }
-
-    const conversation = await Conversation.findById(message.conversationId)
-      .select("participants lastMessage")
-      .lean();
-    if (!conversation) {
-      throw new AppError("Conversation not found", 404);
-    }
-
-    return { message, conversation };
-  },
-
-  getMessageDeleteRealtimeData: async (messageId) => {
-    const message = await Message.findById(messageId)
-      .populate("senderId", "displayName email avatar")
-      .lean();
-    if (!message) {
-      throw new AppError("Message not found", 404);
-    }
-
-    const conversation = await Conversation.findById(message.conversationId)
-      .select("participants lastMessage")
-      .populate("lastMessage.senderId", "displayName avatar")
-      .lean();
-    if (!conversation) {
-      throw new AppError("Conversation not found", 404);
+      await conversation.populate("lastMessage.senderId", "displayName avatar email");
     }
 
     return {
-      messageId: message._id,
-      conversationId: message.conversationId,
-      conversation,
-      lastMessage: conversation.lastMessage || null,
+      message,
+      realtimeData: {
+        participants: conversation.participants,
+        lastMessage: conversation.lastMessage,
+        isLastMessage,
+      },
     };
   },
 };

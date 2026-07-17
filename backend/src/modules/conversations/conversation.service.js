@@ -49,7 +49,7 @@ const ConversationService = {
       ]);
 
       return {
-        ...populatedConversation.toObject(),
+        ...populatedConversation,
         conversationCategory: relationship ? "friend" : "stranger",
       };
     }
@@ -74,7 +74,7 @@ const ConversationService = {
     ]);
 
     return {
-      ...populatedConversation.toObject(),
+      ...populatedConversation,
       conversationCategory: relationship ? "friend" : "stranger",
     };
   },
@@ -128,7 +128,7 @@ const ConversationService = {
     ]);
 
     return {
-      ...populatedConversation.toObject(),
+      ...populatedConversation,
       conversationCategory: "group",
     };
   },
@@ -229,7 +229,7 @@ const ConversationService = {
     ]);
 
     return {
-      conversation: { ...conversation.toObject(), conversationCategory: "group" },
+      conversation: { ...conversation, conversationCategory: "group" },
       realtimeData: {
         newMembers,
         participants,
@@ -378,12 +378,7 @@ const ConversationService = {
 
     await conversation.save();
 
-    return {
-      realtimeData: {
-        participants: conversation.participants,
-        lastReadAt,
-      },
-    };
+    return conversation;
   },
 
   getConversationImages: async (conversationId, userId, page = 1, limit = 8) => {

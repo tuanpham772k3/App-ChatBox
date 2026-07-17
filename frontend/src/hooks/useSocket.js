@@ -113,11 +113,15 @@ export const useSocket = () => {
       }
     };
 
-    const onMessageEdit = (msg) => {
-      dispatch(updateMessage(msg));
+    const onMessageEdit = ({ message, editBy }) => {
+      if (editBy === currentUserId) return;
+
+      dispatch(updateMessage(message));
     };
 
-    const onMessageDelete = (messageId) => {
+    const onMessageDelete = ({ messageId, deletedBy }) => {
+      if (deletedBy === currentUserId) return;
+
       dispatch(removeMessage(messageId));
     };
 

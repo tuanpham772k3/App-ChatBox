@@ -1,8 +1,9 @@
 import React from "react";
+import { useDispatch } from "react-redux";
 import { Check, CheckCheck, Clock, TriangleAlert } from "lucide-react";
 import PopoverMessageActions from "./PopoverMessageActions";
 import UserAvatar from "@/components/ui/avatar/UserAvatar";
-import messagesApi from "@/services/messagesApi";
+import { deleteMessageById } from "@/store/messagesSlice";
 import { useNotification } from "@/hooks/useNotification";
 
 const MESSAGE_STATUS = {
@@ -59,6 +60,7 @@ const MessageItem = ({
   setEditingMessage,
   onOpenUserProfile,
 }) => {
+  const dispatch = useDispatch();
   const notification = useNotification();
 
   // Lấy thông tin tin nhắn
@@ -110,7 +112,7 @@ const MessageItem = ({
   // xóa tin nhắn
   const handleDeleteMessage = async () => {
     try {
-      await messagesApi.deleteMessageById(msg._id);
+      await dispatch(deleteMessageById(msg._id)).unwrap();
     } catch (error) {
       notification.error({
         message: "Gỡ tin nhắn thất bại",

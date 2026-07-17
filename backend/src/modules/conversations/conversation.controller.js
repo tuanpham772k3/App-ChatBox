@@ -261,14 +261,14 @@ const markAsRead = async (req, res, next) => {
       });
     }
 
-    const result = await ConversationService.markAsRead(conversationId, userId);
+    const conversation = await ConversationService.markAsRead(conversationId, userId);
 
     // realtime
     emitConversationEvent.messageSeenUpdated({
       io,
       userId,
       conversationId,
-      ...result.realtimeData,
+      lastReadAt: conversation.lastMessage.createdAt,
     });
 
     return res.status(200).json({

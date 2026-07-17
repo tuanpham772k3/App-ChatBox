@@ -34,11 +34,37 @@ export const createNewMessage = createAsyncThunk(
 
 // Lấy danh sách tin nhắn theo conversation
 export const getConversationMessages = createAsyncThunk(
-  "messages/fetchByConversation",
+  "messages/fetchMessages",
   async ({ conversationId, cursor }, { rejectWithValue }) => {
     try {
       const res = await messagesApi.getConversationMessages({ conversationId, cursor });
       return res.data; // { messages, nextCursor, hasMore }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+// Xóa tin nhắn
+export const deleteMessageById = createAsyncThunk(
+  "messages/deleteMessage",
+  async (messageId, { rejectWithValue }) => {
+    try {
+      const res = await messagesApi.deleteMessageById(messageId);
+      return res.data; //message
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+// Chỉnh sửa tin nhắn
+export const editMessageById = createAsyncThunk(
+  "messages/editMessage",
+  async ({ messageId, newContent }, { rejectWithValue }) => {
+    try {
+      const res = await messagesApi.editMessageById({ messageId, newContent });
+      return res.data; //message
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -77,9 +103,9 @@ const messagesSlice = createSlice({
       }
 
       const exists = state.messages.some((m) => m._id === newMsg._id);
-      if (!exists) {
-        state.messages.push(newMsg);
-      }
+      if (exists) return;
+
+      state.messages.push(newMsg);
     },
 
     // Cập nhật tin nhắn real-time
@@ -192,6 +218,28 @@ const messagesSlice = createSlice({
       .addCase(getConversationMessages.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+
+      // Xóa tin nhắn
+      .addCase(deleteMessageById.fulfilled, (state, action) => {
+        const message = action.payload;
+
+        const index = state.messages.findIndex((m) => m._id === message._id);
+
+        if (index === -1 || !message) return;
+
+        state.messages[index] = message;
+      })
+
+      // Xóa tin nhắn
+      .addCase(editMessageById.fulfilled, (state, action) => {
+        const message = action.payload;
+
+        const index = state.messages.findIndex((m) => m._id === message._id);
+
+        if (index === -1 || !message) return;
+
+        state.messages[index] = message;
       });
   },
 });

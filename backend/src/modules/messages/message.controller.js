@@ -10,6 +10,7 @@ const createNewMessage = async (req, res, next) => {
   try {
     const { userId } = req.user;
     const { conversationId, content, file, clientMessageId = null } = req.body;
+    const io = getSocket();
 
     if (!conversationId) {
       return res.status(400).json({
@@ -28,7 +29,6 @@ const createNewMessage = async (req, res, next) => {
 
     // realtime
     if (isNew) {
-      const io = getSocket();
       emitMessageEvent.created({ io, message, conversation, senderId: userId });
     }
 
@@ -76,9 +76,7 @@ const getConversationMessages = async (req, res, next) => {
   }
 };
 
-/**
- * Xóa tin nhắn
- */
+// Xóa tin nhắn
 const deleteMessageById = async (req, res, next) => {
   try {
     const { messageId } = req.params;
@@ -92,7 +90,7 @@ const deleteMessageById = async (req, res, next) => {
       });
     }
 
-    const { message, conversation } = await MessageService.deleteMessageById(
+    const { message, realtimeData } = await MessageService.deleteMessageById(
       messageId,
       userId
     );
@@ -102,8 +100,8 @@ const deleteMessageById = async (req, res, next) => {
       io,
       messageId: message._id,
       conversationId: message.conversationId,
-      conversation,
-      lastMessage: conversation?.lastMessage,
+      deletedBy: userId,
+      ...realtimeData,
     });
 
     return res.status(200).json({
@@ -116,9 +114,7 @@ const deleteMessageById = async (req, res, next) => {
   }
 };
 
-/**
- * Chỉnh sửa tin nhắn
- */
+// Chỉnh sửa tin nhắn
 const editMessageById = async (req, res, next) => {
   try {
     const { userId } = req.user;
@@ -140,15 +136,24 @@ const editMessageById = async (req, res, next) => {
       });
     }
 
-    const result = await MessageService.editMessageById(messageId, userId, newContent);
+    const { message, realtimeData } = await MessageService.editMessageById(
+      messageId,
+      userId,
+      newContent
+    );
 
     // realtime
-    emitMessageEvent.edited({ io, ...result });
+    emitMessageEvent.edited({
+      io,
+      message,
+      editBy: userId,
+      ...realtimeData,
+    });
 
     return res.status(200).json({
       success: true,
       message: "Message edited successfully",
-      data: result.message,
+      data: message,
     });
   } catch (error) {
     return next(error);
