@@ -3,6 +3,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { emitEvent, offEvent, onEvent } from "@/lib/socket";
 import {
   addConversation,
+  memberAddedRealtime,
+  memberLeftRealtime,
+  memberRemovedRealtime,
   removeConversationRealtime,
   syncDeliveredStatusRealtime,
   syncReadStatusRealtime,
@@ -45,12 +48,24 @@ export const useSocket = () => {
       dispatch(addConversation(conversation));
     };
 
-    const onDeleteConversation = (conversationId) => {
+    const onConversationDeleted = (conversationId) => {
       dispatch(removeConversationRealtime(conversationId));
     };
 
     const onConversationLastMessage = (data) => {
       dispatch(updateConversationLastMessage(data));
+    };
+
+    const onConversationMemberLeft = (data) => {
+      dispatch(memberLeftRealtime(data));
+    };
+
+    const onConversationMemberAdded = (data) => {
+      dispatch(memberAddedRealtime(data));
+    };
+
+    const onConversationMemberRemoved = (conversation) => {
+      dispatch(memberRemovedRealtime(conversation));
     };
 
     const onFriendRequestReceived = (relationship) => {
@@ -111,7 +126,11 @@ export const useSocket = () => {
     onEvent("user_stop_typing", onTypingStop);
 
     onEvent("conversation:created", onNewConversation);
+    onEvent("conversation:deleted", onConversationDeleted);
     onEvent("conversation:last_message_updated", onConversationLastMessage);
+    onEvent("conversation:member_left", onConversationMemberLeft);
+    onEvent("conversation:members_added", onConversationMemberAdded);
+    onEvent("conversation:member_removed", onConversationMemberRemoved);
 
     onEvent("relationship:friend_request_received", onFriendRequestReceived);
     onEvent("relationship:friend_request_accepted", onFriendRequestAccepted);
@@ -132,7 +151,11 @@ export const useSocket = () => {
       offEvent("user_stop_typing", onTypingStop);
 
       offEvent("conversation:created", onNewConversation);
+      offEvent("conversation:deleted", onConversationDeleted);
       offEvent("conversation:last_message_updated", onConversationLastMessage);
+      offEvent("conversation:member_left", onConversationMemberLeft);
+      offEvent("conversation:members_added", onConversationMemberAdded);
+      offEvent("conversation:member_removed", onConversationMemberRemoved);
 
       offEvent("relationship:friend_request_received", onFriendRequestReceived);
       offEvent("relationship:friend_request_accepted", onFriendRequestAccepted);

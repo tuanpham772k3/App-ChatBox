@@ -5,9 +5,7 @@ const {
 } = require("../../sockets/emitters/conversation.emitter.js");
 const { getSocket } = require("../../sockets/socket.js");
 
-/**
- * Tạo conversation 1-1
- */
+// Tạo conversation 1-1
 const createPrivateConversation = async (req, res, next) => {
   try {
     const creatorId = req.user.userId;
@@ -53,9 +51,7 @@ const createPrivateConversation = async (req, res, next) => {
   }
 };
 
-/**
- * Tạo group conversation
- */
+// Tạo group conversation
 const createGroupConversation = async (req, res, next) => {
   try {
     const creatorId = req.user.userId;
@@ -103,9 +99,7 @@ const createGroupConversation = async (req, res, next) => {
   }
 };
 
-/**
- * Lấy danh sách conversation của user hiện tại
- */
+// Lấy danh sách conversation của user hiện tại
 const getConversations = async (req, res, next) => {
   try {
     const { userId } = req.user;
@@ -135,14 +129,13 @@ const getConversations = async (req, res, next) => {
   }
 };
 
-/**
- * Thêm thành viên vào group
- */
+// Thêm thành viên vào group
 const addMemberToGroup = async (req, res, next) => {
   try {
     const { userId } = req.user;
     const { conversationId } = req.params;
     let { memberIds } = req.body;
+    const io = getSocket();
 
     if (!Types.ObjectId.isValid(conversationId)) {
       return res.status(400).json({
@@ -161,11 +154,17 @@ const addMemberToGroup = async (req, res, next) => {
     // remove duplicate input
     memberIds = [...new Set(memberIds)];
 
-    const conversation = await ConversationService.addMemberToGroup(
+    const { conversation, realtimeData } = await ConversationService.addMemberToGroup(
       conversationId,
       memberIds,
       userId
     );
+
+    emitConversationEvent.addedMembers({
+      io,
+      conversation,
+      ...realtimeData,
+    });
 
     return res.status(200).json({
       success: true,
@@ -177,13 +176,12 @@ const addMemberToGroup = async (req, res, next) => {
   }
 };
 
-/**
- * Xóa thành viên khỏi group
- */
+// Xóa thành viên khỏi group
 const removeMemberFromGroup = async (req, res, next) => {
   try {
     const { userId } = req.user;
     const { conversationId, memberId } = req.params;
+    const io = getSocket();
 
     if (!Types.ObjectId.isValid(conversationId) || !Types.ObjectId.isValid(memberId)) {
       return res.status(400).json({
@@ -204,6 +202,13 @@ const removeMemberFromGroup = async (req, res, next) => {
       userId,
       memberId
     );
+
+    emitConversationEvent.removedMember({
+      io,
+      conversation,
+      participants: conversation.participants,
+      memberId,
+    });
 
     return res.status(200).json({
       success: true,
@@ -242,9 +247,7 @@ const getConversationById = async (req, res, next) => {
   }
 };
 
-/**
- * Đánh dấu đã đọc (soft delete)
- */
+// Đánh dấu đã đọc
 const markAsRead = async (req, res, next) => {
   try {
     const { userId } = req.user;
@@ -261,7 +264,12 @@ const markAsRead = async (req, res, next) => {
     const result = await ConversationService.markAsRead(conversationId, userId);
 
     // realtime
-    emitConversationEvent.messageSeenUpdated({ io, userId, ...result.realtimeData });
+    emitConversationEvent.messageSeenUpdated({
+      io,
+      userId,
+      conversationId,
+      ...result.realtimeData,
+    });
 
     return res.status(200).json({
       success: true,
@@ -273,7 +281,7 @@ const markAsRead = async (req, res, next) => {
   }
 };
 
-// Lấy ảnh trong conversation (dùng cho phần media trong conversation details)
+// Lấy danh sách ảnh trong conversation
 const getConversationImages = async (req, res, next) => {
   try {
     const { userId } = req.user;
@@ -310,6 +318,7 @@ const leaveGroup = async (req, res, next) => {
   try {
     const { userId } = req.user;
     const { conversationId } = req.params;
+    const io = getSocket();
 
     if (!Types.ObjectId.isValid(conversationId)) {
       return res.status(400).json({
@@ -318,7 +327,14 @@ const leaveGroup = async (req, res, next) => {
       });
     }
 
-    await ConversationService.leaveGroup(conversationId, userId);
+    const conversation = await ConversationService.leaveGroup(conversationId, userId);
+
+    emitConversationEvent.left({
+      io,
+      userId,
+      conversationId,
+      participants: conversation.participants,
+    });
 
     return res.status(200).json({
       success: true,
@@ -363,6 +379,7 @@ const transferGroupOwnership = async (req, res, next) => {
   }
 };
 
+// Xóa hội thoại phía tôi
 const deleteConversationForMe = async (req, res, next) => {
   try {
     const { userId } = req.user;
@@ -387,6 +404,7 @@ const deleteConversationForMe = async (req, res, next) => {
   }
 };
 
+// Pin hội thoại
 const togglePinConversation = async (req, res, next) => {
   try {
     const { userId } = req.user;
@@ -414,6 +432,7 @@ const togglePinConversation = async (req, res, next) => {
   }
 };
 
+// Đánh dấu chưa đọc
 const markAsUnread = async (req, res, next) => {
   try {
     const { userId } = req.user;
@@ -438,6 +457,7 @@ const markAsUnread = async (req, res, next) => {
   }
 };
 
+// Xóa lịch sử hội thoại
 const clearConversationHistory = async (req, res, next) => {
   try {
     const { userId } = req.user;

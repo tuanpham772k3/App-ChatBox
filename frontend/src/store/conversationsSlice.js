@@ -140,7 +140,7 @@ export const leaveGroup = createAsyncThunk(
   async (conversationId, { rejectWithValue }) => {
     try {
       await conversationApi.leaveGroup(conversationId);
-      return;
+      return conversationId;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -240,7 +240,7 @@ const conversationsSlice = createSlice({
       state.conversations = state.conversations.filter((c) => c._id !== conversationId);
     },
 
-    // Realtime lastMessage
+    // Cập nhật tin nhắn cuối realtime
     updateConversationLastMessage: (state, action) => {
       const { conversationId, lastMessage } = action.payload;
 
@@ -399,6 +399,57 @@ const conversationsSlice = createSlice({
       }
     },
 
+    memberLeftRealtime(state, action) {
+      const { conversationId, userId } = action.payload;
+
+      const conversation = state.conversations.find(
+        (item) => item._id === conversationId
+      );
+
+      if (!conversation) return;
+
+      conversation.participants = conversation.participants.filter(
+        (item) => item.userId._id !== userId
+      );
+
+      if (state.currentConversation?._id === conversationId) {
+        state.currentConversation.participants =
+          state.currentConversation.participants.filter(
+            (item) => item.userId._id !== userId
+          );
+      }
+    },
+
+    memberAddedRealtime(state, action) {
+      const conversation = action.payload;
+
+      const index = state.conversations.findIndex(
+        (item) => item._id === conversation._id
+      );
+
+      if (index !== -1) {
+        state.conversations[index].participants = conversation.participants;
+      }
+
+      if (state.currentConversation?._id === conversation._id) {
+        state.currentConversation.participants = conversation.participants;
+      }
+    },
+
+    memberRemovedRealtime: (state, action) => {
+      const conversation = action.payload;
+
+      const index = state.conversations.findIndex((c) => c._id === conversation._id);
+
+      if (index !== -1) {
+        state.conversations[index].participants = conversation.participants;
+      }
+
+      if (state.currentConversation?._id === conversation._id) {
+        state.currentConversation.participants = conversation.participants;
+      }
+    },
+
     setActiveConversation: (state, action) => {
       state.activeConversationId = action.payload;
     },
@@ -448,23 +499,29 @@ const conversationsSlice = createSlice({
       /** -----ADD MEMBER TO GROUP----- */
       .addCase(addMemberToGroup.fulfilled, (state, action) => {
         const conversation = action.payload;
-        const conversationId = action.meta.arg.conversationId;
 
-        const idx = state.conversations.findIndex((c) => c._id === conversationId);
+        const idx = state.conversations.findIndex((c) => c._id === conversation._id);
         if (idx === -1 || !conversation) return;
 
-        state.conversations[idx] = conversation;
+        state.conversations[idx].participants = conversation.participants;
+
+        if (state.currentConversation._id === conversation._id) {
+          state.currentConversation.participants = conversation.participants;
+        }
       })
 
       /** -----REMOVE MEMBER FROM GROUP----- */
       .addCase(removeMemberFromGroup.fulfilled, (state, action) => {
         const conversation = action.payload;
-        const conversationId = action.meta.arg.conversationId;
 
-        const idx = state.conversations.findIndex((c) => c._id === conversationId);
+        const idx = state.conversations.findIndex((c) => c._id === conversation._id);
         if (idx === -1 || !conversation) return;
 
-        state.conversations[idx] = conversation;
+        state.conversations[idx].participants = conversation.participants;
+
+        if (state.currentConversation._id === conversation._id) {
+          state.currentConversation.participants = conversation.participants;
+        }
       })
 
       // -------------------------------
@@ -552,6 +609,19 @@ const conversationsSlice = createSlice({
               : p
           );
         }
+      })
+
+      .addCase(leaveGroup.fulfilled, (state, action) => {
+        const conversationId = action.payload;
+
+        state.conversations = state.conversations.filter(
+          (item) => item._id !== conversationId
+        );
+
+        if (state.activeConversationId === conversationId) {
+          state.activeConversationId = null;
+          state.currentConversation = null;
+        }
       });
   },
 });
@@ -566,6 +636,9 @@ export const {
   userStatusChanged,
   userStartTyping,
   userStopTyping,
+  memberLeftRealtime,
+  memberAddedRealtime,
+  memberRemovedRealtime,
   setActiveConversation,
 } = conversationsSlice.actions;
 export default conversationsSlice.reducer;

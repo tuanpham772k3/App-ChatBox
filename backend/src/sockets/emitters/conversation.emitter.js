@@ -1,6 +1,4 @@
-// conversation.emitter.js
-
-const { emitToParticipants } = require("../socket.helpers.js");
+const { emitToParticipants, emitToUser } = require("../socket.helpers.js");
 
 const emitConversationEvent = {
   created: ({ io, conversation }) => {
@@ -14,7 +12,7 @@ const emitConversationEvent = {
     );
   },
 
-  messageSeenUpdated: ({ io, conversationId, userId, lastReadAt, participants }) => {
+  messageSeenUpdated: ({ io, userId, conversationId, participants, lastReadAt }) => {
     const payload = {
       conversationId,
       userId,
@@ -38,6 +36,27 @@ const emitConversationEvent = {
     };
 
     emitToParticipants(io, participants, "message:delivered_updated", payload);
+  },
+
+  left: ({ io, userId, conversationId, participants }) => {
+    const payload = {
+      conversationId,
+      userId,
+    };
+
+    emitToParticipants(io, participants, "conversation:member_left", payload);
+  },
+
+  addedMembers: ({ io, conversation, newMembers, participants }) => {
+    emitToParticipants(io, participants, "conversation:members_added", conversation);
+
+    emitToParticipants(io, newMembers, "conversation:created", conversation);
+  },
+
+  removedMember: ({ io, conversation, participants, memberId }) => {
+    emitToParticipants(io, participants, "conversation:member_removed", conversation);
+
+    emitToUser(io, memberId, "conversation:deleted", conversation._id);
   },
 };
 
