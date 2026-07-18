@@ -1,64 +1,46 @@
 const Relationship = require("../relationship/relationship.model.js");
 
-const formatConversations = async (conversations, userId) => {
-  const privateConversations = conversations.filter(
-    (conversation) => conversation.type === "private"
+const formatConversation = async (conversation, userId) => {
+  if (conversation.type === "group") {
+    return {
+      ...conversation,
+      conversationCategory: "group",
+    };
+  }
+
+  const partner = conversation.participants.find(
+    (participant) => participant.userId._id.toString() !== userId.toString()
   );
 
-  const partnerIds = privateConversations.map((conversation) => {
-    const partner = conversation.participants.find(
-      (participant) => participant.userId._id.toString() !== userId.toString()
-    );
-
-    return partner.userId._id;
-  });
-
-  const relationships = await Relationship.find({
+  const isFriend = await Relationship.exists({
     status: "accepted",
     $or: [
       {
         requesterId: userId,
-        recipientId: { $in: partnerIds },
+        recipientId: partner.userId._id,
       },
       {
         recipientId: userId,
-        requesterId: { $in: partnerIds },
+        requesterId: partner.userId._id,
       },
     ],
-  })
-    .select("requesterId recipientId")
-    .lean();
-
-  const friendIds = new Set();
-
-  relationships.forEach((relationship) => {
-    const requesterId = relationship.requesterId.toString();
-    const recipientId = relationship.recipientId.toString();
-
-    friendIds.add(requesterId === userId.toString() ? recipientId : requesterId);
   });
 
-  return conversations.map((conversation) => {
-    if (conversation.type === "group") {
-      return {
-        ...conversation,
-        conversationCategory: "group",
-      };
-    }
+  return {
+    ...conversation,
+    conversationCategory: isFriend ? "friend" : "stranger",
+  };
+};
 
-    const partner = conversation.participants.find(
-      (participant) => participant.userId._id.toString() !== userId.toString()
-    );
-
-    return {
-      ...conversation,
-      conversationCategory: friendIds.has(partner.userId._id.toString())
-        ? "friend"
-        : "stranger",
-    };
-  });
+const formatConversations = (conversations, userId) => {
+  return Promise.all(
+    conversations.map((conversation) => {
+      return formatConversation(conversation, userId);
+    })
+  );
 };
 
 module.exports = {
+  formatConversation,
   formatConversations,
 };

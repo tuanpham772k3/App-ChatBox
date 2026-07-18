@@ -2,6 +2,9 @@ const MessageService = require("./message.service.js");
 const { Types } = require("mongoose");
 const { emitMessageEvent } = require("../../sockets/emitters/message.emitter.js");
 const { getSocket } = require("../../sockets/socket.js");
+const {
+  emitConversationEvent,
+} = require("../../sockets/emitters/conversation.emitter.js");
 
 /**
  * Tạo tin nhắn mới
@@ -30,6 +33,8 @@ const createNewMessage = async (req, res, next) => {
     // realtime
     if (isNew) {
       emitMessageEvent.created({ io, message, conversation, senderId: userId });
+
+      emitConversationEvent.created({ io, conversation });
     }
 
     return res.status(201).json({

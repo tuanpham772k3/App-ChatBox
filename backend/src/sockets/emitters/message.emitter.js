@@ -21,7 +21,7 @@ const emitMessageEvent = {
 
     // Trường hợp đặc biệt: cần payload động cho từng participant để cập nhật unreadCount
     participants.forEach((participant) => {
-      const participantId = String(participant?.userId);
+      const participantId = String(participant?.userId._id || participant?.userId);
 
       if (!participantId || participantId === String(senderId)) return;
 

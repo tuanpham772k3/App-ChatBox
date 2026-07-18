@@ -1,18 +1,10 @@
 const Message = require("./message.model.js");
 const Conversation = require("../conversations/conversation.model.js");
 const { AppError } = require("../../utils/AppError.js");
+const { formatConversation } = require("../conversations/conversation.utils.js");
 
 const MessageService = {
-  /**Tạo tin nhắn mới
-   * @param {string} conversationId - ID của conversation
-   * @param {string} senderId - ID của người gửi
-   * @param {string} content - Nội dung tin nhắn
-   * @param {string} type - Loại tin nhắn (text, image, file, emoji)
-   * @param {object} fileInfo - Thông tin file (nếu có)
-   * @param {string|null} clientMessageId - Idempotency key do client tạo
-   * @param {string} replyTo - ID của tin nhắn được trả lời (nếu có)
-   * @returns {{ message: object, isNew: boolean }} - Tin nhắn + cờ isNew (phục vụ publish realtime)
-   */
+  // Tạo tin nhắn mới
   createMessage: async (conversationId, senderId, content, fileInfo, clientMessageId) => {
     const conversation = await Conversation.findOne({
       _id: conversationId,
@@ -103,23 +95,30 @@ const MessageService = {
     });
 
     await conversation.save();
-    await conversation.populate("lastMessage.senderId", "displayName email avatar");
+    await conversation.populate([
+      {
+        path: "participants.userId",
+        select: "displayName email avatar bio presence lastSeenAt",
+      },
+      {
+        path: "lastMessage.senderId",
+        select: "displayName avatar email",
+      },
+    ]);
+
+    const formattedConversation = await formatConversation(
+      conversation.toObject(),
+      senderId
+    );
 
     return {
       message,
-      conversation,
+      conversation: formattedConversation,
       isNew: true,
     };
   },
 
-  /**
-   *Lấy danh sách tin nhắn trong một conversation với pagination
-   * @param {string} conversationId - ID của conversation
-   * @param {string} userId - ID của user (để kiểm tra quyền truy cập)
-   * @param {number} page - Trang hiện tại (mặc định 1)
-   * @param {number} limit - Số tin nhắn trên mỗi trang (mặc định 20)
-   * @returns {object} - Danh sách tin nhắn với pagination
-   */
+  // Lấy danh sách tin nhắn trong một conversation
   getConversationMessages: async (conversationId, userId, before, limit = 20) => {
     // 1. Kiểm tra user có quyền truy cập conversation không
     const conversation = await Conversation.findOne({

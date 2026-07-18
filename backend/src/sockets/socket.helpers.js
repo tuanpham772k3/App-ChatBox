@@ -14,7 +14,12 @@ const emitToConversation = (io, conversationId, event, payload) => {
 
 const emitToParticipants = (io, participants, event, payload) => {
   (participants || []).forEach((participant) => {
-    emitToUser(io, String(participant?.userId), event, payload);
+    emitToUser(
+      io,
+      String(participant?.userId._id || participant?.userId),
+      event,
+      payload
+    );
   });
 };
 
