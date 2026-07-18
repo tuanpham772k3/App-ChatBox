@@ -39,7 +39,7 @@ const createPrivateConversation = async (req, res, next) => {
     );
 
     // realtime
-    emitConversationEvent.created({ io, conversation });
+    emitConversationEvent.created({ io, conversation, creatorId });
 
     return res.status(201).json({
       success: true,

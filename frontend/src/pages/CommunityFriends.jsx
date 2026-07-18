@@ -72,7 +72,6 @@ const CommunityFriends = () => {
   const location = useLocation();
 
   const { friends, loading } = useSelector((state) => state.relationship);
-  console.log("🚀 ~ CommunityFriends ~ friends:", friends);
   const [search, setSearch] = useState("");
 
   const notification = useNotification();

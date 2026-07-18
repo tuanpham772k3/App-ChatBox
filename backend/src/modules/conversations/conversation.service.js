@@ -49,7 +49,7 @@ const ConversationService = {
       ]);
 
       return {
-        ...populatedConversation,
+        ...populatedConversation.toObject(),
         conversationCategory: relationship ? "friend" : "stranger",
       };
     }
@@ -74,7 +74,7 @@ const ConversationService = {
     ]);
 
     return {
-      ...populatedConversation,
+      ...populatedConversation.toObject(),
       conversationCategory: relationship ? "friend" : "stranger",
     };
   },
