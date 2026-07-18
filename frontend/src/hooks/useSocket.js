@@ -44,7 +44,9 @@ export const useSocket = () => {
       dispatch(userStopTyping(data));
     };
 
-    const onNewConversation = (conversation) => {
+    const onNewConversation = ({ conversation, creatorId }) => {
+      if (creatorId === currentUserId) return;
+
       dispatch(addConversation(conversation));
     };
 

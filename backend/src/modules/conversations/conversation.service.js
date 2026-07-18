@@ -128,7 +128,7 @@ const ConversationService = {
     ]);
 
     return {
-      ...populatedConversation,
+      ...populatedConversation.toObject(),
       conversationCategory: "group",
     };
   },
@@ -229,7 +229,7 @@ const ConversationService = {
     ]);
 
     return {
-      conversation: { ...conversation, conversationCategory: "group" },
+      conversation: { ...conversation.toObject(), conversationCategory: "group" },
       realtimeData: {
         newMembers,
         participants,
