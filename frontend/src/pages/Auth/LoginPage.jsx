@@ -1,14 +1,12 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
-import { Button, Card, Form, Input, Typography } from "antd";
+import { useNavigate } from "react-router-dom";
 import { loginUser } from "@/store/authSlice";
 import { useNotification } from "@/hooks/useNotification";
-
-const { Title } = Typography;
+import LoginForm from "@/components/auth/loginForm";
+import loginBg from "@/assets/images/login-bg.jpg";
 
 const LoginPage = () => {
-  const [form] = Form.useForm();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -16,7 +14,7 @@ const LoginPage = () => {
 
   const notification = useNotification();
 
-  const onFinish = async (values) => {
+  const handleLogin = async (values) => {
     const { username, password } = values;
 
     setLoading(true);
@@ -41,106 +39,18 @@ const LoginPage = () => {
   };
 
   return (
-    <section id="login">
+    <section
+      className="min-h-screen bg-cover bg-center bg-no-repeat"
+      style={{
+        backgroundImage: `url(${loginBg})`,
+      }}
+    >
       <div className="container mx-auto min-h-screen flex items-center justify-center px-4 py-6">
-        <Card className="w-full max-w-[25rem] shadow-lg">
-          <Title level={3} className="text-center">
-            Đăng nhập
-          </Title>
+        <div className="w-full max-w-[25rem] shadow-lg rounded-2xl backdrop-blur-3xl bg-white/10 p-8">
+          <h1 className="text-2xl font-bold text-center text-white mb-4">Login</h1>
 
-          <Form
-            form={form}
-            name="login"
-            layout="vertical"
-            initialValues={{ remember: true }}
-            onFinish={onFinish}
-            autoComplete="off"
-          >
-            <Form.Item
-              label="Tên đăng nhập"
-              name="username"
-              rules={[
-                {
-                  required: true,
-                  message: "Vui lòng nhập tên đăng nhập!",
-                },
-                {
-                  min: 3,
-                  message: "Tên đăng nhập phải có ít nhất 3 ký tự!",
-                },
-                {
-                  max: 30,
-                  message: "Tên đăng nhập không được vượt quá 30 ký tự!",
-                },
-                {
-                  pattern: /^[a-zA-Z0-9_]+$/,
-                  message:
-                    "Tên đăng nhập chỉ được chứa chữ cái, số và dấu gạch dưới (_)!",
-                },
-              ]}
-            >
-              <Input disabled={loading} />
-            </Form.Item>
-
-            <Form.Item
-              label="Mật khẩu"
-              name="password"
-              rules={[
-                {
-                  required: true,
-                  message: "Vui lòng nhập mật khẩu!",
-                },
-                {
-                  min: 6,
-                  message: "Mật khẩu phải có tối thiểu 6 ký tự",
-                },
-                {
-                  max: 128,
-                  message: "Mật khẩu quá dài",
-                },
-              ]}
-            >
-              <Input.Password disabled={loading} autoComplete="current-password" />
-            </Form.Item>
-
-            <div>
-              <Link
-                to={"/forgot-password"}
-                className="block w-fit ml-auto font-bold hover:!underline"
-              >
-                Quên mật khẩu?
-              </Link>
-            </div>
-
-            <Form.Item>
-              <Button
-                type="primary"
-                htmlType="submit"
-                block
-                disabled={loading}
-                loading={loading}
-              >
-                {loading ? "Đang xử lý..." : "Đăng nhập"}
-              </Button>
-            </Form.Item>
-
-            <Form.Item>
-              <Button block disabled={loading}>
-                Bạn chưa xác thực tài khoản?
-              </Button>
-            </Form.Item>
-          </Form>
-
-          <div className="text-center">
-            Chưa có tài khoản?{" "}
-            <Link
-              to="/register"
-              className="text-[var(--color-primary)] hover:text-[var(--color-primary-hover)] font-bold hover:!underline"
-            >
-              Đăng ký
-            </Link>
-          </div>
-        </Card>
+          <LoginForm loading={loading} onSubmit={handleLogin} />
+        </div>
       </div>
     </section>
   );

@@ -1,19 +1,20 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Popover, Switch } from "antd";
 import { useDispatch, useSelector } from "react-redux";
+import { Popover, Switch } from "antd";
 import { toggleTheme } from "@/store/themeSlice";
-import { useLogout } from "@/hooks/useLogout";
 import ModalMyProfile from "./ModalMyProfile";
 import UserAvatar from "../ui/avatar/UserAvatar";
+import { logoutUser } from "@/store/authSlice";
+import { useNotification } from "@/hooks/useNotification";
 
 const PopoverUserActions = ({ currentUser }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const logout = useLogout();
   const mode = useSelector((state) => state.theme.mode);
   const [open, setOpen] = useState(false);
   const [openModal, setOpenModal] = useState(false);
+  const notification = useNotification();
 
   const openModalMyProfile = () => {
     setOpenModal(true);
@@ -27,7 +28,23 @@ const PopoverUserActions = ({ currentUser }) => {
 
   const handleLogout = async () => {
     setOpen(false);
-    await logout();
+
+    try {
+      await dispatch(logoutUser()).unwrap();
+
+      notification.success({
+        message: "Đăng xuất thành công",
+        description: "See you again ^-^",
+      });
+
+      dispatch(clearMessages());
+      disconnectSocket();
+    } catch (error) {
+      notification.error({
+        message: "Lỗi đăng xuất hệ thống",
+        description: error.message || "Có lỗi xảy ra",
+      });
+    }
   };
 
   return (

@@ -1,21 +1,18 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Button, Card, Checkbox, Col, Form, Input, Row, Typography } from "antd";
+import { useNavigate } from "react-router-dom";
 import { useNotification } from "@/hooks/useNotification";
 import authApi from "@/services/authApi";
-
-const { Title } = Typography;
+import RegisterForm from "@/components/auth/RegisterForm";
+import registerBg from "@/assets/images/register-bg.jpg";
 
 const RegisterPage = () => {
-  const [form] = Form.useForm();
-
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
 
   const notification = useNotification();
 
-  const onFinish = async (values) => {
+  const handleRegister = async (values) => {
     const { confirmPassword, ...info } = values;
 
     if (confirmPassword !== info.password) {
@@ -49,191 +46,18 @@ const RegisterPage = () => {
   };
 
   return (
-    <section id="register">
+    <section
+      className="min-h-screen bg-cover bg-center bg-no-repeat"
+      style={{
+        backgroundImage: `url(${registerBg})`,
+      }}
+    >
       <div className="container mx-auto min-h-screen flex items-center justify-center px-4 py-6">
-        <Card className="w-full max-w-[25rem] shadow-lg">
-          <Title level={3} className="text-center">
-            Đăng ký
-          </Title>
+        <div className="w-full max-w-[25rem] shadow-2xl rounded-2xl backdrop-blur-3xl bg-white/10 p-8">
+          <h1 className="text-2xl font-bold text-center text-white mb-4">Register</h1>
 
-          <Form
-            form={form}
-            name="register"
-            layout="vertical"
-            initialValues={{ remember: true }}
-            onFinish={onFinish}
-            autoComplete="off"
-          >
-            {/* Display Name */}
-            <Row gutter={12}>
-              <Col span={12}>
-                <Form.Item
-                  label="Họ"
-                  name="firstName"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Vui lòng nhập họ!",
-                    },
-                    {
-                      max: 50,
-                      message: "Họ không được vượt quá 50 ký tự!",
-                    },
-                  ]}
-                >
-                  <Input placeholder="Phạm" disabled={loading} />
-                </Form.Item>
-              </Col>
-
-              <Col span={12}>
-                <Form.Item
-                  label="Tên"
-                  name="lastName"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Vui lòng nhập tên!",
-                    },
-                    {
-                      max: 50,
-                      message: "Tên không được vượt quá 50 ký tự!",
-                    },
-                  ]}
-                >
-                  <Input placeholder="Anh Tuấn" disabled={loading} />
-                </Form.Item>
-              </Col>
-            </Row>
-
-            {/* Username */}
-            <Form.Item
-              label="Tên đăng nhập"
-              name="username"
-              rules={[
-                {
-                  required: true,
-                  message: "Vui lòng nhập tên đăng nhập!",
-                },
-                {
-                  min: 3,
-                  message: "Tên đăng nhập phải có ít nhất 3 ký tự!",
-                },
-                {
-                  max: 30,
-                  message: "Tên đăng nhập không được vượt quá 30 ký tự!",
-                },
-                {
-                  pattern: /^[a-zA-Z0-9_]+$/,
-                  message:
-                    "Tên đăng nhập chỉ được chứa chữ cái, số và dấu gạch dưới (_)!",
-                },
-              ]}
-            >
-              <Input placeholder="tuan_anh" disabled={loading} />
-            </Form.Item>
-
-            {/* Email */}
-            <Form.Item
-              label="Email"
-              name="email"
-              rules={[
-                {
-                  required: true,
-                  message: "Vui lòng nhập email!",
-                },
-                {
-                  type: "email",
-                  message: "Email không hợp lệ",
-                },
-                {
-                  max: 254,
-                  message: "Email quá dài",
-                },
-              ]}
-            >
-              <Input placeholder="abc123@gmail.com" disabled={loading} />
-            </Form.Item>
-
-            {/* Password */}
-            <Form.Item
-              label="Mật khẩu"
-              name="password"
-              rules={[
-                {
-                  required: true,
-                  message: "Vui lòng nhập mật khẩu!",
-                },
-                {
-                  min: 6,
-                  message: "Mật khẩu phải có tối thiểu 6 ký tự",
-                },
-                {
-                  max: 128,
-                  message: "Mật khẩu quá dài",
-                },
-              ]}
-            >
-              <Input.Password
-                placeholder="Mật khẩu có ít nhất 6 ký tự"
-                disabled={loading}
-              />
-            </Form.Item>
-
-            {/* Confirm Password */}
-            <Form.Item
-              label="Xác nhận mật khẩu"
-              name="confirmPassword"
-              dependencies={["password"]}
-              rules={[
-                {
-                  required: true,
-                  message: "Vui lòng xác nhận mật khẩu!",
-                },
-              ]}
-            >
-              <Input.Password placeholder="Nhập lại mật khẩu" disabled={loading} />
-            </Form.Item>
-
-            <Form.Item
-              name="remember"
-              valuePropName="checked"
-              rules={[
-                {
-                  validator: (_, value) =>
-                    value
-                      ? Promise.resolve()
-                      : Promise.reject(
-                          new Error("Bạn cần chấp nhận điều khoản & điều kiện")
-                        ),
-                },
-              ]}
-            >
-              <Checkbox disabled={loading}>Chấp nhận điều khoản & điều kiện</Checkbox>
-            </Form.Item>
-
-            <Form.Item>
-              <Button
-                type="primary"
-                htmlType="submit"
-                block
-                loading={loading}
-                disabled={loading}
-              >
-                {loading ? "Đang xử lý..." : "Đăng ký"}
-              </Button>
-            </Form.Item>
-          </Form>
-
-          <div className="text-center mt-2">
-            Đã có tài khoản?{" "}
-            <Link
-              to="/login"
-              className="text-[var(--color-primary)] hover:text-[var(--color-primary-hover)] font-medium"
-            >
-              Đăng nhập
-            </Link>
-          </div>
-        </Card>
+          <RegisterForm loading={loading} onSubmit={handleRegister} />
+        </div>
       </div>
     </section>
   );

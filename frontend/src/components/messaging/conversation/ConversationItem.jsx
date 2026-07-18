@@ -6,7 +6,7 @@ import GroupAvatar from "@/components/ui/avatar/GroupAvatar";
 import UserAvatar from "@/components/ui/avatar/UserAvatar";
 import PopoverConversationAction from "./PopoverConversationActions";
 import { mapConversationForDisplay } from "@/utils/conversationMapper";
-import { markConversationAsUnread } from "@/store/conversationsSlice";
+import { markConversationAsUnread, togglePinConversation } from "@/store/conversationsSlice";
 import { useNotification } from "@/hooks/useNotification";
 
 const ConversationItem = ({ conversation, currentUserId, activeConversationId }) => {

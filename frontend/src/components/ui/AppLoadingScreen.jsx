@@ -1,20 +1,22 @@
 import { Spin } from "antd";
-import { LoadingOutlined, MessageOutlined } from "@ant-design/icons";
+import { LoadingOutlined } from "@ant-design/icons";
+import loadingBg from "@/assets/images/login-bg.jpg";
+import logo from "@/assets/logo.svg.png";
 
 const AppLoadingScreen = () => {
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-indigo-950 to-purple-950 relative overflow-hidden">
-      {/* Nền trang trí */}
-      <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
-      <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob" />
-      <div className="absolute top-1/3 right-1/4 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000" />
-
+    <div
+      className="min-h-screen w-full flex flex-col items-center justify-center bg-cover bg-center bg-no-repeat relative overflow-hidden"
+      style={{
+        backgroundImage: `url(${loadingBg})`,
+      }}
+    >
       {/* Nội dung chính */}
       <div className="relative z-10 flex flex-col items-center">
         {/* Icon hoặc Logo */}
         <div className="mb-8">
           <div className="w-20 h-20">
-            <img src="/logo.svg.png" style={{ fontSize: 36, color: "white" }} />
+            <img src={logo} alt="logo" style={{ fontSize: 36, color: "white" }} />
           </div>
         </div>
 

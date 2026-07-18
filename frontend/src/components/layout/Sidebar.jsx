@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   ChartNoAxesCombined,
   Files,
@@ -10,9 +10,12 @@ import {
   Settings,
 } from "lucide-react";
 import { HiOutlineUserGroup } from "react-icons/hi2";
-import { useLogout } from "@/hooks/useLogout";
 import PopoverUserActions from "@/components/profile/PopoverUserActions";
 import { useNotification } from "@/hooks/useNotification";
+import { logoutUser } from "@/store/authSlice";
+import { clearMessages } from "@/store/messagesSlice";
+import { disconnectSocket } from "@/lib/socket";
+import logo from "@/assets/logo.svg.png";
 
 const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard", disable: true },
@@ -30,10 +33,29 @@ const navItems = [
 ];
 
 const Sidebar = ({ mode = "desktop", onClose }) => {
+  const dispatch = useDispatch();
   const currentUser = useSelector((state) => state.user.currentUser);
-  const logout = useLogout();
   const notification = useNotification();
   const isMobile = mode === "mobile";
+
+  const handleLogout = async () => {
+    try {
+      await dispatch(logoutUser()).unwrap();
+
+      notification.success({
+        message: "Đăng xuất thành công",
+        description: "See you again ^-^",
+      });
+
+      dispatch(clearMessages());
+      disconnectSocket();
+    } catch (error) {
+      notification.error({
+        message: "Lỗi đăng xuất hệ thống",
+        description: error.message || "Có lỗi xảy ra",
+      });
+    }
+  };
 
   return (
     <div
@@ -42,7 +64,7 @@ const Sidebar = ({ mode = "desktop", onClose }) => {
       }`}
     >
       <header className="shrink-0 h-16 sm:h-20 flex items-center gap-3 px-4 border-b border-[var(--color-border)] transition-all">
-        <img src={"/logo.svg.png"} alt="" className="w-8 h-8" />
+        <img src={logo} alt="logo" className="w-8 h-8" />
         <p className="text-2xl font-bold text-shadow-sm text-[var(--color-text-primary)]">
           Chatbox
         </p>
@@ -101,7 +123,7 @@ const Sidebar = ({ mode = "desktop", onClose }) => {
           </p>
           <button
             type="button"
-            onClick={logout}
+            onClick={handleLogout}
             className="text-xs font-medium text-[var(--color-text-secondary)] hover:underline hover:text-red-400"
           >
             Logout
