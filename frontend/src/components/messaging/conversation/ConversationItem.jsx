@@ -6,8 +6,14 @@ import GroupAvatar from "@/components/ui/avatar/GroupAvatar";
 import UserAvatar from "@/components/ui/avatar/UserAvatar";
 import PopoverConversationAction from "./PopoverConversationActions";
 import { mapConversationForDisplay } from "@/utils/conversationMapper";
-import { clearConversationHistory, deleteConversationForMe, markConversationAsUnread, togglePinConversation } from "@/store/conversationsSlice";
+import {
+  clearConversationHistory,
+  deleteConversationForMe,
+  markConversationAsUnread,
+  togglePinConversation,
+} from "@/store/conversationsSlice";
 import { useNotification } from "@/hooks/useNotification";
+import { clearMessages } from "@/store/messagesSlice";
 
 const ConversationItem = ({ conversation, currentUserId, activeConversationId }) => {
   const navigate = useNavigate();
@@ -79,17 +85,9 @@ const ConversationItem = ({ conversation, currentUserId, activeConversationId })
   // Xóa lịch sử trò chuyện
   const handleClearHistory = async () => {
     try {
-      await dispatch(
-        clearConversationHistory({
-          conversationId: conversation._id,
-          userId: currentUserId,
-        })
-      ).unwrap();
+      await dispatch(clearConversationHistory(conversation._id)).unwrap();
 
-      if (isActive) {
-        navigate("/chat", { replace: true });
-      }
-
+      dispatch(clearMessages());
       notification.success({ message: "Đã xóa lịch sử trò chuyện" });
     } catch (error) {
       notification.error({

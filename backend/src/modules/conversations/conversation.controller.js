@@ -470,12 +470,15 @@ const clearConversationHistory = async (req, res, next) => {
       });
     }
 
-    await ConversationService.clearConversationHistory(conversationId, userId);
+    const conversation = await ConversationService.clearConversationHistory(
+      conversationId,
+      userId
+    );
 
     return res.status(200).json({
       success: true,
       message: "Conversation history cleared successfully",
-      data: null,
+      data: conversation,
     });
   } catch (error) {
     return next(error);

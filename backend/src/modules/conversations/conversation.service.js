@@ -583,11 +583,15 @@ const ConversationService = {
     participant.unreadCount = 0;
     participant.lastReadAt = null;
     participant.lastDeliveredAt = null;
-    participant.deletedAt = null;
 
     await conversation.save();
 
-    return null;
+    await conversation.populate(
+      "participants.userId",
+      "displayName email avatar bio presence lastSeenAt"
+    );
+
+    return conversation.toObject();
   },
 };
 

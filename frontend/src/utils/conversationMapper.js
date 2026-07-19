@@ -65,8 +65,19 @@ const formatConversationTime = (isoString) => {
   ).padStart(2, "0")}`;
 };
 
-const getLastMessageView = (lastMsg, currentUserId) => {
+const getLastMessageView = (lastMsg, currentUserId, participants) => {
   if (!lastMsg) {
+    return { ...EMPTY_LAST_MESSAGE };
+  }
+
+  const currentUser = participants.find((p) => p.userId._id === currentUserId);
+
+  const isHidden = currentUser?.clearedMessagesHistoryAt
+    ? new Date(currentUser.clearedMessagesHistoryAt).getTime() >
+      new Date(lastMsg.createdAt).getTime()
+    : false;
+
+  if (isHidden) {
     return { ...EMPTY_LAST_MESSAGE };
   }
 
@@ -89,7 +100,7 @@ export const mapConversationForDisplay = (conversation, currentUserId) => {
   const partnerParticipant = findPartnerParticipant(participants, currentUserId);
   const currentParticipant = findCurrentParticipant(participants, currentUserId);
   const members = mapMembers(participants, currentUserId);
-  const lastMessageView = getLastMessageView(lastMessage, currentUserId);
+  const lastMessageView = getLastMessageView(lastMessage, currentUserId, participants);
 
   const isGroup = type === "group";
 

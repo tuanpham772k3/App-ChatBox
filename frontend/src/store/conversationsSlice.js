@@ -166,7 +166,7 @@ export const deleteConversationForMe = createAsyncThunk(
   async (conversationId, { rejectWithValue }) => {
     try {
       await conversationApi.deleteConversationForMe(conversationId);
-      return;
+      return conversationId;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -199,10 +199,10 @@ export const markConversationAsUnread = createAsyncThunk(
 
 export const clearConversationHistory = createAsyncThunk(
   "conversations/clearHistory",
-  async ({ conversationId, userId }, { rejectWithValue }) => {
+  async (conversationId, { rejectWithValue }) => {
     try {
-      await conversationApi.clearConversationHistory(conversationId);
-      return;
+      const res = await conversationApi.clearConversationHistory(conversationId);
+      return res.data;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -569,7 +569,7 @@ const conversationsSlice = createSlice({
       // DELETE CONVERSATION FOR ME
       // -------------------------------
       .addCase(deleteConversationForMe.fulfilled, (state, action) => {
-        const conversationId = action.meta.arg;
+        const conversationId = action.payload;
         state.conversations = state.conversations.filter((c) => c._id !== conversationId);
       })
 
@@ -607,21 +607,13 @@ const conversationsSlice = createSlice({
       // Clear Conversation History
       // -------------------------------
       .addCase(clearConversationHistory.fulfilled, (state, action) => {
-        const { conversationId, userId } = action.meta.arg;
+        const conversationId = action.meta.arg;
+        const conversation = action.payload;
 
-        const conv = state.conversations.find((c) => c._id === conversationId);
-        if (conv) {
-          conv.participants = conv.participants.map((p) =>
-            p.userId?._id === userId
-              ? {
-                  ...p,
-                  unreadCount: 0,
-                  lastReadAt: null,
-                  lastDeliveredAt: null,
-                  clearedMessagesHistoryAt: new Date().toISOString(),
-                }
-              : p
-          );
+        const index = state.conversations.findIndex((c) => c._id === conversationId);
+
+        if (index !== -1) {
+          state.conversations[index].participants = conversation.participants;
         }
       })
 

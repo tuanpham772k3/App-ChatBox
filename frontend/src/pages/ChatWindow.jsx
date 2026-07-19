@@ -26,6 +26,7 @@ import {
   cancelFriendRequest,
   createFriendRequest,
 } from "@/store/relationshipSlice";
+import { clearMessages } from "@/store/messagesSlice";
 
 const MODAL = {
   ADD: "add_members",
@@ -137,12 +138,9 @@ const ChatWindow = () => {
   const handleClearHistory = async () => {
     if (!activeConversationId || !currentUserId) return;
     try {
-      await dispatch(
-        clearConversationHistory({
-          conversationId: activeConversationId,
-          userId: currentUserId,
-        })
-      ).unwrap();
+      await dispatch(clearConversationHistory(activeConversationId)).unwrap();
+
+      dispatch(clearMessages());
     } catch (error) {
       notification.error({
         message: "Xóa lịch sử trò chuyện thất bại",
