@@ -1,11 +1,35 @@
 const Relationship = require("../relationship/relationship.model.js");
 
-const formatConversation = async (conversation, userId) => {
+const resolveLastMessage = (conversation, userId) => {
+  const participant = conversation.participants.find(
+    (p) => p.userId._id.toString() === userId.toString()
+  );
+
+  if (!participant) {
+    return null;
+  }
+
+  const { lastMessage } = conversation;
+
+  if (!lastMessage) {
+    return null;
+  }
+
+  const { clearedMessagesHistoryAt } = participant;
+
+  if (
+    clearedMessagesHistoryAt &&
+    new Date(lastMessage.createdAt) <= new Date(clearedMessagesHistoryAt)
+  ) {
+    return null;
+  }
+
+  return lastMessage;
+};
+
+const resolveConversationCategory = async (conversation, userId) => {
   if (conversation.type === "group") {
-    return {
-      ...conversation,
-      conversationCategory: "group",
-    };
+    return "group";
   }
 
   const partner = conversation.participants.find(
@@ -26,9 +50,14 @@ const formatConversation = async (conversation, userId) => {
     ],
   });
 
+  return isFriend ? "friend" : "stranger";
+};
+
+const formatConversation = async (conversation, userId) => {
   return {
     ...conversation,
-    conversationCategory: isFriend ? "friend" : "stranger",
+    lastMessage: resolveLastMessage(conversation, userId),
+    conversationCategory: await resolveConversationCategory(conversation, userId),
   };
 };
 

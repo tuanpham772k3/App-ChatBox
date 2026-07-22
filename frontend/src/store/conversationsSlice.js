@@ -613,7 +613,7 @@ const conversationsSlice = createSlice({
         const index = state.conversations.findIndex((c) => c._id === conversationId);
 
         if (index !== -1) {
-          state.conversations[index].participants = conversation.participants;
+          state.conversations[index].lastMessage = conversation.lastMessage;
         }
       })
 

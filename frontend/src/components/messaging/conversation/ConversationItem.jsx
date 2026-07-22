@@ -147,12 +147,12 @@ const ConversationItem = ({ conversation, currentUserId, activeConversationId })
                 : "text-[var(--color-text-secondary)]"
             }`}
           >
-            {display?.lastMsgSender ? (
+            {display?.lastMessage?.sender ? (
               <>
-                {display.lastMsgSender}: <span>{display.lastMsgContent}</span>
+                {display.lastMessage?.sender}: <span>{display.lastMessage?.content}</span>
               </>
             ) : (
-              display?.lastMsgContent
+              display?.lastMessage?.content
             )}
           </span>
         </span>
@@ -165,7 +165,7 @@ const ConversationItem = ({ conversation, currentUserId, activeConversationId })
         {/* Top row */}
         <div className="relative w-full flex items-center justify-end">
           <time className="touch-hide whitespace-nowrap text-[11px] text-[var(--color-text-secondary)] hidden lg:block lg:group-hover:opacity-0 transition-opacity duration-150">
-            {display?.lastMsgTime}
+            {display?.lastMessage?.time}
           </time>
 
           <div className="touch-always-visible lg:absolute lg:right-0 flex items-center justify-center lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150">

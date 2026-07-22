@@ -3,7 +3,7 @@ const User = require("../users/user.model.js");
 const Message = require("../messages/message.model.js");
 const Relationship = require("../relationship/relationship.model.js");
 const { AppError } = require("../../utils/AppError.js");
-const { formatConversations } = require("./conversation.utils.js");
+const { formatConversations, formatConversation } = require("./conversation.utils.js");
 
 const ConversationService = {
   createPrivateConversation: async (creatorId, participantId) => {
@@ -591,7 +591,9 @@ const ConversationService = {
       "displayName email avatar bio presence lastSeenAt"
     );
 
-    return conversation.toObject();
+    const formattedConversation = formatConversation(conversation.toObject(), userId);
+
+    return formattedConversation;
   },
 };
 
