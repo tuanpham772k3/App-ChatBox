@@ -3,7 +3,7 @@ const User = require("../users/user.model.js");
 const Message = require("../messages/message.model.js");
 const Relationship = require("../relationship/relationship.model.js");
 const { AppError } = require("../../utils/AppError.js");
-const { formatConversations, formatConversation } = require("./conversation.utils.js");
+const { formatConversations, formatConversation } = require("./conversation.mapper.js");
 
 const ConversationService = {
   createPrivateConversation: async (creatorId, participantId) => {

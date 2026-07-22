@@ -1,7 +1,7 @@
 const Message = require("./message.model.js");
 const Conversation = require("../conversations/conversation.model.js");
 const { AppError } = require("../../utils/AppError.js");
-const { formatConversation } = require("../conversations/conversation.utils.js");
+const { formatConversation } = require("../conversations/conversation.mapper.js");
 
 const MessageService = {
   // Tạo tin nhắn mới
