@@ -110,20 +110,16 @@ const messagesSlice = createSlice({
 
     // Cập nhật tin nhắn real-time
     updateMessage: (state, action) => {
-      const updatedMessage = action.payload;
-      const index = state.messages.findIndex((m) => m._id === updatedMessage._id);
-      if (index !== -1) state.messages[index] = updatedMessage;
+      const message = action.payload;
+      const index = state.messages.findIndex((m) => m._id === message._id);
+      if (index !== -1) state.messages[index] = message;
     },
 
     // Xóa tin nhắn real-time
     removeMessage: (state, action) => {
-      const messageId = action.payload;
-      const msg = state.messages.find((m) => m._id === messageId);
-      if (msg) {
-        msg.isDeleted = true;
-        msg.content = "This message has been deleted.";
-        msg.file = null;
-      }
+      const message = action.payload;
+      const index = state.messages.findIndex((m) => m._id === message._id);
+      if (index !== -1) state.messages[index] = message;
     },
 
     // Clear khi đổi sang cuộc trò chuyện khác

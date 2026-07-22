@@ -5,13 +5,15 @@ const {
 } = require("../socket.helpers.js");
 
 const emitConversationEvent = {
-  created: ({ io, conversation, creatorId }) => {
+  created: ({ io, conversation }) => {
     if (!conversation) return;
 
-    emitToParticipants(io, conversation.participants, "conversation:created", {
-      conversation,
-      creatorId,
-    });
+    emitToParticipants(
+      io,
+      conversation.participants,
+      "conversation:created",
+      conversation
+    );
   },
 
   messageSeenUpdated: ({ io, userId, conversationId, lastReadAt }) => {

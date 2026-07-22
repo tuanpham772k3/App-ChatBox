@@ -103,9 +103,7 @@ const deleteMessageById = async (req, res, next) => {
     // realtime
     emitMessageEvent.deleted({
       io,
-      messageId: message._id,
-      conversationId: message.conversationId,
-      deletedBy: userId,
+      message,
       ...realtimeData,
     });
 
@@ -151,7 +149,6 @@ const editMessageById = async (req, res, next) => {
     emitMessageEvent.edited({
       io,
       message,
-      editBy: userId,
       ...realtimeData,
     });
 

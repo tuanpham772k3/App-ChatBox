@@ -33,12 +33,12 @@ const emitMessageEvent = {
     });
   },
 
-  edited: ({ io, message, editBy, participants, lastMessage, isLastMessage }) => {
+  edited: ({ io, message, participants, lastMessage, isLastMessage }) => {
     if (!message) return;
 
     const conversationId = String(message.conversationId);
 
-    emitToConversation(io, conversationId, "message:edited", { message, editBy });
+    emitToConversation(io, conversationId, "message:edited", message);
 
     if (!isLastMessage) return;
 
@@ -48,16 +48,12 @@ const emitMessageEvent = {
     });
   },
 
-  deleted: ({
-    io,
-    messageId,
-    conversationId,
-    deletedBy,
-    participants,
-    lastMessage,
-    isLastMessage,
-  }) => {
-    emitToConversation(io, conversationId, "message:deleted", { messageId, deletedBy });
+  deleted: ({ io, message, participants, lastMessage, isLastMessage }) => {
+    if (!message) return;
+
+    const conversationId = String(message.conversationId);
+
+    emitToConversation(io, conversationId, "message:deleted", message);
 
     if (!isLastMessage) return;
 

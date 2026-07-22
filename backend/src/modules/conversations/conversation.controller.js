@@ -39,7 +39,7 @@ const createPrivateConversation = async (req, res, next) => {
     );
 
     // realtime
-    emitConversationEvent.created({ io, conversation, creatorId });
+    emitConversationEvent.created({ io, conversation });
 
     return res.status(201).json({
       success: true,
@@ -87,7 +87,7 @@ const createGroupConversation = async (req, res, next) => {
     );
 
     // realtime
-    emitConversationEvent.created({ io, conversation, creatorId });
+    emitConversationEvent.created({ io, conversation });
 
     return res.status(201).json({
       success: true,

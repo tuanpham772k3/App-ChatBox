@@ -44,9 +44,7 @@ export const useSocket = () => {
       dispatch(userStopTyping(data));
     };
 
-    const onNewConversation = ({ conversation, creatorId }) => {
-      if (creatorId === currentUserId) return;
-
+    const onNewConversation = (conversation) => {
       dispatch(addConversation(conversation));
     };
 
@@ -115,16 +113,12 @@ export const useSocket = () => {
       }
     };
 
-    const onMessageEdit = ({ message, editBy }) => {
-      if (editBy === currentUserId) return;
-
+    const onMessageEdit = (message) => {
       dispatch(updateMessage(message));
     };
 
-    const onMessageDelete = ({ messageId, deletedBy }) => {
-      if (deletedBy === currentUserId) return;
-
-      dispatch(removeMessage(messageId));
+    const onMessageDelete = (message) => {
+      dispatch(removeMessage(message));
     };
 
     onEvent("user_status_changed", onStatusChanged);
