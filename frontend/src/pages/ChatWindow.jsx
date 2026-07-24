@@ -56,6 +56,10 @@ const ChatWindow = () => {
     content: "",
     originalContent: "",
   });
+  const [replyingMessage, setReplyingMessage] = useState({
+    id: null,
+    originalContent: "",
+  });
 
   const notification = useNotification();
 
@@ -260,6 +264,7 @@ const ChatWindow = () => {
           activeConversationId={activeConversationId}
           currentConversation={currentConversation}
           setEditingMessage={setEditingMessage}
+          setReplyingMessage={setReplyingMessage}
           onOpenUserProfile={handleOpenUserProfile}
           onCreateFriendRequest={handleCreateFriendRequest}
           onAcceptFriendRequest={handleAcceptFriendRequest}
@@ -271,6 +276,8 @@ const ChatWindow = () => {
         activeConversationId={activeConversationId}
         editingMessage={editingMessage}
         setEditingMessage={setEditingMessage}
+        replyingMessage={replyingMessage}
+        setReplyingMessage={setReplyingMessage}
       />
 
       <DrawerConversationInfo

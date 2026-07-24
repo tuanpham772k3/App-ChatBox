@@ -42,6 +42,7 @@ const Messages = ({
   activeConversationId,
   currentConversation,
   setEditingMessage,
+  setReplyingMessage,
   onOpenUserProfile,
   onCreateFriendRequest,
   onAcceptFriendRequest,
@@ -53,6 +54,7 @@ const Messages = ({
   }); // sentinel observer
 
   const { messages, cursor, hasMore, loading } = useSelector((state) => state.messages);
+  console.log("🚀 ~ Messages ~ messages:", messages);
 
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
@@ -282,6 +284,7 @@ const Messages = ({
                 isLastMessage={index === messages.length - 1}
                 onPreviewImage={handlePreviewImage}
                 setEditingMessage={setEditingMessage}
+                setReplyingMessage={setReplyingMessage}
                 onOpenUserProfile={onOpenUserProfile}
               />
             </React.Fragment>

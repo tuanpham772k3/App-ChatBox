@@ -1,18 +1,23 @@
 import React, { useState } from "react";
 import { Popover } from "antd";
-import { EllipsisVertical, Pencil, Trash } from "lucide-react";
+import { EllipsisVertical, Pencil, Reply, Trash } from "lucide-react";
 import MenuActions from "../../ui/popover/MenuActions";
 
-const PopoverMessageActions = ({ msg, onEditMessage, onDeleteMessage }) => {
+const PopoverMessageActions = ({ onEditMessage, onDeleteMessage, onReplyMessage }) => {
   const [open, setOpen] = useState(false);
 
   const handleDelete = () => {
-    onDeleteMessage(msg._id);
+    onDeleteMessage();
     setOpen(false);
   };
 
   const handleEdit = () => {
-    onEditMessage(msg);
+    onEditMessage();
+    setOpen(false);
+  };
+
+  const handleReply = () => {
+    onReplyMessage();
     setOpen(false);
   };
 
@@ -29,6 +34,12 @@ const PopoverMessageActions = ({ msg, onEditMessage, onDeleteMessage }) => {
       label: "Thu hồi tin nhắn",
       danger: true,
       onClick: handleDelete,
+    },
+    {
+      id: "reply",
+      Icon: Reply,
+      label: "Trả lời tin nhắn",
+      onClick: handleReply,
     },
   ];
 

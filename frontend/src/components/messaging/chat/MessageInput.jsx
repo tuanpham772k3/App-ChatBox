@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import { useDispatch } from "react-redux";
-import { Image, MapPin, Mic, Navigation, Send, Smile } from "lucide-react";
+import { Image, MapPin, Mic, Navigation, Reply, Send, Smile } from "lucide-react";
 import { Input, Upload } from "antd";
 import { emitEvent } from "@/lib/socket";
 import { useNotification } from "@/hooks/useNotification";
@@ -11,6 +11,8 @@ const MessageInput = ({
   activeConversationId,
   editingMessage,
   setEditingMessage,
+  replyingMessage,
+  setReplyingMessage,
 }) => {
   const dispatch = useDispatch();
 
@@ -21,12 +23,11 @@ const MessageInput = ({
 
   const notification = useNotification();
 
-  const { id, content, originalContent } = editingMessage;
+  const isEditing = Boolean(editingMessage.id);
+  const inputValue = isEditing ? editingMessage.content : text;
 
-  const isEditing = Boolean(id);
-  const inputValue = isEditing ? content : text;
+  const isReplying = Boolean(replyingMessage.id);
 
-  // Xử lý gửi tin nhắn
   const sendMessage = async (payload) => {
     try {
       // Idempotency key (KISS): mỗi lần gửi 1 message tạo 1 clientMessageId
@@ -41,7 +42,6 @@ const MessageInput = ({
       await dispatch(
         createNewMessage({
           conversationId: activeConversationId,
-          content: text,
           senderId: { _id: currentUserId }, // Để xử lý redux thunk
           tempId,
           clientMessageId,
@@ -64,8 +64,14 @@ const MessageInput = ({
     try {
       await sendMessage({
         content: text,
+        replyTo: isReplying ? replyingMessage.id : null,
       });
+
       setText("");
+      setReplyingMessage({
+        id: null,
+        originalContent: "",
+      });
     } finally {
       setIsSending(false);
     }
@@ -82,16 +88,26 @@ const MessageInput = ({
         size: file.size,
         localFile: file,
       },
+      replyTo: isReplying ? replyingMessage.id : null,
+    });
+
+    setReplyingMessage({
+      id: null,
+      originalContent: "",
     });
   };
 
-  // Xử lý chỉnh sửa tin nhắn
   const handleEdit = async () => {
     try {
-      if (!content.trim()) return;
-      if (content.trim() === originalContent.trim()) return;
+      if (!editingMessage.content.trim()) return;
+      if (editingMessage.content.trim() === editingMessage.originalContent.trim()) return;
 
-      await dispatch(editMessageById({ messageId: id, newContent: content })).unwrap();
+      await dispatch(
+        editMessageById({
+          messageId: editingMessage.id,
+          newContent: editingMessage.content,
+        })
+      ).unwrap();
 
       setEditingMessage({
         id: null,
@@ -110,6 +126,13 @@ const MessageInput = ({
     setEditingMessage({
       id: null,
       content: "",
+      originalContent: "",
+    });
+  };
+
+  const handleCancelReply = () => {
+    setReplyingMessage({
+      id: null,
       originalContent: "",
     });
   };
@@ -151,7 +174,7 @@ const MessageInput = ({
       aria-label="Message composer"
       onSubmit={(e) => {
         e.preventDefault();
-        id ? handleEdit() : handleSend();
+        isEditing ? handleEdit() : handleSend();
       }}
     >
       {/* ====== Editing ====== */}
@@ -167,8 +190,27 @@ const MessageInput = ({
           </button>
         </div>
       )}
+      {/* Replying */}
+      {isReplying && (
+        <div className="flex items-center justify-between p-2 pb-2 bg-[var(--color-surface)] text-sm text-[var(--color-text-secondary)]">
+          <div className="border-l-2 border-blue-400 px-2">
+            <div className="flex items-center gap-2">
+              <Reply size={20} />
+              <span>Trả lời</span>
+            </div>
+            <span>{replyingMessage.originalContent}</span>
+          </div>
+          <button
+            type="button"
+            onClick={handleCancelReply}
+            className="text-[var(--color-primary)] hover:underline"
+          >
+            Hủy
+          </button>
+        </div>
+      )}
 
-      <div className="flex-1 flex items-center justify-between gap-2 min-w-0">
+      <div className="flex-1 flex items-center justify-between gap-2 mt-2 min-w-0">
         {/* ====== Action ======= */}
         <div className="shrink-0 flex items-center gap-1 overflow-x-auto">
           <Upload
@@ -223,7 +265,7 @@ const MessageInput = ({
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
-              id ? handleEdit() : handleSend();
+              isEditing ? handleEdit() : handleSend();
             }
           }}
           type="text"
@@ -233,7 +275,7 @@ const MessageInput = ({
         {/* ===== SEND BUTTON ===== */}
         <button
           type="submit"
-          aria-label={id ? "Save edited message" : "Send message"}
+          aria-label={isEditing ? "Save edited message" : "Send message"}
           disabled={!inputValue.trim() || isSending}
           className={`w-10 h-10 flex items-center justify-center rounded-full shrink-0
       ${

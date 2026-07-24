@@ -6,33 +6,20 @@ const {
   emitConversationEvent,
 } = require("../../sockets/emitters/conversation.emitter.js");
 
-/**
- * Tạo tin nhắn mới
- */
+// Tạo tin nhắn mới
 const createNewMessage = async (req, res, next) => {
   try {
-    const { userId } = req.user;
-    const { conversationId, content, file, clientMessageId = null } = req.body;
+    const { userId: senderId } = req.user;
     const io = getSocket();
 
-    if (!conversationId) {
-      return res.status(400).json({
-        success: false,
-        message: "conversationId is required",
-      });
-    }
-
-    const { message, conversation, isNew } = await MessageService.createMessage(
-      conversationId,
-      userId,
-      content,
-      file,
-      clientMessageId
-    );
+    const { message, conversation, isNew } = await MessageService.createMessage({
+      ...req.body,
+      senderId,
+    });
 
     // realtime
     if (isNew) {
-      emitMessageEvent.created({ io, message, conversation, senderId: userId });
+      emitMessageEvent.created({ io, message, conversation, senderId });
 
       emitConversationEvent.created({ io, conversation });
     }
@@ -47,9 +34,7 @@ const createNewMessage = async (req, res, next) => {
   }
 };
 
-/**
- * Lấy danh sách tin nhắn trong conversation
- */
+// Lấy danh sách tin nhắn trong conversation
 const getConversationMessages = async (req, res, next) => {
   try {
     const { conversationId } = req.params;

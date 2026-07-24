@@ -5,7 +5,16 @@ const { formatConversation } = require("../conversations/conversation.mapper.js"
 
 const MessageService = {
   // Tạo tin nhắn mới
-  createMessage: async (conversationId, senderId, content, fileInfo, clientMessageId) => {
+  createMessage: async (payload) => {
+    const {
+      conversationId,
+      content,
+      file,
+      clientMessageId = null,
+      replyTo,
+      senderId,
+    } = payload;
+
     const conversation = await Conversation.findOne({
       _id: conversationId,
       "participants.userId": senderId,
@@ -16,11 +25,22 @@ const MessageService = {
       throw new AppError("Conversation not found or access denied", 404);
     }
 
+    // Trường hợp reply:
+    if (replyTo) {
+      const repliedMessage = await Message.findById(replyTo);
+
+      if (!repliedMessage) throw new AppError("Message not found", 404);
+
+      if (repliedMessage.conversationId.toString() !== conversationId) {
+        throw new AppError("Reply message must belong to same conversation", 400);
+      }
+    }
+
     // Xác định message type (BACKEND QUYẾT)
     let type = "text";
 
-    if (fileInfo) {
-      type = fileInfo.mimeType.startsWith("image/") ? "image" : "file";
+    if (file) {
+      type = file.mimeType.startsWith("image/") ? "image" : "file";
     }
 
     if (type === "text") {
@@ -32,7 +52,7 @@ const MessageService = {
       }
     }
 
-    if ((type === "image" || type === "file") && !fileInfo?.url) {
+    if ((type === "image" || type === "file") && !file?.url) {
       throw new AppError("File info is required for file/image message", 400);
     }
 
@@ -55,32 +75,44 @@ const MessageService = {
     const message = await Message.create({
       conversationId,
       senderId,
-      clientMessageId: clientMessageId || null,
+      clientMessageId,
       type,
-      content: content ? content.trim() : null,
-      file: fileInfo
-        ? {
-            url: fileInfo.url,
-            public_id: fileInfo.public_id,
-            filename: fileInfo.filename,
-            mimeType: fileInfo.mimeType,
-            size: fileInfo.size,
-          }
-        : null,
+      content,
+      file: file && {
+        url: file.url,
+        public_id: file.public_id,
+        filename: file.filename,
+        mimeType: file.mimeType,
+        size: file.size,
+      },
+      replyTo,
     });
 
-    await message.populate("senderId", "displayName email avatar");
+    await message.populate([
+      {
+        path: "senderId",
+        select: "displayName email avatar",
+      },
+      {
+        path: "replyTo",
+        select: "content senderId type file isDeleted",
+        populate: {
+          path: "senderId",
+          select: "displayName email avatar",
+        },
+      },
+    ]);
 
     conversation.lastMessage = {
       messageId: message._id,
       senderId,
       type,
-      content: type === "text" ? content.trim() : fileInfo?.filename || type,
-      file: fileInfo
+      content: type === "text" ? content.trim() : file?.filename || type,
+      file: file
         ? {
-            url: fileInfo.url,
-            filename: fileInfo.filename,
-            size: fileInfo.size,
+            url: file.url,
+            filename: file.filename,
+            size: file.size,
           }
         : null,
       isDeleted: false,
@@ -120,7 +152,6 @@ const MessageService = {
 
   // Lấy danh sách tin nhắn trong một conversation
   getConversationMessages: async (conversationId, userId, before, limit = 20) => {
-    // 1. Kiểm tra user có quyền truy cập conversation không
     const conversation = await Conversation.findOne({
       _id: conversationId,
       "participants.userId": userId,
@@ -145,17 +176,29 @@ const MessageService = {
       query.createdAt.$lt = new Date(before);
     }
 
-    // 2. Lấy danh sách tin nhắn (không bao gồm tin nhắn đã xóa)
     const messages = await Message.find(query)
-      .populate("senderId", "displayName email avatar")
+      .populate([
+        {
+          path: "senderId",
+          select: "displayName email avatar",
+        },
+        {
+          path: "replyTo",
+          select: "content senderId type file isDeleted",
+          populate: {
+            path: "senderId",
+            select: "displayName email avatar",
+          },
+        },
+      ])
       .sort({ createdAt: -1 }) // Sắp xếp từ mới nhất đến cũ nhất
       .limit(limit + 1)
       .lean();
 
-    // 3. Xác định còn tin nhắn để load thêm không
+    // Xác định còn tin nhắn để load thêm không
     const hasMore = messages.length > limit;
 
-    // 4. Đảo ngược để UI hiển thị từ cũ → mới
+    // Đảo ngược để UI hiển thị từ cũ → mới
     messages.reverse();
 
     return {

@@ -5,6 +5,7 @@ import PopoverMessageActions from "./PopoverMessageActions";
 import UserAvatar from "@/components/ui/avatar/UserAvatar";
 import { deleteMessageById } from "@/store/messagesSlice";
 import { useNotification } from "@/hooks/useNotification";
+import MessageReplyPreview from "./MessageReplyPreview";
 
 const MESSAGE_STATUS = {
   sending: {
@@ -58,6 +59,7 @@ const MessageItem = ({
   isLastMessage,
   onPreviewImage,
   setEditingMessage,
+  setReplyingMessage,
   onOpenUserProfile,
 }) => {
   const dispatch = useDispatch();
@@ -130,6 +132,13 @@ const MessageItem = ({
     });
   };
 
+  const handleReplyMessage = () => {
+    setReplyingMessage({
+      id: msg._id,
+      originalContent: msg.content,
+    });
+  };
+
   return (
     <li className={`${showAvatar ? "mt-4" : "mt-1"} list-none`}>
       <div
@@ -153,9 +162,9 @@ const MessageItem = ({
         {isMine && !msg.isDeleted && (
           <div className="touch-always-visible self-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-150">
             <PopoverMessageActions
-              msg={msg}
               onEditMessage={handleEditMessage}
               onDeleteMessage={handleDeleteMessage}
+              onReplyMessage={handleReplyMessage}
             />
           </div>
         )}
@@ -179,6 +188,9 @@ const MessageItem = ({
                   : "bg-[var(--color-app)] border-[var(--color-message-border)]"
               }`}
           >
+            {/* Reply */}
+            {msg.replyTo && <MessageReplyPreview replyTo={msg.replyTo} />}
+
             {/* Content */}
             {msg.type === "image" ? (
               <figure>
