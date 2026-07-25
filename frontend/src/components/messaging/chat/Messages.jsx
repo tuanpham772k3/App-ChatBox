@@ -54,7 +54,6 @@ const Messages = ({
   }); // sentinel observer
 
   const { messages, cursor, hasMore, loading } = useSelector((state) => state.messages);
-  console.log("🚀 ~ Messages ~ messages:", messages);
 
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
@@ -181,6 +180,33 @@ const Messages = ({
     setLightboxOpen(true);
   };
 
+  const handleJumpToMessage = (id) => {
+    const element = document.getElementById(`message-${id}`);
+
+    if (!element) return;
+
+    element.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+
+    element.classList.add(
+      "ring-2",
+      "ring-[var(--color-primary)]",
+      "bg-[var(--color-hover)]",
+      "transition-all",
+      "duration-300"
+    );
+
+    setTimeout(() => {
+      element.classList.remove(
+        "ring-2",
+        "ring-[var(--color-primary)]",
+        "bg-[var(--color-hover)]"
+      );
+    }, 1200);
+  };
+
   // Map messages for display (show/hide date, time, avatar, etc.)
   const displayMessages = useMemo(() => {
     return mapMessagesForDisplay(messages, currentUserId);
@@ -286,6 +312,7 @@ const Messages = ({
                 setEditingMessage={setEditingMessage}
                 setReplyingMessage={setReplyingMessage}
                 onOpenUserProfile={onOpenUserProfile}
+                onJumpToMessage={handleJumpToMessage}
               />
             </React.Fragment>
           ))

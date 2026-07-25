@@ -61,6 +61,7 @@ const MessageItem = ({
   setEditingMessage,
   setReplyingMessage,
   onOpenUserProfile,
+  onJumpToMessage,
 }) => {
   const dispatch = useDispatch();
   const notification = useNotification();
@@ -135,12 +136,13 @@ const MessageItem = ({
   const handleReplyMessage = () => {
     setReplyingMessage({
       id: msg._id,
+      senderName: msg.senderId.displayName,
       originalContent: msg.content,
     });
   };
 
   return (
-    <li className={`${showAvatar ? "mt-4" : "mt-1"} list-none`}>
+    <li id={`message-${msg._id}`} className={`${showAvatar ? "mt-4" : "mt-1"} list-none`}>
       <div
         className={`group flex items-start gap-2 ${
           isMine ? "justify-end" : "items-end gap-2"
@@ -189,7 +191,9 @@ const MessageItem = ({
               }`}
           >
             {/* Reply */}
-            {msg.replyTo && <MessageReplyPreview replyTo={msg.replyTo} />}
+            {!msg.isDeleted && msg.replyTo && (
+              <MessageReplyPreview replyTo={msg.replyTo} onJump={onJumpToMessage} />
+            )}
 
             {/* Content */}
             {msg.type === "image" ? (

@@ -58,6 +58,7 @@ const ChatWindow = () => {
   });
   const [replyingMessage, setReplyingMessage] = useState({
     id: null,
+    senderName: "",
     originalContent: "",
   });
 

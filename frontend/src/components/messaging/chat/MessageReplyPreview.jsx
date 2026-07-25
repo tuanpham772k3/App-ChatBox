@@ -1,7 +1,11 @@
 import React from "react";
-import { Image, FileText, Reply } from "lucide-react";
+import { Image, FileText } from "lucide-react";
 
-const MessageReplyPreview = ({ replyTo }) => {
+const MessageReplyPreview = ({ replyTo, onJump }) => {
+  const handleClick = () => {
+    onJump(replyTo._id);
+  };
+
   if (!replyTo) return null;
 
   const renderContent = () => {
@@ -36,19 +40,18 @@ const MessageReplyPreview = ({ replyTo }) => {
   };
 
   return (
-    <div className="mb-2 flex gap-2 rounded-md border-l-4 border-[var(--color-primary)] bg-[var(--color-hover)] px-3 py-2">
-      <Reply size={14} className="mt-0.5 shrink-0 text-[var(--color-text-secondary)]" />
-
-      <div className="min-w-0 flex-1">
-        <div className="truncate text-xs font-semibold text-[var(--color-primary)]">
-          {replyTo.senderId?.displayName || "Người dùng"}
-        </div>
-
-        <div className="truncate text-xs text-[var(--color-text-secondary)]">
-          {renderContent()}
-        </div>
+    <button
+      onClick={handleClick}
+      className="block w-full min-w-0 rounded-md border-l-4 border-[var(--color-primary)] bg-[var(--color-hover)] px-2 py-2 text-left cursor-pointer"
+    >
+      <div className="mb-2 truncate text-xs font-semibold text-[var(--color-primary)]">
+        {replyTo.senderId?.displayName || "Người dùng"}
       </div>
-    </div>
+
+      <div className="truncate text-xs text-[var(--color-text-secondary)]">
+        {renderContent()}
+      </div>
+    </button>
   );
 };
 

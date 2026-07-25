@@ -29,6 +29,7 @@ const MessageInput = ({
   const isReplying = Boolean(replyingMessage.id);
 
   const sendMessage = async (payload) => {
+    setIsSending(true);
     try {
       // Idempotency key (KISS): mỗi lần gửi 1 message tạo 1 clientMessageId
       const clientMessageId =
@@ -48,6 +49,15 @@ const MessageInput = ({
           ...payload,
         })
       ).unwrap();
+
+      // reset state
+      setIsSending(false);
+      setText("");
+      setReplyingMessage({
+        id: null,
+        senderName: "",
+        originalContent: "",
+      });
     } catch (err) {
       notification.error({
         message: "Gửi tin nhắn thất bại",
@@ -59,22 +69,10 @@ const MessageInput = ({
   const handleSend = async () => {
     if (!text.trim() || isSending) return;
 
-    setIsSending(true);
-
-    try {
-      await sendMessage({
-        content: text,
-        replyTo: isReplying ? replyingMessage.id : null,
-      });
-
-      setText("");
-      setReplyingMessage({
-        id: null,
-        originalContent: "",
-      });
-    } finally {
-      setIsSending(false);
-    }
+    await sendMessage({
+      content: text,
+      replyTo: isReplying ? replyingMessage.id : null,
+    });
   };
 
   const handleUploadImage = async ({ file }) => {
@@ -89,11 +87,6 @@ const MessageInput = ({
         localFile: file,
       },
       replyTo: isReplying ? replyingMessage.id : null,
-    });
-
-    setReplyingMessage({
-      id: null,
-      originalContent: "",
     });
   };
 
@@ -133,6 +126,7 @@ const MessageInput = ({
   const handleCancelReply = () => {
     setReplyingMessage({
       id: null,
+      senderName: "",
       originalContent: "",
     });
   };
@@ -192,11 +186,12 @@ const MessageInput = ({
       )}
       {/* Replying */}
       {isReplying && (
-        <div className="flex items-center justify-between p-2 pb-2 bg-[var(--color-surface)] text-sm text-[var(--color-text-secondary)]">
-          <div className="border-l-2 border-blue-400 px-2">
-            <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between p-2 pb-2 rounded-sm bg-[var(--color-surface)] text-sm text-[var(--color-text-secondary)]">
+          <div className="border-l-2 border-blue-400 px-2 text-[var(--color-text-primary)] text-[13px]">
+            <div className="flex items-center gap-1">
               <Reply size={20} />
               <span>Trả lời</span>
+              <span className="font-medium">{replyingMessage.senderName}</span>
             </div>
             <span>{replyingMessage.originalContent}</span>
           </div>
