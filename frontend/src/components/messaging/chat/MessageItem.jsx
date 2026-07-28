@@ -199,6 +199,7 @@ const MessageItem = ({
           <div
             className={`relative min-w-[3.75rem] max-w-full rounded-lg break-words border shadow-xs text-[var(--color-text-primary)]
               ${msg.type !== "image" && "py-3 px-3"}
+              ${totalReactions > 0 ? "mb-3" : ""}
               ${
                 isMine
                   ? "bg-[var(--color-primary)]/5 border-blue-500"
@@ -253,7 +254,7 @@ const MessageItem = ({
             )}
 
             {/* --- Reactions --- */}
-            <div className="absolute -bottom-4 right-2 flex flex-row-reverse items-center gap-1">
+            <div className="absolute -bottom-3 right-2 z-10 flex flex-row-reverse items-center gap-1">
               {/* Picker */}
               {!msg.isDeleted && (
                 <div
