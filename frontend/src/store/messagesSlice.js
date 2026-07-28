@@ -71,6 +71,18 @@ export const editMessageById = createAsyncThunk(
   }
 );
 
+export const reactionMessageById = createAsyncThunk(
+  "messages/reactionMessage",
+  async ({ messageId, emoji }, { rejectWithValue }) => {
+    try {
+      const res = await messagesApi.reactionMessageById({ messageId, emoji });
+      return res.data; //message
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
 /* =============================
  *  Slice setup
  * ============================= */
@@ -120,6 +132,13 @@ const messagesSlice = createSlice({
       const message = action.payload;
       const index = state.messages.findIndex((m) => m._id === message._id);
       if (index !== -1) state.messages[index] = message;
+    },
+
+    // Reaction realtime
+    reactionMessageRealtime: (state, action) => {
+      const message = action.payload;
+      const index = state.messages.findIndex((m) => m._id === message._id);
+      if (index !== -1) state.messages[index].reactions = message.reactions;
     },
 
     // Clear khi đổi sang cuộc trò chuyện khác
@@ -236,10 +255,26 @@ const messagesSlice = createSlice({
         if (index === -1 || !message) return;
 
         state.messages[index] = message;
+      })
+
+      // reaction
+      .addCase(reactionMessageById.fulfilled, (state, action) => {
+        const message = action.payload;
+
+        const index = state.messages.findIndex((m) => m._id === message._id);
+
+        if (index === -1 || !message) return;
+
+        state.messages[index].reactions = message.reactions;
       });
   },
 });
 
-export const { addIncomingMessage, updateMessage, removeMessage, clearMessages } =
-  messagesSlice.actions;
+export const {
+  addIncomingMessage,
+  updateMessage,
+  removeMessage,
+  reactionMessageRealtime,
+  clearMessages,
+} = messagesSlice.actions;
 export default messagesSlice.reducer;

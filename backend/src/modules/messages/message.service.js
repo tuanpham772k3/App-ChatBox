@@ -190,6 +190,10 @@ const MessageService = {
             select: "displayName email avatar",
           },
         },
+        {
+          path: "reactions.userId",
+          select: "displayName email avatar",
+        },
       ])
       .sort({ createdAt: -1 }) // Sắp xếp từ mới nhất đến cũ nhất
       .limit(limit + 1)
@@ -322,6 +326,48 @@ const MessageService = {
         isLastMessage,
       },
     };
+  },
+
+  // Reaction
+  reactionMessageById: async (payload) => {
+    const { userId, messageId, emoji } = payload;
+
+    const message = await Message.findById(messageId);
+
+    if (!message || message.isDeleted) {
+      throw new AppError("Message not found", 404);
+    }
+
+    const reaction = message.reactions.find(
+      (r) => r.userId.toString() === userId.toString()
+    );
+
+    // Chưa từng reaction -> thêm mới
+    if (!reaction) {
+      message.reactions.push({
+        userId,
+        emoji,
+      });
+    }
+    // Click lại cùng emoji -> bỏ reaction
+    else if (reaction.emoji === emoji) {
+      message.reactions = message.reactions.filter(
+        (r) => r.userId.toString() !== userId.toString()
+      );
+    }
+    // Đổi emoji
+    else {
+      reaction.emoji = emoji;
+    }
+
+    await message.save();
+
+    await message.populate({
+      path: "reactions.userId",
+      select: "displayName email avatar",
+    });
+
+    return message.toObject();
   },
 };
 

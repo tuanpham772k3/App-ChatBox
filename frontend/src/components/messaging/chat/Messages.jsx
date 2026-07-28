@@ -16,12 +16,13 @@ import { mapMessagesForDisplay } from "@/utils/messageMapper";
 import { emitEvent } from "@/lib/socket";
 import { useNotification } from "@/hooks/useNotification";
 import MessageItem from "./MessageItem";
+import ReactionDetailsModal from "./ReactionDetailsModal ";
 
 const MessageDateDivider = ({ date }) => {
   const messageDate = new Date(date);
 
   return (
-    <li className="sticky top-0 z-10 flex justify-center py-2 list-none">
+    <li className="sticky top-0 z-10 flex justify-center my-5 list-none">
       <time
         dateTime={messageDate.toISOString()}
         className="py-1 px-4 bg-[var(--color-status)] backdrop-blur rounded-xl text-xs text-white shadow"
@@ -57,6 +58,10 @@ const Messages = ({
 
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [reactionDetails, setReactionDetails] = useState({
+    open: false,
+    reactionSummary: [],
+  });
 
   const containerRef = useRef(null);
   const initialLoadRef = useRef(true);
@@ -212,6 +217,13 @@ const Messages = ({
     return mapMessagesForDisplay(messages, currentUserId);
   }, [messages, currentUserId]);
 
+  const handleOpenReactionDetails = (reactionSummary) => {
+    setReactionDetails({
+      open: true,
+      reactionSummary,
+    });
+  };
+
   return (
     <>
       <ul
@@ -313,6 +325,7 @@ const Messages = ({
                 setReplyingMessage={setReplyingMessage}
                 onOpenUserProfile={onOpenUserProfile}
                 onJumpToMessage={handleJumpToMessage}
+                onOpenReactionDetails={handleOpenReactionDetails}
               />
             </React.Fragment>
           ))
@@ -326,6 +339,17 @@ const Messages = ({
         slides={lightboxSlides}
         index={lightboxIndex}
         plugins={[Zoom, Download, Thumbnails]}
+      />
+
+      <ReactionDetailsModal
+        open={reactionDetails.open}
+        reactionSummary={reactionDetails.reactionSummary}
+        onClose={() =>
+          setReactionDetails({
+            open: false,
+            reactionSummary: [],
+          })
+        }
       />
     </>
   );

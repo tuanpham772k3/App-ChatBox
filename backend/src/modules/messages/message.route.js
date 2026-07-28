@@ -5,6 +5,7 @@ const {
   getConversationMessages,
   deleteMessageById,
   editMessageById,
+  reactionMessageById,
 } = require("./message.controller.js");
 
 const router = express.Router();
@@ -20,5 +21,8 @@ router.delete("/:messageId", verifyToken, deleteMessageById);
 
 // Chỉnh sửa tin nhắn
 router.put("/:messageId", verifyToken, editMessageById);
+
+// PATCH /messages/:messageId/reaction
+router.patch("/:messageId/reaction", verifyToken, reactionMessageById);
 
 module.exports = router;

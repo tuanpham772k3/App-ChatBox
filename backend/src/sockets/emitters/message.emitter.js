@@ -62,6 +62,14 @@ const emitMessageEvent = {
       lastMessage,
     });
   },
+
+  reaction: ({ io, message }) => {
+    if (!message) return;
+
+    const conversationId = String(message.conversationId);
+
+    emitToConversation(io, conversationId, "message:reaction_updated", message);
+  },
 };
 
 module.exports = {

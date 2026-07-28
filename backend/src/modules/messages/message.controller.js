@@ -147,9 +147,50 @@ const editMessageById = async (req, res, next) => {
   }
 };
 
+// Reaction message
+const reactionMessageById = async (req, res, next) => {
+  try {
+    const { userId } = req.user;
+    const { messageId } = req.params;
+    const { emoji } = req.body;
+    const io = getSocket();
+
+    if (!Types.ObjectId.isValid(messageId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid message ID format",
+      });
+    }
+
+    if (!emoji) {
+      return res.status(400).json({
+        success: false,
+        message: "Emoji is required",
+      });
+    }
+
+    const message = await MessageService.reactionMessageById({
+      userId,
+      messageId,
+      emoji,
+    });
+
+    emitMessageEvent.reaction({ io, message });
+
+    return res.status(200).json({
+      success: true,
+      message: "Reaction message successfully",
+      data: message,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 module.exports = {
   createNewMessage,
   getConversationMessages,
   deleteMessageById,
   editMessageById,
+  reactionMessageById,
 };

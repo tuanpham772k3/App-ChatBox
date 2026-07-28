@@ -14,6 +14,22 @@ const fileSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const reactionsSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    emoji: {
+      type: String,
+      required: true,
+      enum: ["like", "love", "joy", "surprise", "sad", "angry"],
+    },
+  },
+  { _id: false, timestamps: true }
+);
+
 const messageSchema = new mongoose.Schema(
   {
     conversationId: {
@@ -61,6 +77,9 @@ const messageSchema = new mongoose.Schema(
       ref: "User",
       default: null,
     },
+
+    reactions: [reactionsSchema],
+
     isDeleted: {
       type: Boolean,
       default: false,

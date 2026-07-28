@@ -15,7 +15,12 @@ import {
   userStatusChanged,
   userStopTyping,
 } from "@/store/conversationsSlice";
-import { addIncomingMessage, removeMessage, updateMessage } from "@/store/messagesSlice";
+import {
+  addIncomingMessage,
+  reactionMessageRealtime,
+  removeMessage,
+  updateMessage,
+} from "@/store/messagesSlice";
 import {
   friendRemovedRealtime,
   friendRequestAcceptedRealtime,
@@ -121,6 +126,10 @@ export const useSocket = () => {
       dispatch(removeMessage(message));
     };
 
+    const onMessageReaction = (message) => {
+      dispatch(reactionMessageRealtime(message));
+    };
+
     onEvent("user_status_changed", onStatusChanged);
     onEvent("user_typing", onTypingStart);
     onEvent("user_stop_typing", onTypingStop);
@@ -144,6 +153,7 @@ export const useSocket = () => {
     onEvent("message:created", onMessageNew);
     onEvent("message:edited", onMessageEdit);
     onEvent("message:deleted", onMessageDelete);
+    onEvent("message:reaction_updated", onMessageReaction);
 
     return () => {
       offEvent("user_status_changed", onStatusChanged);
@@ -169,6 +179,7 @@ export const useSocket = () => {
       offEvent("message:created", onMessageNew);
       offEvent("message:edited", onMessageEdit);
       offEvent("message:deleted", onMessageDelete);
+      offEvent("message:reaction_updated", onMessageReaction);
     };
   }, [activeConversationId, currentUserId, dispatch]);
 };

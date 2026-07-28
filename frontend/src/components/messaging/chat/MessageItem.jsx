@@ -1,11 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import { useDispatch } from "react-redux";
-import { Check, CheckCheck, Clock, TriangleAlert } from "lucide-react";
+import { Tooltip } from "antd";
+import { Check, CheckCheck, Clock, ThumbsUp, TriangleAlert } from "lucide-react";
 import PopoverMessageActions from "./PopoverMessageActions";
 import UserAvatar from "@/components/ui/avatar/UserAvatar";
-import { deleteMessageById } from "@/store/messagesSlice";
+import { deleteMessageById, reactionMessageById } from "@/store/messagesSlice";
 import { useNotification } from "@/hooks/useNotification";
 import MessageReplyPreview from "./MessageReplyPreview";
+import ReactionPicker from "./ReactionPicker";
+import { REACTIONS } from "@/constants/reactions";
 
 const MESSAGE_STATUS = {
   sending: {
@@ -62,29 +65,23 @@ const MessageItem = ({
   setReplyingMessage,
   onOpenUserProfile,
   onJumpToMessage,
+  onOpenReactionDetails,
 }) => {
   const dispatch = useDispatch();
+  const [openReaction, setOpenReaction] = useState(false);
   const notification = useNotification();
 
-  // Lấy thông tin tin nhắn
-  const isMine = msg.meta.isMine;
-  const showTime = msg.meta.showTime;
-  const showName = msg.meta.showName;
-  const showAvatar = msg.meta.showAvatar;
+  const { isMine, showTime, showName, showAvatar, msgTimeDate, msgTime, msgEditedAt } =
+    msg.meta;
 
-  // Lấy thời gian gửi tin nhắn và thời gian chỉnh sửa tin nhắn
-  const msgTimeDate = new Date(msg.createdAt);
-  const msgTime = msgTimeDate.toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-  const msgEditedAt = new Date(msg.editedAt).toLocaleString([], {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const {
+    myReaction,
+    reactionSummary,
+    recentReactionEmojis,
+    totalReactions,
+    previewReactionUsers,
+    hasMoreReactionUsers,
+  } = msg.reactions;
 
   // Lấy danh sách người đã đọc và người nhận đã nhận tin nhắn
   const readers =
@@ -141,23 +138,41 @@ const MessageItem = ({
     });
   };
 
+  const handleReaction = async (reaction) => {
+    try {
+      await dispatch(
+        reactionMessageById({
+          messageId: msg._id,
+          emoji: reaction,
+        })
+      ).unwrap();
+    } catch (error) {
+      notification.error({
+        message: "Không thể thả cảm xúc",
+        description: error.message,
+      });
+    }
+  };
+
   return (
     <li id={`message-${msg._id}`} className={`${showAvatar ? "mt-4" : "mt-1"} list-none`}>
       <div
-        className={`group flex items-start gap-2 ${
+        className={`relative group flex items-start gap-2 ${
           isMine ? "justify-end" : "items-end gap-2"
         }`}
       >
         {/* --- Avatar ---*/}
-        {showAvatar ? (
-          <button type="button" onClick={() => onOpenUserProfile(msg?.senderId?._id)}>
+        {showAvatar && (
+          <button
+            type="button"
+            onClick={() => onOpenUserProfile(msg?.senderId?._id)}
+            className="absolute left-0 top-0"
+          >
             <UserAvatar
               name={msg.senderId?.displayName || "Người dùng"}
               avatarUrl={msg.senderId?.avatar?.url}
             />
           </button>
-        ) : (
-          <div className="w-10 h-10 shrink-0" />
         )}
 
         {/* Ellipsis + Menu */}
@@ -172,7 +187,7 @@ const MessageItem = ({
         )}
 
         {/* --- Section --- */}
-        <div className="min-w-0 max-w-[min(75vw,42rem)] sm:max-w-[70%] flex flex-col items-start gap-1">
+        <div className="min-w-0 max-w-[min(75vw,42rem)] sm:max-w-[70%] flex flex-col items-start gap-1 ml-12">
           {/* --- Name Sender --- */}
           {showName && currentConversation?.type === "group" && (
             <span className="bg-[var(--color-app)] p-1 rounded-xl text-xs font-medium text-[var(--color-text-secondary)]">
@@ -182,7 +197,7 @@ const MessageItem = ({
 
           {/* --- Bubble --- */}
           <div
-            className={`relative min-w-[3.75rem] max-w-full rounded-lg overflow-hidden break-words border shadow-xs text-[var(--color-text-primary)]
+            className={`relative min-w-[3.75rem] max-w-full rounded-lg break-words border shadow-xs text-[var(--color-text-primary)]
               ${msg.type !== "image" && "py-3 px-3"}
               ${
                 isMine
@@ -236,6 +251,76 @@ const MessageItem = ({
                 {msgTime}
               </time>
             )}
+
+            {/* --- Reactions --- */}
+            <div className="absolute -bottom-4 right-2 flex flex-row-reverse items-center gap-1">
+              {/* Picker */}
+              {!msg.isDeleted && (
+                <div
+                  className={`shrink-0 transition-opacity duration-150 ${
+                    myReaction ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                  }`}
+                >
+                  <ReactionPicker
+                    onSelect={handleReaction}
+                    open={openReaction}
+                    onOpenChange={setOpenReaction}
+                    myReaction={myReaction}
+                  >
+                    <button
+                      type="button"
+                      className="flex items-center justify-center p-1 rounded-full border
+          border-[var(--color-border)] bg-[var(--color-chat)] text-[var(--color-text-secondary)]"
+                    >
+                      {myReaction ? (
+                        <img
+                          src={REACTIONS[myReaction.emoji].src}
+                          alt={REACTIONS[myReaction.emoji].label}
+                          className="w-4 h-4 select-none"
+                          draggable={false}
+                        />
+                      ) : (
+                        <ThumbsUp size={16} />
+                      )}
+                    </button>
+                  </ReactionPicker>
+                </div>
+              )}
+
+              {/* Summary */}
+              {recentReactionEmojis.length > 0 && (
+                <Tooltip
+                  placement="bottom"
+                  title={
+                    <div>
+                      {previewReactionUsers.map((user) => (
+                        <div key={user._id}>{user.displayName}</div>
+                      ))}
+
+                      {hasMoreReactionUsers && <div>...</div>}
+                    </div>
+                  }
+                >
+                  <button
+                    onClick={() => onOpenReactionDetails(reactionSummary)}
+                    type="button"
+                    className="shrink-0 flex items-center justify-center gap-1 px-1 rounded-full border
+                  border-[var(--color-border)] bg-[var(--color-chat)]"
+                  >
+                    {recentReactionEmojis.map((emoji) => (
+                      <img
+                        key={emoji}
+                        src={REACTIONS[emoji].src}
+                        alt={REACTIONS[emoji].label}
+                        className="w-4 h-4 select-none"
+                        draggable={false}
+                      />
+                    ))}
+                    <span>{totalReactions}</span>
+                  </button>
+                </Tooltip>
+              )}
+            </div>
           </div>
         </div>
       </div>

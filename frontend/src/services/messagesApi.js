@@ -45,6 +45,12 @@ const messagesApi = {
       content: newContent,
     });
   },
+
+  reactionMessageById: ({ messageId, emoji }) => {
+    return instance.patch(`/messages/${messageId}/reaction`, {
+      emoji,
+    });
+  },
 };
 
 export default messagesApi;
