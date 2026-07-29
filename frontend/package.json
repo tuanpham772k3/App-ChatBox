@@ -17,6 +17,7 @@
     "axios": "^1.12.2",
     "caniuse-lite": "^1.0.30001786",
     "class-variance-authority": "^0.7.1",
+    "emoji-picker-react": "^4.19.1",
     "lodash": "^4.17.21",
     "lucide-react": "^0.544.0",
     "react": "^19.1.1",

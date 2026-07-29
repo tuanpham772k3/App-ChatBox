@@ -1,10 +1,11 @@
 import React, { useRef, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Image, MapPin, Mic, Navigation, Reply, Send, Smile } from "lucide-react";
-import { Input, Upload } from "antd";
+import { Input, Popover, Upload } from "antd";
 import { emitEvent } from "@/lib/socket";
 import { useNotification } from "@/hooks/useNotification";
 import { createNewMessage, editMessageById } from "@/store/messagesSlice";
+import EmojiPicker from "emoji-picker-react";
 
 const MessageInput = ({
   currentUserId,
@@ -16,10 +17,12 @@ const MessageInput = ({
 }) => {
   const dispatch = useDispatch();
 
+  const typingTimeoutRef = useRef(null);
+
+  const { mode } = useSelector((state) => state.theme);
+
   const [text, setText] = useState("");
   const [isSending, setIsSending] = useState("");
-
-  const typingTimeoutRef = useRef(null);
 
   const notification = useNotification();
 
@@ -222,13 +225,38 @@ const MessageInput = ({
             </button>
           </Upload>
 
-          <button
-            type="button"
-            aria-label="Choose emoji"
-            className="flex h-10 w-10 shrink-0 justify-center items-center rounded-full hover:bg-[var(--color-hover)] text-[var(--color-text-secondary)]"
+          {/* Emoji */}
+          <Popover
+            trigger="click"
+            placement="topLeft"
+            styles={{ body: { padding: 0 } }}
+            content={
+              <EmojiPicker
+                theme={mode === "dark" ? "dark" : "light"}
+                onEmojiClick={(emojiData) => {
+                  if (isEditing) {
+                    setEditingMessage((prev) => ({
+                      ...prev,
+                      content: prev.content + emojiData.emoji,
+                    }));
+                  } else {
+                    setText((prev) => prev + emojiData.emoji);
+                  }
+
+                  setShowPicker(false);
+                }}
+              />
+            }
           >
-            <Smile size={20} />
-          </button>
+            <button
+              type="button"
+              aria-label="Choose emoji"
+              className="flex h-10 w-10 shrink-0 justify-center items-center rounded-full hover:bg-[var(--color-hover)] text-[var(--color-text-secondary)]"
+            >
+              <Smile size={20} />
+            </button>
+          </Popover>
+
           <button
             type="button"
             aria-label="Send current location"

@@ -57,7 +57,7 @@ const messageSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["text", "image", "file", "emoji"],
+      enum: ["text", "image", "file"],
       required: true,
     },
     // Thông tin file (nếu là tin nhắn file/image)
