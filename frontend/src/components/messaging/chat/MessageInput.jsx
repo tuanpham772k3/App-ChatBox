@@ -242,8 +242,6 @@ const MessageInput = ({
                   } else {
                     setText((prev) => prev + emojiData.emoji);
                   }
-
-                  setShowPicker(false);
                 }}
               />
             }
