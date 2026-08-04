@@ -3,7 +3,7 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { loginUser } from "@/store/authSlice";
 import { useNotification } from "@/hooks/useNotification";
-import LoginForm from "@/components/auth/loginForm";
+import LoginForm from "@/components/auth/LoginForm";
 import loginBg from "@/assets/images/login-bg.jpg";
 
 const LoginPage = () => {
