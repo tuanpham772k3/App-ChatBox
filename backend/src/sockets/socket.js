@@ -10,7 +10,7 @@ let io = null;
  * Khởi tạo Socket.IO và lưu singleton
  */
 const initSocket = (server) => {
-  io = new Server(server, { cors: { origin: "*" } });
+  io = new Server(server, { origin: process.env.CLIENT_ORIGIN, credentials: true });
 
   // Auth middleware
   io.use(socketAuthMiddleware);
