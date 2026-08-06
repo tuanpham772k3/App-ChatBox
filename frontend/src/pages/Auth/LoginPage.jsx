@@ -22,18 +22,18 @@ const LoginPage = () => {
     try {
       await dispatch(loginUser({ username, password })).unwrap();
 
+      navigate("/chat");
+
       notification.success({
         message: "Đăng nhập thành công",
         description: "Chào mừng bạn quay lại hệ thống",
       });
-
-      navigate("/chat");
     } catch (error) {
       notification.error({
         message: "Đăng nhập thất bại",
         description: error.message || "Có lỗi xảy ra",
       });
-    } finally {
+
       setLoading(false);
     }
   };

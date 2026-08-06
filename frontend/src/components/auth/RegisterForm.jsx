@@ -4,13 +4,18 @@ import { Button, Col, Form, Input, Row } from "antd";
 const RegisterForm = ({ loading, onSubmit }) => {
   const [form] = Form.useForm();
 
+  // Tạo hàm handleFinish để Antd cô lập luồng submit dữ liệu
+  const handleFinish = (values) => {
+    onSubmit(values);
+  };
+
   return (
     <>
       <Form
         form={form}
         layout="vertical"
         initialValues={{ remember: true }}
-        onFinish={onSubmit}
+        onFinish={handleFinish}
         autoComplete="off"
       >
         {/* Display Name */}

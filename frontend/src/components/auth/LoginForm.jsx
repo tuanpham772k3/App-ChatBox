@@ -4,9 +4,14 @@ import { Button, Form, Input } from "antd";
 const LoginForm = ({ loading, onSubmit }) => {
   const [form] = Form.useForm();
 
+  // Tạo hàm handleFinish để Antd cô lập luồng submit dữ liệu
+  const handleFinish = (values) => {
+    onSubmit(values);
+  };
+
   return (
     <>
-      <Form form={form} layout="vertical" onFinish={onSubmit} autoComplete="off">
+      <Form form={form} layout="vertical" onFinish={handleFinish} autoComplete="off">
         <label htmlFor="username" className="mb-2 block text-sm font-medium text-white">
           Username
         </label>

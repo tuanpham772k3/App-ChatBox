@@ -28,19 +28,20 @@ const RegisterPage = () => {
     try {
       await authApi.register(info);
 
+      navigate("/login");
+
       notification.success({
         message: "Đăng ký thành công!",
         description: "Hãy đăng nhập để vào hệ thống",
       });
 
       form.resetFields();
-      navigate("/login");
     } catch (err) {
       notification.error({
         message: "Đăng ký thất bại",
         description: err.message || "Có lỗi xảy ra",
       });
-    } finally {
+
       setLoading(false);
     }
   };
