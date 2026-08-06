@@ -28,7 +28,10 @@ const RegisterPage = () => {
     try {
       await authApi.register(info);
 
-      navigate("/login");
+      // Chỉ tắt loading khi chuyển trang thành công để tránh re-render trùng lặp
+      setTimeout(() => {
+        navigate("/chat");
+      }, 100);
 
       notification.success({
         message: "Đăng ký thành công!",
