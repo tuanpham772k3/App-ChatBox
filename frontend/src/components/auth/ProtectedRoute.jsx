@@ -10,12 +10,20 @@ const ProtectedRoute = () => {
   const dispatch = useDispatch();
 
   const { accessToken, isInitializing } = useSelector((state) => state.auth);
+  const currentUser = useSelector((state) => state.user.currentUser);
 
   useEffect(() => {
+    if (!isInitializing) return;
+
     const bootstrap = async () => {
       try {
-        await refreshAccessToken();
-        await dispatch(getMe()).unwrap();
+        if (!accessToken) {
+          await refreshAccessToken();
+        }
+
+        if (!currentUser) {
+          await dispatch(getMe()).unwrap();
+        }
       } catch (err) {
         console.log("No active session");
       } finally {
@@ -24,7 +32,7 @@ const ProtectedRoute = () => {
     };
 
     bootstrap();
-  }, [dispatch]);
+  }, [accessToken, currentUser, dispatch, isInitializing]);
 
   if (isInitializing) {
     return <AppLoadingScreen />;

@@ -22,10 +22,7 @@ const LoginPage = () => {
     try {
       await dispatch(loginUser({ username, password })).unwrap();
 
-      // Chỉ tắt loading khi chuyển trang thành công để tránh re-render trùng lặp
-      setTimeout(() => {
-        navigate("/chat");
-      }, 100);
+      navigate("/chat", { replace: true });
 
       notification.success({
         message: "Đăng nhập thành công",

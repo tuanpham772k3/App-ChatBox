@@ -7,6 +7,8 @@ import ModalMyProfile from "./ModalMyProfile";
 import UserAvatar from "../ui/avatar/UserAvatar";
 import { logoutUser } from "@/store/authSlice";
 import { useNotification } from "@/hooks/useNotification";
+import { clearMessages } from "@/store/messagesSlice";
+import { disconnectSocket } from "@/lib/socket";
 
 const PopoverUserActions = ({ currentUser }) => {
   const dispatch = useDispatch();
