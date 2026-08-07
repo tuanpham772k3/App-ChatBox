@@ -164,11 +164,18 @@ const ConversationItem = ({ conversation, currentUserId, activeConversationId })
       >
         {/* Top row */}
         <div className="relative w-full flex items-center justify-end">
-          <time className="touch-hide whitespace-nowrap text-[11px] text-[var(--color-text-secondary)] hidden lg:block lg:group-hover:opacity-0 transition-opacity duration-150">
+          <time
+            className="whitespace-nowrap text-[11px] text-[var(--color-text-secondary)]
+            hidden lg:block lg:group-hover:opacity-0 transition-opacity duration-150"
+          >
             {display?.lastMessage?.time}
           </time>
 
-          <div className="touch-always-visible lg:absolute lg:right-0 flex items-center justify-center lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150">
+          <div
+            className="lg:absolute lg:right-0
+            flex items-center justify-center opacity-100
+            lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150"
+          >
             <PopoverConversationAction
               isPinned={display?.isPinned}
               onTogglePin={handleTogglePin}

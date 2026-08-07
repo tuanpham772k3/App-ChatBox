@@ -123,13 +123,3 @@
     scrollbar-color: var(--color-border) transparent; /* thumb màu var(--color-border), track trong suốt */
   }
 }
-
-@media (hover: none) and (pointer: coarse) {
-  .touch-always-visible {
-    opacity: 1 !important;
-  }
-
-  .touch-hide {
-    opacity: 0 !important;
-  }
-}

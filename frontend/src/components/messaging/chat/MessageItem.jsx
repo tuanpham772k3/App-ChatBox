@@ -177,7 +177,7 @@ const MessageItem = ({
 
         {/* Ellipsis + Menu */}
         {isMine && !msg.isDeleted && (
-          <div className="touch-always-visible self-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-150">
+          <div className="self-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-150">
             <PopoverMessageActions
               onEditMessage={handleEditMessage}
               onDeleteMessage={handleDeleteMessage}
@@ -259,7 +259,9 @@ const MessageItem = ({
               {!msg.isDeleted && (
                 <div
                   className={`shrink-0 transition-opacity duration-150 ${
-                    myReaction ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                    myReaction
+                      ? "opacity-100"
+                      : "opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
                   }`}
                 >
                   <ReactionPicker

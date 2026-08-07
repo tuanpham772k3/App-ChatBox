@@ -35,8 +35,8 @@ const FriendRow = ({ friend, onOpenChat, onRemoveFriend }) => (
     </button>
 
     <div
-      className="touch-always-visible self-center mr-4
-      opacity-100 sm:opacity-0 sm:group-hover:opacity-100
+      className="self-center mr-4 opacity-100
+      sm:opacity-0 sm:group-hover:opacity-100
       transition-opacity duration-150"
     >
       <PopoverFriendActions
