@@ -12,6 +12,8 @@ import ModalAddFriend from "./ModalAddFriend";
 
 import { mapConversationForDisplay } from "@/utils/conversationMapper";
 import { useNotification } from "@/hooks/useNotification";
+import ConversationItemSkeleton from "./ConversationListSkeleton";
+import ConversationListSkeleton from "./ConversationListSkeleton";
 
 const CATEGORY = {
   ALL: "all",
@@ -113,9 +115,7 @@ const ConversationContainer = () => {
 
         {/* ---LIST CONVERSATIONS--- */}
         {loading ? (
-          <div className="flex-1 flex items-center justify-center">
-            <Spin />
-          </div>
+          <ConversationListSkeleton />
         ) : (
           <div className="min-w-0 flex pt-6 overflow-hidden">
             <section className="flex-1 flex flex-col overflow-y-auto custom-scrollbar">

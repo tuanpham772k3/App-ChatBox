@@ -3,6 +3,7 @@ import { PanelRight, Search, UserPlus, UsersRound, Video } from "lucide-react";
 import { SlArrowLeft } from "react-icons/sl";
 import GroupAvatar from "@/components/ui/avatar/GroupAvatar";
 import UserAvatar from "@/components/ui/avatar/UserAvatar";
+import ChatHeaderSkeleton from "./ChatHeaderSkeleton";
 
 const ChatHeader = ({
   onBack,
@@ -12,11 +13,16 @@ const ChatHeader = ({
   onOpenUserProfile,
   displayInfo,
   typingNames,
+  loading,
 }) => {
-  const typingText =
+  const typingUsers =
     typingNames.length > 2
       ? `${typingNames.slice(0, 2).join(", ")} +${typingNames.length - 2}`
       : typingNames.join(", ");
+
+  if (loading) {
+    return <ChatHeaderSkeleton />;
+  }
 
   return (
     <header className="shrink-0 h-16 sm:h-20 transition-all flex items-center justify-between gap-2 px-3 sm:px-4 border-b border-[var(--color-border)]">
@@ -32,31 +38,29 @@ const ChatHeader = ({
         </button>
 
         {/* ===== AVATAR ===== */}
-        <div className="hidden sm:flex">
-          {displayInfo.isGroup ? (
-            <button type="button">
-              <GroupAvatar users={displayInfo.members || []} size={48} />
-            </button>
-          ) : (
-            <button
-              onClick={() => onOpenUserProfile(displayInfo?.partnerId)}
-              type="button"
-              className="relative"
-            >
-              <UserAvatar
-                name={displayInfo.displayName}
-                avatarUrl={displayInfo.displayAvatar}
-                size={48}
+        {displayInfo.isGroup ? (
+          <button type="button">
+            <GroupAvatar users={displayInfo.members || []} size={48} />
+          </button>
+        ) : (
+          <button
+            onClick={() => onOpenUserProfile(displayInfo?.partnerId)}
+            type="button"
+            className="relative"
+          >
+            <UserAvatar
+              name={displayInfo.displayName}
+              avatarUrl={displayInfo.displayAvatar}
+              size={48}
+            />
+            {displayInfo.isOnline && (
+              <span
+                className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[var(--color-app)] rounded-full"
+                aria-label="Online"
               />
-              {displayInfo.isOnline && (
-                <span
-                  className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[var(--color-app)] rounded-full"
-                  aria-label="Online"
-                />
-              )}
-            </button>
-          )}
-        </div>
+            )}
+          </button>
+        )}
 
         {/* ===== INFO ===== */}
         <div className="flex flex-col min-w-0">
@@ -66,9 +70,9 @@ const ChatHeader = ({
           </h2>
 
           {/* Typing or status */}
-          {typingText ? (
+          {typingUsers ? (
             <span className="text-xs md:text-sm text-green-500 italic animate-pulse truncate">
-              {typingText} đang nhập...
+              {typingUsers} đang nhập...
             </span>
           ) : displayInfo.isGroup ? (
             <button

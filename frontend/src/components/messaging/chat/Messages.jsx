@@ -17,6 +17,8 @@ import { emitEvent } from "@/lib/socket";
 import { useNotification } from "@/hooks/useNotification";
 import MessageItem from "./MessageItem";
 import ReactionDetailsModal from "./ReactionDetailsModal ";
+import MessageSkeleton from "./MessageSkeleton";
+import MessageListSkeleton from "./MessageListSkeleton";
 
 const MessageDateDivider = ({ date }) => {
   const messageDate = new Date(date);
@@ -69,6 +71,8 @@ const Messages = ({
 
   const notification = useNotification();
 
+  const isInitialLoading = loading && messages.length === 0;
+  const isLoadingMore = loading && messages.length > 0;
   const relationshipStatus = currentConversation?.relationship?.status;
 
   // ===== Load initial messages =====
@@ -231,7 +235,8 @@ const Messages = ({
         aria-label="Messages"
         className="h-full px-4 py-4 bg-[var(--color-chat)] overflow-y-auto custom-scrollbar"
       >
-        {relationshipStatus && relationshipStatus !== "friend" && (
+        {/* Relationship status */}
+        {!isInitialLoading && relationshipStatus && relationshipStatus !== "friend" && (
           <li>
             <div
               className="h-10 flex items-center justify-between px-6
@@ -298,37 +303,49 @@ const Messages = ({
           </li>
         )}
 
-        {/* Sentinel for loading older messages */}
-        <li ref={topRef} aria-hidden="true" className="h-px" />
-
-        {loading ? (
-          <li className="flex justify-center" aria-live="polite">
-            <Spin />
-          </li>
-        ) : messages.length === 0 ? (
-          <li className="text-center text-sm text-[var(--color-text-secondary)]">
-            Chưa có tin nhắn nào
-          </li>
+        {/* Initial loading */}
+        {isInitialLoading ? (
+          <MessageListSkeleton />
         ) : (
-          displayMessages.map((msg, index) => (
-            <React.Fragment key={msg._id}>
-              {msg.meta.showDate && <MessageDateDivider date={msg.createdAt} />}
+          <>
+            {/* Sentinel */}
+            <li ref={topRef} aria-hidden="true" className="h-px" />
 
-              <MessageItem
-                key={msg._id}
-                msg={msg}
-                currentUserId={currentUserId}
-                currentConversation={currentConversation}
-                isLastMessage={index === messages.length - 1}
-                onPreviewImage={handlePreviewImage}
-                setEditingMessage={setEditingMessage}
-                setReplyingMessage={setReplyingMessage}
-                onOpenUserProfile={onOpenUserProfile}
-                onJumpToMessage={handleJumpToMessage}
-                onOpenReactionDetails={handleOpenReactionDetails}
-              />
-            </React.Fragment>
-          ))
+            {/* Loading older messages */}
+            {isLoadingMore && (
+              <>
+                <MessageSkeleton />
+                <MessageSkeleton isOwn />
+              </>
+            )}
+
+            {/* Empty */}
+            {messages.length === 0 ? (
+              <li className="text-center text-sm text-[var(--color-text-secondary)]">
+                Chưa có tin nhắn nào
+              </li>
+            ) : (
+              displayMessages.map((msg, index) => (
+                <React.Fragment key={msg._id}>
+                  {msg.meta.showDate && <MessageDateDivider date={msg.createdAt} />}
+
+                  <MessageItem
+                    key={msg._id}
+                    msg={msg}
+                    currentUserId={currentUserId}
+                    currentConversation={currentConversation}
+                    isLastMessage={index === messages.length - 1}
+                    onPreviewImage={handlePreviewImage}
+                    setEditingMessage={setEditingMessage}
+                    setReplyingMessage={setReplyingMessage}
+                    onOpenUserProfile={onOpenUserProfile}
+                    onJumpToMessage={handleJumpToMessage}
+                    onOpenReactionDetails={handleOpenReactionDetails}
+                  />
+                </React.Fragment>
+              ))
+            )}
+          </>
         )}
       </ul>
 
@@ -341,6 +358,7 @@ const Messages = ({
         plugins={[Zoom, Download, Thumbnails]}
       />
 
+      {/* Reaction details */}
       <ReactionDetailsModal
         open={reactionDetails.open}
         reactionSummary={reactionDetails.reactionSummary}

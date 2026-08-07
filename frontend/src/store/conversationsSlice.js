@@ -220,7 +220,10 @@ const conversationsSlice = createSlice({
     currentConversation: null,
     typingUsers: {},
     images: [],
-    loading: null,
+
+    loading: false,
+    detailLoading: false,
+
     error: null,
   },
 
@@ -505,9 +508,15 @@ const conversationsSlice = createSlice({
       /** -----GET DETAIL CONVERSATIONS----- */
       .addCase(getConversationDetail.pending, (state, action) => {
         state.currentConversation = null;
+        state.detailLoading = true;
       })
       .addCase(getConversationDetail.fulfilled, (state, action) => {
         state.currentConversation = action.payload || [];
+        state.detailLoading = false;
+      })
+      .addCase(getConversationDetail.rejected, (state, action) => {
+        state.currentConversation = null;
+        state.detailLoading = false;
       })
 
       /** -----ADD MEMBER TO GROUP----- */

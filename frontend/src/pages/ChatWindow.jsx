@@ -45,7 +45,7 @@ const ChatWindow = () => {
   const activeConversationId = useParams().conversationId;
 
   const currentUserId = useSelector((state) => state.user.currentUser?._id);
-  const { currentConversation, typingUsers } = useSelector(
+  const { currentConversation, typingUsers, detailLoading } = useSelector(
     (state) => state.conversations
   );
 
@@ -257,6 +257,7 @@ const ChatWindow = () => {
         onOpenUserProfile={handleOpenUserProfile}
         displayInfo={displayInfo}
         typingNames={typingNames}
+        loading={detailLoading}
       />
 
       <div className="min-h-0 flex-1 overflow-hidden">
